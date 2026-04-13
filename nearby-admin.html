@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8;
+    --terracotta: #C4622D;
+    --navy: #1A2332;
+    --navy2: #243044;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --mid: #4A5568;
+    --light: #8A96A8;
+    --white: #FDFAF4;
+    --red: #E53E3E;
+    --green: #38A169;
+    --sidebar: 220px;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #EEE9DF;
+    color: var(--navy);
+    display: flex; min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar); flex-shrink: 0;
+    background: var(--navy);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 50; overflow-y: auto;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 8px;
+  }
+  .sidebar-logo .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 900; color: white;
+  }
+  .sidebar-logo .logo span { color: var(--terracotta); }
+  .sidebar-logo .admin-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: rgba(255,255,255,0.35); text-transform: uppercase; margin-top: 4px;
+  }
+  .nav-section { padding: 8px 12px; margin-bottom: 4px; }
+  .nav-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.3); text-transform: uppercase;
+    padding: 0 8px; margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    color: rgba(255,255,255,0.55); cursor: pointer;
+    font-size: 14px; font-weight: 500; margin-bottom: 2px;
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-item.active { background: rgba(196,98,45,0.2); color: white; }
+  .nav-item .ni { font-size: 18px; width: 22px; text-align: center; }
+  .nav-badge {
+    margin-left: auto; background: var(--terracotta);
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 100px;
+  }
+  .sidebar-footer {
+    margin-top: auto; padding: 16px 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .admin-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+  }
+  .admin-av {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--terracotta); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .admin-name { font-size: 13px; font-weight: 600; color: white; }
+  .admin-role { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  /* ── MAIN ── */
+  .main { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--white); padding: 16px 28px;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 40;
+  }
+  .topbar-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; }
+  .topbar-title span { color: var(--terracotta); font-style: italic; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .tb-btn {
+    padding: 8px 16px; border-radius: 100px;
+    border: 2px solid rgba(0,0,0,0.1); background: transparent;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 600; color: var(--mid); cursor: pointer;
+  }
+  .tb-btn.primary { background: var(--navy); color: white; border-color: var(--navy); }
+  .live-dot {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--green); font-weight: 600;
+  }
+  .live-dot::before {
+    content: ''; width: 8px; height: 8px;
+    background: var(--green); border-radius: 50%;
+    animation: blink 2s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* CONTENT */
+  .content { padding: 28px; flex: 1; }
+
+  /* PAGE SECTIONS */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* STAT CARDS */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--white); border-radius: 18px; padding: 22px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .stat-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .stat-icon {
+    width: 44px; height: 44px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .stat-change { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 100px; }
+  .up { background: rgba(56,161,105,0.1); color: var(--green); }
+  .down { background: rgba(229,62,62,0.1); color: var(--red); }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+  .stat-label { font-size: 13px; color: var(--light); }
+
+  /* CHART */
+  .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .chart-card { background: var(--white); border-radius: 18px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .chart-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .chart-legend { display: flex; gap: 14px; }
+  .leg { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--mid); }
+  .leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Bar chart */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 140px; }
+  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bar-wrap { display: flex; gap: 3px; align-items: flex-end; height: 120px; }
+  .bar {
+    width: 12px; border-radius: 4px 4px 0 0;
+    transition: opacity 0.2s; cursor: pointer;
+  }
+  .bar:hover { opacity: 0.7; }
+  .bar-label { font-size: 10px; color: var(--light); }
+
+  /* Donut chart */
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; }
+  .donut-svg { margin-bottom: 16px; }
+  .donut-stats { width: 100%; }
+  .donut-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .donut-label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mid); }
+  .donut-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .donut-val { font-size: 13px; font-weight: 700; color: var(--navy); }
+
+  /* TABLES */
+  .table-card { background: var(--white); border-radius: 18px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+  .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .table-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .table-search {
+    padding: 8px 14px; border: 2px solid rgba(0,0,0,0.1); border-radius: 100px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; width: 200px;
+  }
+  .table-search:focus { border-color: var(--terracotta); }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 700; color: var(--light); letter-spacing: 0.5px; text-transform: uppercase; padding: 0 12px 12px; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  td { padding: 13px 12px; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 14px; color: var(--mid); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(0,0,0,0.015); }
+  .user-cell { display: flex; align-items: center; gap: 10px; }
+  .u-av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
+  .u-name { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .u-email { font-size: 12px; color: var(--light); }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; }
+  .pill-green { background: rgba(56,161,105,0.12); color: var(--green); }
+  .pill-amber { background: rgba(232,168,56,0.15); color: #9A6700; }
+  .pill-red { background: rgba(229,62,62,0.1); color: var(--red); }
+  .pill-blue { background: rgba(66,153,225,0.1); color: #2B6CB0; }
+  .pill-navy { background: rgba(26,35,50,0.08); color: var(--navy); }
+  .act-btn {
+    padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600;
+    border: 2px solid rgba(0,0,0,0.1); background: transparent; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; margin-right: 4px; color: var(--mid);
+  }
+  .act-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+  .act-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+  /* MODERATION */
+  .mod-card { background: var(--white); border-radius: 16px; padding: 18px 20px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .mod-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .mod-body { flex: 1; }
+  .mod-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .mod-text { font-size: 13px; color: var(--mid); line-height: 1.5; margin-bottom: 10px; }
+  .mod-meta { font-size: 11px; color: var(--light); margin-bottom: 10px; }
+  .mod-actions { display: flex; gap: 8px; }
+  .mod-approve { padding: 7px 16px; border-radius: 100px; background: var(--green); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .mod-remove { padding: 7px 16px; border-radius: 100px; background: rgba(229,62,62,0.1); color: var(--red); border: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .mod-skip { padding: 7px 16px; border-radius: 100px; background: rgba(0,0,0,0.05); color: var(--mid); border: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  /* SETTINGS */
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .settings-card { background: var(--white); border-radius: 18px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .settings-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { font-size: 14px; color: var(--navy); font-weight: 500; }
+  .setting-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.15);
+    border-radius: 100px; cursor: pointer; transition: 0.2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; width: 18px; height: 18px;
+    left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s;
+  }
+  input:checked + .toggle-slider { background: var(--terracotta); }
+  input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  /* ANALYTICS EXTRA ROW */
+  .analytics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+  .mini-stat { background: var(--white); border-radius: 14px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .mini-stat-label { font-size: 12px; color: var(--light); margin-bottom: 8px; }
+  .mini-stat-val { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+  .mini-stat-sub { font-size: 12px; color: var(--green); font-weight: 600; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+    .analytics-row { grid-template-columns: 1fr 1fr; }
+    .settings-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo">Near<span>by</span></div>
+    <div class="admin-tag">Admin Control Panel</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-item active" onclick="showPage('dashboard', this)">
+      <span class="ni">📊</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="showPage('analytics', this)">
+      <span class="ni">📈</span> Analytics
+    </button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Community</div>
+    <button class="nav-item" onclick="showPage('users', this)">
+      <span class="ni">👥</span> Users
+      <span class="nav-badge">1.2k</span>
+    </button>
+    <button class="nav-item" onclick="showPage('businesses', this)">
+      <span class="ni">🏪</span> Businesses
+    </button>
+    <button class="nav-item" onclick="showPage('posts', this)">
+      <span class="ni">💬</span> Posts & Feed
+    </button>
+    <button class="nav-item" onclick="showPage('jobs', this)">
+      <span class="ni">💼</span> Jobs Board
+    </button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Control</div>
+    <button class="nav-item" onclick="showPage('moderation', this)">
+      <span class="ni">🛡️</span> Moderation
+      <span class="nav-badge">5</span>
+    </button>
+    <button class="nav-item" onclick="showPage('reports', this)">
+      <span class="ni">🚩</span> Reports
+      <span class="nav-badge">3</span>
+    </button>
+    <button class="nav-item" onclick="showPage('settings', this)">
+      <span class="ni">⚙️</span> Settings
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="admin-user">
+      <div class="admin-av">A</div>
+      <div>
+        <div class="admin-name">Admin</div>
+        <div class="admin-role">Super Administrator</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-title">Good morning, <span>Admin</span> 👋</div>
+    <div class="topbar-right">
+      <div class="live-dot">Live</div>
+      <button class="tb-btn" onclick="alert('Generating report...')">📥 Export Report</button>
+      <button class="tb-btn primary" onclick="window.location.href='nearby-feed.html'">View App →</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD PAGE ══ -->
+    <div class="page active" id="page-dashboard">
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon" style="background:rgba(196,98,45,0.1);">👥</div>
+            <span class="stat-change up">↑ 12%</span>
+          </div>
+          <div class="stat-num">1,284</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon" style="background:rgba(122,158,126,0.1);">🆕</div>
+            <span class="stat-change up">↑ 8%</span>
+          </div>
+          <div class="stat-num">47</div>
+          <div class="stat-label">New This Week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon" style="background:rgba(232,168,56,0.1);">💼</div>
+            <span class="stat-change up">↑ 23%</span>
+          </div>
+          <div class="stat-num">138</div>
+          <div class="stat-label">Active Job Posts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon" style="background:rgba(229,62,62,0.1);">🛡️</div>
+            <span class="stat-change down">5 pending</span>
+          </div>
+          <div class="stat-num">5</div>
+          <div class="stat-label">Needs Review</div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">User Growth — Last 7 Days</div>
+            <div class="chart-legend">
+              <div class="leg"><div class="leg-dot" style="background:var(--terracotta)"></div>New Users</div>
+              <div class="leg"><div class="leg-dot" style="background:var(--navy)"></div>Active</div>
+            </div>
+          </div>
+          <div class="bar-chart" id="barChart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">User Types</div>
+          </div>
+          <div class="donut-wrap">
+            <svg class="donut-svg" width="130" height="130" viewBox="0 0 130 130">
+              <circle cx="65" cy="65" r="50" fill="none" stroke="#EEE9DF" stroke-width="20"/>
+              <circle cx="65" cy="65" r="50" fill="none" stroke="var(--terracotta)" stroke-width="20" stroke-dasharray="157 157" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
+              <circle cx="65" cy="65" r="50" fill="none" stroke="var(--sage)" stroke-width="20" stroke-dasharray="63 251" stroke-dashoffset="-157" transform="rotate(-90 65 65)"/>
+              <circle cx="65" cy="65" r="50" fill="none" stroke="var(--amber)" stroke-width="20" stroke-dasharray="47 267" stroke-dashoffset="-220" transform="rotate(-90 65 65)"/>
+              <circle cx="65" cy="65" r="50" fill="none" stroke="var(--navy2)" stroke-width="20" stroke-dasharray="47 267" stroke-dashoffset="-267" transform="rotate(-90 65 65)"/>
+              <text x="65" y="60" text-anchor="middle" font-size="18" font-weight="900" fill="var(--navy)" font-family="DM Sans">50%</text>
+              <text x="65" y="76" text-anchor="middle" font-size="10" fill="var(--light)" font-family="DM Sans">Residents</text>
+            </svg>
+            <div class="donut-stats">
+              <div class="donut-item"><div class="donut-label"><div class="donut-dot" style="background:var(--terracotta)"></div>Residents</div><div class="donut-val">50%</div></div>
+              <div class="donut-item"><div class="donut-label"><div class="donut-dot" style="background:var(--sage)"></div>Newcomers</div><div class="donut-val">20%</div></div>
+              <div class="donut-item"><div class="donut-label"><div class="donut-dot" style="background:var(--amber)"></div>Businesses</div><div class="donut-val">15%</div></div>
+              <div class="donut-item"><div class="donut-label"><div class="donut-dot" style="background:var(--navy2)"></div>Visitors</div><div class="donut-val">15%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT USERS TABLE -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Recent Users</div>
+          <input class="table-search" placeholder="🔍  Search users..." oninput="filterTable(this)" />
+        </div>
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Type</th>
+              <th>Location</th>
+              <th>Joined</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="user-cell"><div class="u-av" style="background:var(--terracotta)">M</div><div><div class="u-name">Marcus Johnson</div><div class="u-email">marcus@email.com</div></div></div></td>
+              <td><span class="pill pill-amber">Newcomer</span></td>
+              <td>Green Point</td>
+              <td>2 days ago</td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><button class="act-btn" onclick="alert('Viewing Marcus profile')">View</button><button class="act-btn danger" onclick="confirmBan('Marcus')">Ban</button></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="u-av" style="background:var(--sage)">A</div><div><div class="u-name">Amara Osei</div><div class="u-email">amara@email.com</div></div></div></td>
+              <td><span class="pill pill-navy">Resident</span></td>
+              <td>Bo-Kaap</td>
+              <td>5 days ago</td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><button class="act-btn">View</button><button class="act-btn danger" onclick="confirmBan('Amara')">Ban</button></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="u-av" style="background:var(--amber);color:var(--navy)">B</div><div><div class="u-name">Blue Moon Bakery</div><div class="u-email">info@bluemoon.co.za</div></div></div></td>
+              <td><span class="pill pill-blue">Business</span></td>
+              <td>Sea Point</td>
+              <td>1 week ago</td>
+              <td><span class="pill pill-green">Verified ✓</span></td>
+              <td><button class="act-btn">View</button><button class="act-btn danger" onclick="confirmBan('Blue Moon Bakery')">Ban</button></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="u-av" style="background:#9B59B6">K</div><div><div class="u-name">Kofi Asante</div><div class="u-email">kofi@email.com</div></div></div></td>
+              <td><span class="pill pill-navy">Visitor</span></td>
+              <td>City Bowl</td>
+              <td>2 weeks ago</td>
+              <td><span class="pill pill-amber">Flagged</span></td>
+              <td><button class="act-btn">View</button><button class="act-btn danger" onclick="confirmBan('Kofi')">Ban</button></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="u-av" style="background:#2980B9">L</div><div><div class="u-name">Lerato Molefe</div><div class="u-email">lerato@email.com</div></div></div></td>
+              <td><span class="pill pill-navy">Resident</span></td>
+              <td>Woodstock</td>
+              <td>3 weeks ago</td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><button class="act-btn">View</button><button class="act-btn danger" onclick="confirmBan('Lerato')">Ban</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ ANALYTICS PAGE ══ -->
+    <div class="page" id="page-analytics">
+      <div class="analytics-row">
+        <div class="mini-stat">
+          <div class="mini-stat-label">Daily Active Users</div>
+          <div class="mini-stat-val">342</div>
+          <div class="mini-stat-sub">↑ 18% vs last week</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Avg. Session Time</div>
+          <div class="mini-stat-val">8.4m</div>
+          <div class="mini-stat-sub">↑ 2.1 min increase</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Posts This Week</div>
+          <div class="mini-stat-val">486</div>
+          <div class="mini-stat-sub">↑ 31% more than last week</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Job Applications</div>
+          <div class="mini-stat-val">93</div>
+          <div class="mini-stat-sub">↑ 23% this week</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">New Arrivals Greeted</div>
+          <div class="mini-stat-val">78%</div>
+          <div class="mini-stat-sub">↑ Engagement rate</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Retention Rate</div>
+          <div class="mini-stat-val">64%</div>
+          <div class="mini-stat-sub">30-day user return rate</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Post Types Breakdown — This Month</div>
+          </div>
+          <div class="bar-chart" id="barChart2"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><div class="chart-title">Top Neighborhoods</div></div>
+          <table style="width:100%">
+            <thead><tr><th>Neighborhood</th><th>Users</th><th>Growth</th></tr></thead>
+            <tbody>
+              <tr><td>Green Point</td><td>284</td><td><span class="pill pill-green">↑ 22%</span></td></tr>
+              <tr><td>Sea Point</td><td>198</td><td><span class="pill pill-green">↑ 14%</span></td></tr>
+              <tr><td>Bo-Kaap</td><td>156</td><td><span class="pill pill-green">↑ 31%</span></td></tr>
+              <tr><td>Woodstock</td><td>134</td><td><span class="pill pill-amber">↑ 5%</span></td></tr>
+              <tr><td>City Bowl</td><td>112</td><td><span class="pill pill-green">↑ 18%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MODERATION PAGE ══ -->
+    <div class="page" id="page-moderation">
+      <div style="margin-bottom:20px">
+        <div class="chart-title" style="font-size:16px;margin-bottom:6px;">🛡️ Content Moderation Queue</div>
+        <div style="font-size:13px;color:var(--light)">5 items need your review</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon">🚩</div>
+        <div class="mod-body">
+          <div class="mod-title">Reported Post — Spam</div>
+          <div class="mod-text">"Buy cheap followers now!! WhatsApp 083... Click link 👇👇" — Posted by unknown123</div>
+          <div class="mod-meta">Reported by 4 users · Green Point feed · 2 hours ago</div>
+          <div class="mod-actions">
+            <button class="mod-remove" onclick="modAction(this,'removed')">🗑️ Remove Post</button>
+            <button class="mod-approve" onclick="modAction(this,'approved')">✓ Keep Post</button>
+            <button class="mod-skip" onclick="modAction(this,'skipped')">Skip</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon">👤</div>
+        <div class="mod-body">
+          <div class="mod-title">User Report — Harassment</div>
+          <div class="mod-text">User "anon_987" sent repeated unsolicited messages to a resident. Reported by the recipient.</div>
+          <div class="mod-meta">1 report · Direct messages · 5 hours ago</div>
+          <div class="mod-actions">
+            <button class="mod-remove" onclick="modAction(this,'banned user')">🚫 Ban User</button>
+            <button class="mod-approve" onclick="modAction(this,'warned')">⚠️ Warn User</button>
+            <button class="mod-skip" onclick="modAction(this,'skipped')">Skip</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon">🏪</div>
+        <div class="mod-body">
+          <div class="mod-title">Business Verification Request</div>
+          <div class="mod-text">"Cape Town Eats" submitted documents for business verification. Needs admin approval to get verified badge.</div>
+          <div class="mod-meta">Submitted 1 day ago · Documents attached</div>
+          <div class="mod-actions">
+            <button class="mod-approve" onclick="modAction(this,'verified')">✓ Verify Business</button>
+            <button class="mod-remove" onclick="modAction(this,'rejected')">✗ Reject</button>
+            <button class="mod-skip" onclick="modAction(this,'skipped')">Skip</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon">💼</div>
+        <div class="mod-body">
+          <div class="mod-title">Suspicious Job Post</div>
+          <div class="mod-text">"Make R5000/day working from home! No experience needed. Send CV to personal Gmail..." — flagged as potential scam.</div>
+          <div class="mod-meta">Auto-flagged by system · Jobs board · 6 hours ago</div>
+          <div class="mod-actions">
+            <button class="mod-remove" onclick="modAction(this,'removed')">🗑️ Remove Post</button>
+            <button class="mod-approve" onclick="modAction(this,'approved')">✓ Looks Legit</button>
+            <button class="mod-skip" onclick="modAction(this,'skipped')">Skip</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS PAGE ══ -->
+    <div class="page" id="page-settings">
+      <div class="settings-grid">
+        <div class="settings-card">
+          <div class="settings-title">🌍 Platform Controls</div>
+          <div class="setting-row">
+            <div><div class="setting-label">New User Registrations</div><div class="setting-desc">Allow new accounts to be created</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Visitor Mode</div><div class="setting-desc">Allow non-resident browsing</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Job Postings</div><div class="setting-desc">Allow businesses to post jobs</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Maintenance Mode</div><div class="setting-desc">Take the app offline for updates</div></div>
+            <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-title">🛡️ Safety & Moderation</div>
+          <div class="setting-row">
+            <div><div class="setting-label">Auto-flag Spam</div><div class="setting-desc">AI scans posts for spam links</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Require Email Verify</div><div class="setting-desc">Users must verify before posting</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Business Verification</div><div class="setting-desc">Manual review before verified badge</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Profanity Filter</div><div class="setting-desc">Auto-block offensive language</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-title">🔔 Notifications</div>
+          <div class="setting-row">
+            <div><div class="setting-label">New Report Alerts</div><div class="setting-desc">Notify admin on new reports</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Weekly Report Email</div><div class="setting-desc">Analytics digest every Monday</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">New Business Signup</div><div class="setting-desc">Alert when a business registers</div></div>
+            <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-title">💼 Jobs Board Rules</div>
+          <div class="setting-row">
+            <div><div class="setting-label">Require Business Account</div><div class="setting-desc">Only verified businesses can post jobs</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Job Post Expiry</div><div class="setting-desc">Auto-remove after 30 days</div></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Salary Required</div><div class="setting-desc">Force salary info on job posts</div></div>
+            <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTHER PAGES PLACEHOLDER -->
+    <div class="page" id="page-users"><div class="table-card"><div class="table-title" style="font-size:18px;margin-bottom:4px;">👥 All Users</div><p style="color:var(--light);margin-top:8px;">Full user management view — same as dashboard users table with extended filters.</p></div></div>
+    <div class="page" id="page-businesses"><div class="table-card"><div class="table-title" style="font-size:18px;margin-bottom:4px;">🏪 Businesses</div><p style="color:var(--light);margin-top:8px;">Business profiles, verification status and activity.</p></div></div>
+    <div class="page" id="page-posts"><div class="table-card"><div class="table-title" style="font-size:18px;margin-bottom:4px;">💬 Posts & Feed</div><p style="color:var(--light);margin-top:8px;">All community posts with moderation controls.</p></div></div>
+    <div class="page" id="page-jobs"><div class="table-card"><div class="table-title" style="font-size:18px;margin-bottom:4px;">💼 Jobs Board</div><p style="color:var(--light);margin-top:8px;">All job postings with approval and removal controls.</p></div></div>
+    <div class="page" id="page-reports"><div class="table-card"><div class="table-title" style="font-size:18px;margin-bottom:4px;">🚩 User Reports</div><p style="color:var(--light);margin-top:8px;">Community reports awaiting review.</p></div></div>
+
+  </div>
+</div>
+
+<script>
+  // Build bar chart
+  var days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var newU = [8,14,6,19,12,24,18];
+  var active = [120,145,110,180,160,210,190];
+  var maxV = Math.max(...active);
+  var bc = document.getElementById('barChart');
+  days.forEach(function(d, i) {
+    var g = document.createElement('div'); g.className = 'bar-group';
+    var bw = document.createElement('div'); bw.className = 'bar-wrap';
+    var b1 = document.createElement('div'); b1.className = 'bar';
+    b1.style.cssText = 'background:var(--terracotta);height:'+(newU[i]/maxV*110)+'px';
+    var b2 = document.createElement('div'); b2.className = 'bar';
+    b2.style.cssText = 'background:var(--navy);height:'+(active[i]/maxV*110)+'px';
+    bw.appendChild(b1); bw.appendChild(b2);
+    var bl = document.createElement('div'); bl.className = 'bar-label'; bl.textContent = d;
+    g.appendChild(bw); g.appendChild(bl); bc.appendChild(g);
+  });
+
+  // Build analytics bar chart
+  var types = ['Posts','Jobs','Events','Alerts'];
+  var vals = [486,138,74,32];
+  var maxV2 = Math.max(...vals);
+  var bc2 = document.getElementById('barChart2');
+  if (bc2) {
+    var colors = ['var(--terracotta)','var(--sage)','var(--amber)','#E53E3E'];
+    types.forEach(function(t, i) {
+      var g = document.createElement('div'); g.className = 'bar-group';
+      var bw = document.createElement('div'); bw.className = 'bar-wrap';
+      var b = document.createElement('div'); b.className = 'bar';
+      b.style.cssText = 'background:'+colors[i]+';height:'+(vals[i]/maxV2*110)+'px;width:28px';
+      bw.appendChild(b);
+      var bl = document.createElement('div'); bl.className = 'bar-label'; bl.textContent = t;
+      var bv = document.createElement('div'); bv.style.cssText = 'font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px'; bv.textContent = vals[i];
+      g.appendChild(bv); g.appendChild(bw); g.appendChild(bl); bc2.appendChild(g);
+    });
+  }
+
+  function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    document.getElementById('page-'+id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+    btn.classList.add('active');
+    var titles = { dashboard:'Good morning, <span style="color:var(--terracotta);font-style:italic">Admin</span> 👋', analytics:'Platform <span style="color:var(--terracotta);font-style:italic">Analytics</span>', users:'User <span style="color:var(--terracotta);font-style:italic">Management</span>', businesses:'Local <span style="color:var(--terracotta);font-style:italic">Businesses</span>', posts:'Posts & <span style="color:var(--terracotta);font-style:italic">Feed</span>', jobs:'Jobs <span style="color:var(--terracotta);font-style:italic">Board</span>', moderation:'Content <span style="color:var(--terracotta);font-style:italic">Moderation</span>', reports:'User <span style="color:var(--terracotta);font-style:italic">Reports</span>', settings:'Platform <span style="color:var(--terracotta);font-style:italic">Settings</span>' };
+    document.querySelector('.topbar-title').innerHTML = titles[id] || id;
+  }
+
+  function filterTable(input) {
+    var term = input.value.toLowerCase();
+    document.querySelectorAll('#usersTable tbody tr').forEach(function(row) {
+      row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+    });
+  }
+
+  function confirmBan(name) {
+    if (confirm('Are you sure you want to ban ' + name + '? This cannot be undone easily.')) {
+      alert(name + ' has been banned from Nearby.');
+    }
+  }
+
+  function modAction(btn, action) {
+    var card = btn.closest('.mod-card');
+    card.style.opacity = '0.4';
+    card.style.pointerEvents = 'none';
+    var msg = { removed:'Post removed ✓', approved:'Post approved ✓', banned:'User banned ✓', warned:'Warning sent ✓', verified:'Business verified ✓', rejected:'Request rejected ✓', skipped:'Skipped', 'banned user':'User banned ✓' };
+    var t = document.createElement('div');
+    t.style.cssText = 'text-align:center;font-size:13px;font-weight:700;color:var(--green);padding:8px 0';
+    t.textContent = msg[action] || action;
+    card.appendChild(t);
+  }
+</script>
+</body>
+</html>
