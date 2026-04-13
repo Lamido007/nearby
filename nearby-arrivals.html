@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — New Arrivals</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8;
+    --terracotta: #C4622D;
+    --navy: #1A2332;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --mid: #4A5568;
+    --light: #8A96A8;
+    --white: #FDFAF4;
+    --gold: #D4AF37;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #EEE9DF;
+    color: var(--navy);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    background: var(--white);
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .logo span { color: var(--terracotta); }
+  .nav-icons { display: flex; gap: 8px; }
+  .nav-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--cream); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+  }
+
+  /* HERO BANNER */
+  .hero-banner {
+    background: linear-gradient(135deg, var(--navy), #2C3E6B);
+    padding: 24px 20px; margin-bottom: 10px;
+    position: relative; overflow: hidden;
+  }
+  .hero-banner::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(196,98,45,0.2), transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-tag {
+    display: inline-block; background: rgba(196,98,45,0.25);
+    color: #F0A070; padding: 4px 12px; border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 900; color: white;
+    line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 8px;
+  }
+  .hero-title em { color: var(--amber); font-style: italic; }
+  .hero-sub { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 16px; }
+  .hero-stats { display: flex; gap: 20px; }
+  .h-stat { }
+  .h-stat-num { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: white; }
+  .h-stat-label { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+
+  /* FILTER TABS */
+  .filter-row {
+    display: flex; gap: 8px; overflow-x: auto;
+    padding: 12px 16px; background: var(--white);
+    margin-bottom: 10px; scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .ftab {
+    flex-shrink: 0; padding: 7px 16px; border-radius: 100px;
+    border: 2px solid rgba(0,0,0,0.1); background: transparent;
+    font-size: 13px; font-weight: 600; color: var(--mid);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap;
+  }
+  .ftab.on { background: var(--navy); border-color: var(--navy); color: white; }
+
+  /* SECTION */
+  .section-label {
+    font-size: 11px; font-weight: 700; color: var(--terracotta);
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 0 16px; margin-bottom: 10px; margin-top: 4px;
+  }
+
+  /* ARRIVAL CARD — FULL */
+  .arrival-card {
+    background: var(--white); border-radius: 18px;
+    margin: 0 10px 12px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+
+  /* TOP stripe per type */
+  .card-stripe { height: 5px; }
+  .stripe-new { background: linear-gradient(90deg, var(--terracotta), var(--amber)); }
+  .stripe-visitor { background: linear-gradient(90deg, #2980B9, #6DD5FA); }
+  .stripe-returning { background: linear-gradient(90deg, var(--sage), #B8E0BC); }
+
+  .card-inner { padding: 16px; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+
+  .arr-avatar {
+    width: 58px; height: 58px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; color: white;
+    flex-shrink: 0; position: relative;
+  }
+  .arr-badge-icon {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--white); display: flex; align-items: center;
+    justify-content: center; font-size: 11px;
+    border: 2px solid var(--white);
+  }
+
+  .arr-info { flex: 1; }
+  .arr-name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .arr-name { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .arr-verified { font-size: 14px; }
+  .arr-type-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 100px; margin-left: auto;
+  }
+  .type-mover { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+  .type-visitor { background: rgba(41,128,185,0.1); color: #2980B9; }
+  .type-returning { background: rgba(122,158,126,0.15); color: var(--sage); }
+  .arr-sub { font-size: 12px; color: var(--light); margin-bottom: 6px; }
+  .arr-from {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--cream); border-radius: 100px;
+    padding: 3px 10px; font-size: 11px; color: var(--mid); font-weight: 500;
+  }
+
+  .arr-bio {
+    font-size: 13px; color: var(--mid); line-height: 1.6;
+    margin-bottom: 12px; font-style: italic;
+    padding: 10px 14px; background: var(--cream); border-radius: 12px;
+    border-left: 3px solid var(--terracotta);
+  }
+
+  /* INTERESTS */
+  .arr-interests { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .interest-tag {
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 100px;
+    background: rgba(26,35,50,0.06); font-size: 11px;
+    font-weight: 500; color: var(--mid);
+  }
+
+  /* LOOKING FOR */
+  .looking-for {
+    background: rgba(122,158,126,0.08);
+    border: 1px solid rgba(122,158,126,0.2);
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 12px;
+  }
+  .lf-label { font-size: 11px; font-weight: 700; color: var(--sage); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .lf-text { font-size: 13px; color: var(--mid); }
+
+  /* CARD ACTIONS */
+  .card-actions { display: flex; gap: 8px; }
+  .btn-welcome {
+    flex: 2; padding: 11px; border-radius: 12px;
+    background: var(--terracotta); color: white; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 700; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-welcome:active { background: #A34B1F; }
+  .btn-welcome.sent { background: var(--sage); }
+  .btn-profile {
+    flex: 1; padding: 11px; border-radius: 12px;
+    background: transparent; color: var(--navy);
+    border: 2px solid rgba(0,0,0,0.1);
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+  }
+  .btn-connect {
+    width: 42px; border-radius: 12px;
+    background: transparent; color: var(--mid);
+    border: 2px solid rgba(0,0,0,0.1);
+    font-size: 18px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+  }
+
+  /* AMBASSADOR WELCOME CARD */
+  .ambassador-section {
+    background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(232,168,56,0.08));
+    border: 1px solid rgba(212,175,55,0.25);
+    border-radius: 18px; margin: 0 10px 12px; padding: 16px;
+  }
+  .amb-title {
+    font-size: 13px; font-weight: 700; color: var(--navy);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+  }
+  .amb-list { display: flex; flex-direction: column; gap: 10px; }
+  .amb-item { display: flex; align-items: center; gap: 10px; }
+  .amb-av {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: white; flex-shrink: 0;
+    position: relative;
+  }
+  .amb-crown {
+    position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+    font-size: 10px;
+  }
+  .amb-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .amb-tag { font-size: 11px; color: var(--light); }
+  .amb-btn {
+    margin-left: auto; padding: 6px 12px; border-radius: 100px;
+    background: rgba(212,175,55,0.2); color: #8A6200;
+    border: none; font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; flex-shrink: 0;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center; padding: 48px 20px;
+    display: none;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 14px; }
+  .empty-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); margin-bottom: 8px; }
+  .empty-sub { font-size: 14px; color: var(--light); line-height: 1.6; }
+
+  /* MY ARRIVAL CARD (if user is a newcomer) */
+  .my-arrival-banner {
+    background: var(--terracotta); padding: 14px 16px;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
+  }
+  .mab-icon { font-size: 24px; }
+  .mab-text { flex: 1; }
+  .mab-title { font-size: 14px; font-weight: 700; color: white; }
+  .mab-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+  .mab-btn {
+    background: rgba(255,255,255,0.2); color: white;
+    border: none; border-radius: 100px; padding: 7px 14px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; flex-shrink: 0;
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
+    display: flex; padding: 10px 0 16px;
+  }
+  .bnav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 4px; cursor: pointer; border: none; background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .bnav-icon { font-size: 22px; }
+  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
+  .bnav-item.active .bnav-label { color: var(--terracotta); }
+
+  .feed-wrap { padding-bottom: 100px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="logo">Near<span>by</span></div>
+  <div class="nav-icons">
+    <button class="nav-icon">🔍</button>
+    <button class="nav-icon">🔔</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero-banner">
+  <div class="hero-tag">📍 Green Point · Cape Town</div>
+  <div class="hero-title">New to the <em>neighborhood</em></div>
+  <div class="hero-sub">Say hello and make someone feel at home. Every welcome earns you +10 reputation points.</div>
+  <div class="hero-stats">
+    <div class="h-stat">
+      <div class="h-stat-num">12</div>
+      <div class="h-stat-label">New this week</div>
+    </div>
+    <div class="h-stat">
+      <div class="h-stat-num">47</div>
+      <div class="h-stat-label">This month</div>
+    </div>
+    <div class="h-stat">
+      <div class="h-stat-num">89%</div>
+      <div class="h-stat-label">Got welcomed</div>
+    </div>
+  </div>
+</div>
+
+<!-- MY ARRIVAL BANNER (shown if newcomer) -->
+<div class="my-arrival-banner" id="myBanner">
+  <div class="mab-icon">🆕</div>
+  <div class="mab-text">
+    <div class="mab-title">You're listed as a new arrival!</div>
+    <div class="mab-sub">Neighbors can see your profile and say hello</div>
+  </div>
+  <button class="mab-btn" onclick="document.getElementById('myBanner').style.display='none'">Edit ✏️</button>
+</div>
+
+<!-- FILTER TABS -->
+<div class="filter-row">
+  <button class="ftab on" onclick="setTab(this)">🏠 All Arrivals</button>
+  <button class="ftab" onclick="setTab(this)">🆕 Just Moved</button>
+  <button class="ftab" onclick="setTab(this)">✈️ Visitors</button>
+  <button class="ftab" onclick="setTab(this)">🔁 Returning</button>
+</div>
+
+<div class="feed-wrap">
+
+  <!-- AMBASSADORS SECTION -->
+  <div class="ambassador-section">
+    <div class="amb-title">🏆 Ambassadors ready to welcome you</div>
+    <div class="amb-list">
+      <div class="amb-item">
+        <div class="amb-av" style="background:var(--terracotta);">
+          <div class="amb-crown">🏆</div>L
+        </div>
+        <div>
+          <div class="amb-name">Lerato M.</div>
+          <div class="amb-tag">Ambassador · 847 rep · 6mo member</div>
+        </div>
+        <button class="amb-btn" onclick="this.textContent='👋 Sent!'">Say Hi</button>
+      </div>
+      <div class="amb-item">
+        <div class="amb-av" style="background:var(--sage);">
+          <div class="amb-crown">⭐</div>A
+        </div>
+        <div>
+          <div class="amb-name">Amara O.</div>
+          <div class="amb-tag">Community Star · 520 rep · 8mo member</div>
+        </div>
+        <button class="amb-btn" onclick="this.textContent='👋 Sent!'">Say Hi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION LABEL -->
+  <div class="section-label">🆕 Just moved in — This week</div>
+
+  <!-- ARRIVAL CARD 1 — Marcus -->
+  <div class="arrival-card">
+    <div class="card-stripe stripe-new"></div>
+    <div class="card-inner">
+      <div class="card-top">
+        <div class="arr-avatar" style="background:var(--terracotta);">
+          M
+          <div class="arr-badge-icon">🆕</div>
+        </div>
+        <div class="arr-info">
+          <div class="arr-name-row">
+            <div class="arr-name">Marcus Johnson</div>
+            <span class="arr-type-badge type-mover">Just Moved</span>
+          </div>
+          <div class="arr-sub">📍 Green Point · Arrived 2 days ago</div>
+          <div class="arr-from">🏙️ From Johannesburg</div>
+        </div>
+      </div>
+      <div class="arr-bio">"Hey neighbors! I'm a graphic designer who loves hiking and great coffee. Looking to meet people and explore Cape Town properly!"</div>
+      <div class="arr-interests">
+        <div class="interest-tag">🎨 Design</div>
+        <div class="interest-tag">🥾 Hiking</div>
+        <div class="interest-tag">☕ Coffee</div>
+        <div class="interest-tag">📸 Photography</div>
+      </div>
+      <div class="looking-for">
+        <div class="lf-label">🔍 Looking for</div>
+        <div class="lf-text">Hiking buddies, local coffee spots, creative community</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-welcome" onclick="sendWelcome(this)">👋 Say Hello · +10 pts</button>
+        <button class="btn-profile" onclick="window.location.href='nearby-profile.html'">Profile</button>
+        <button class="btn-connect" onclick="this.textContent='✓';this.style.borderColor='var(--sage)';this.style.color='var(--sage)'">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARRIVAL CARD 2 — Sara (Visitor) -->
+  <div class="arrival-card">
+    <div class="card-stripe stripe-visitor"></div>
+    <div class="card-inner">
+      <div class="card-top">
+        <div class="arr-avatar" style="background:#2980B9;">
+          S
+          <div class="arr-badge-icon">✈️</div>
+        </div>
+        <div class="arr-info">
+          <div class="arr-name-row">
+            <div class="arr-name">Sara Bekele</div>
+            <span class="arr-type-badge type-visitor">Visitor</span>
+          </div>
+          <div class="arr-sub">📍 City Bowl · Here for 2 weeks</div>
+          <div class="arr-from">🌍 From Addis Ababa, Ethiopia</div>
+        </div>
+      </div>
+      <div class="arr-bio">"First time in Cape Town! Looking to experience the city like a local — food, music, hidden gems. Any recommendations welcome 😊"</div>
+      <div class="arr-interests">
+        <div class="interest-tag">🍕 Food</div>
+        <div class="interest-tag">🎵 Music</div>
+        <div class="interest-tag">🏛️ Culture</div>
+        <div class="interest-tag">🌍 Travel</div>
+      </div>
+      <div class="looking-for">
+        <div class="lf-label">🔍 Looking for</div>
+        <div class="lf-text">Local restaurant tips, live music spots, guided walks</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-welcome" onclick="sendWelcome(this)">👋 Say Hello · +10 pts</button>
+        <button class="btn-profile">Profile</button>
+        <button class="btn-connect" onclick="this.textContent='✓';this.style.borderColor='var(--sage)';this.style.color='var(--sage)'">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARRIVAL CARD 3 — Kofi (Just moved) -->
+  <div class="arrival-card">
+    <div class="card-stripe stripe-new"></div>
+    <div class="card-inner">
+      <div class="card-top">
+        <div class="arr-avatar" style="background:var(--amber);color:var(--navy);">
+          K
+          <div class="arr-badge-icon">🆕</div>
+        </div>
+        <div class="arr-info">
+          <div class="arr-name-row">
+            <div class="arr-name">Kofi Asante</div>
+            <span class="arr-type-badge type-mover">Just Moved</span>
+          </div>
+          <div class="arr-sub">📍 Sea Point · Arrived 4 days ago</div>
+          <div class="arr-from">🏙️ From Accra, Ghana</div>
+        </div>
+      </div>
+      <div class="arr-bio">"New to South Africa, excited to explore and build a new life here. Chef by trade, food lover always. Let's cook something together!"</div>
+      <div class="arr-interests">
+        <div class="interest-tag">🍳 Cooking</div>
+        <div class="interest-tag">⚽ Football</div>
+        <div class="interest-tag">🎵 Music</div>
+        <div class="interest-tag">🌱 Sustainability</div>
+      </div>
+      <div class="looking-for">
+        <div class="lf-label">🔍 Looking for</div>
+        <div class="lf-text">Work opportunities in hospitality, community events, football groups</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-welcome" onclick="sendWelcome(this)">👋 Say Hello · +10 pts</button>
+        <button class="btn-profile">Profile</button>
+        <button class="btn-connect" onclick="this.textContent='✓';this.style.borderColor='var(--sage)';this.style.color='var(--sage)'">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION LABEL — EARLIER -->
+  <div class="section-label" style="margin-top:8px;">📅 Earlier this month</div>
+
+  <!-- ARRIVAL CARD 4 — Thabo (Returning) -->
+  <div class="arrival-card">
+    <div class="card-stripe stripe-returning"></div>
+    <div class="card-inner">
+      <div class="card-top">
+        <div class="arr-avatar" style="background:var(--sage);">
+          T
+          <div class="arr-badge-icon">🔁</div>
+        </div>
+        <div class="arr-info">
+          <div class="arr-name-row">
+            <div class="arr-name">Thabo Dlamini</div>
+            <span class="arr-type-badge type-returning">Returning</span>
+          </div>
+          <div class="arr-sub">📍 Woodstock · Back 1 week ago</div>
+          <div class="arr-from">🏠 Grew up here · Was in Durban</div>
+        </div>
+      </div>
+      <div class="arr-bio">"Back home after 3 years in Durban! The neighbourhood has changed so much — can't wait to reconnect and see familiar faces."</div>
+      <div class="arr-interests">
+        <div class="interest-tag">🎨 Art</div>
+        <div class="interest-tag">💻 Tech</div>
+        <div class="interest-tag">🏡 Community</div>
+      </div>
+      <div class="looking-for">
+        <div class="lf-label">🔍 Looking for</div>
+        <div class="lf-text">Old friends, tech community, creative spaces in Woodstock</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-welcome" onclick="sendWelcome(this)">👋 Welcome back · +10 pts</button>
+        <button class="btn-profile">Profile</button>
+        <button class="btn-connect" onclick="this.textContent='✓';this.style.borderColor='var(--sage)';this.style.color='var(--sage)'">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARRIVAL CARD 5 — Priya -->
+  <div class="arrival-card">
+    <div class="card-stripe stripe-new"></div>
+    <div class="card-inner">
+      <div class="card-top">
+        <div class="arr-avatar" style="background:#9B59B6;">
+          P
+          <div class="arr-badge-icon">🆕</div>
+        </div>
+        <div class="arr-info">
+          <div class="arr-name-row">
+            <div class="arr-name">Priya Naidoo</div>
+            <span class="arr-type-badge type-mover">Just Moved</span>
+          </div>
+          <div class="arr-sub">📍 Bo-Kaap · Arrived 10 days ago</div>
+          <div class="arr-from">🏙️ From Durban</div>
+        </div>
+      </div>
+      <div class="arr-bio">"Moved here for a new job and loving it so far. Teacher by profession. Looking for book clubs, yoga classes and nice running routes!"</div>
+      <div class="arr-interests">
+        <div class="interest-tag">📚 Books</div>
+        <div class="interest-tag">🧘 Wellness</div>
+        <div class="interest-tag">🎓 Education</div>
+        <div class="interest-tag">💪 Fitness</div>
+      </div>
+      <div class="looking-for">
+        <div class="lf-label">🔍 Looking for</div>
+        <div class="lf-text">Book club, yoga studio, running routes near Bo-Kaap</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-welcome" onclick="sendWelcome(this)">👋 Say Hello · +10 pts</button>
+        <button class="btn-profile">Profile</button>
+        <button class="btn-connect" onclick="this.textContent='✓';this.style.borderColor='var(--sage)';this.style.color='var(--sage)'">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAD MORE -->
+  <div style="text-align:center;padding:20px 0 8px;">
+    <button onclick="loadMore(this)" style="padding:12px 32px;border-radius:100px;border:2px solid rgba(0,0,0,0.1);background:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--mid);cursor:pointer;">
+      Load More Arrivals
+    </button>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item" onclick="window.location.href='nearby-feed.html'">
+    <div class="bnav-icon">🏡</div>
+    <div class="bnav-label">Home</div>
+  </button>
+  <button class="bnav-item active">
+    <div class="bnav-icon">🆕</div>
+    <div class="bnav-label">Arrivals</div>
+  </button>
+  <button class="bnav-item">
+    <div class="bnav-icon">💼</div>
+    <div class="bnav-label">Jobs</div>
+  </button>
+  <button class="bnav-item" onclick="window.location.href='nearby-profile.html'">
+    <div class="bnav-icon">👤</div>
+    <div class="bnav-label">Profile</div>
+  </button>
+</div>
+
+<script>
+  var repPoints = 0;
+
+  function sendWelcome(btn) {
+    if (btn.classList.contains('sent')) return;
+    btn.classList.add('sent');
+    btn.textContent = '✓ Welcome Sent! +10 pts';
+    repPoints += 10;
+    showToast('+10 Reputation Points! 🌟');
+  }
+
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 1800);
+    setTimeout(function(){ t.remove(); }, 2200);
+  }
+
+  function setTab(el) {
+    document.querySelectorAll('.ftab').forEach(function(t){ t.classList.remove('on'); });
+    el.classList.add('on');
+  }
+
+  function loadMore(btn) {
+    btn.textContent = 'Loading...';
+    setTimeout(function(){
+      btn.textContent = '✓ All caught up!';
+      btn.style.color = 'var(--sage)';
+      btn.disabled = true;
+    }, 1200);
+  }
+</script>
+</body>
+</html>
