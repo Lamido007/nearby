@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8;
+    --terracotta: #C4622D;
+    --navy: #1A2332;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --mid: #4A5568;
+    --light: #8A96A8;
+    --white: #FDFAF4;
+    --gold: #D4AF37;
+    --gold-light: #F0D060;
+    --silver: #A8A9AD;
+    --bronze: #CD7F32;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #EEE9DF;
+    color: var(--navy);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    background: var(--white);
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+  }
+  .back-btn { background: none; border: none; font-size: 22px; cursor: pointer; }
+  .nav-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; color: var(--navy); }
+  .nav-more { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--mid); }
+
+  /* HERO */
+  .profile-hero {
+    background: var(--white);
+    padding: 28px 20px 20px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .hero-bg {
+    position: absolute; top: 0; left: 0; right: 0; height: 80px;
+    background: linear-gradient(135deg, var(--navy), #2C3E6B);
+  }
+
+  /* AVATAR */
+  .avatar-wrap {
+    position: relative; width: 90px; margin: 0 auto 14px;
+    z-index: 2;
+  }
+  .avatar-circle {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--terracotta), var(--amber));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; font-weight: 900; color: white;
+    border: 4px solid var(--white);
+    position: relative;
+  }
+  .avatar-level-ring {
+    position: absolute; inset: -6px; border-radius: 50%;
+    border: 3px solid transparent;
+  }
+  .ring-neighbor { border-color: var(--sage); }
+  .ring-star { border-color: var(--amber); animation: ringPulse 2.5s ease-in-out infinite; }
+  .ring-ambassador { border-color: var(--gold); animation: ringPulse 2s ease-in-out infinite; }
+  @keyframes ringPulse {
+    0%,100% { box-shadow: 0 0 0 0 transparent; }
+    50% { box-shadow: 0 0 12px 3px rgba(212,175,55,0.4); }
+  }
+
+  /* BADGE CROWN */
+  .badge-crown {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    font-size: 22px; z-index: 3;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-4px)} }
+
+  /* MAIN BADGE */
+  .main-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 100px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+    margin-bottom: 10px;
+  }
+  .badge-ambassador {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #5C4200;
+    box-shadow: 0 4px 16px rgba(212,175,55,0.35);
+  }
+  .badge-star {
+    background: linear-gradient(135deg, var(--amber), #F5C842);
+    color: #6B4A00;
+  }
+  .badge-neighbor {
+    background: rgba(122,158,126,0.15);
+    color: var(--sage);
+    border: 1px solid rgba(122,158,126,0.3);
+  }
+  .badge-newcomer {
+    background: rgba(196,98,45,0.1);
+    color: var(--terracotta);
+  }
+
+  /* PROFILE INFO */
+  .profile-info { text-align: center; position: relative; z-index: 2; }
+  .profile-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px; font-weight: 900; color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .profile-loc { font-size: 13px; color: var(--light); margin-bottom: 12px; }
+  .profile-bio {
+    font-size: 14px; color: var(--mid); line-height: 1.6;
+    max-width: 320px; margin: 0 auto 16px;
+  }
+
+  /* REP SCORE */
+  .rep-score {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--cream); border-radius: 100px; padding: 8px 18px;
+    margin-bottom: 16px;
+  }
+  .rep-icon { font-size: 18px; }
+  .rep-num { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .rep-label { font-size: 12px; color: var(--light); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 16px;
+    margin-top: 4px;
+  }
+  .stat-item { flex: 1; text-align: center; }
+  .stat-item:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.06); }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .stat-label { font-size: 11px; color: var(--light); margin-top: 2px; }
+
+  /* ACTION BUTTONS */
+  .profile-actions {
+    display: flex; gap: 10px; padding: 12px 16px;
+    background: var(--white); margin-bottom: 10px;
+  }
+  .btn-msg {
+    flex: 1; padding: 12px; border-radius: 12px;
+    background: var(--navy); color: white; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    font-weight: 700; cursor: pointer;
+  }
+  .btn-follow {
+    flex: 1; padding: 12px; border-radius: 12px;
+    background: transparent; color: var(--navy); border: 2px solid rgba(0,0,0,0.12);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    font-weight: 700; cursor: pointer;
+  }
+  .btn-follow.following { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+
+  /* BADGE JOURNEY */
+  .section { background: var(--white); border-radius: 18px; margin: 0 10px 10px; padding: 20px; }
+  .section-title {
+    font-size: 14px; font-weight: 700; color: var(--navy);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .badge-journey { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; position: relative; }
+  .badge-journey::before {
+    content: ''; position: absolute; top: 22px; left: 22px; right: 22px;
+    height: 3px; background: rgba(0,0,0,0.08); z-index: 0;
+  }
+  .badge-journey-fill {
+    position: absolute; top: 22px; left: 22px;
+    height: 3px; background: linear-gradient(90deg, var(--sage), var(--amber));
+    z-index: 1; transition: width 0.5s ease;
+  }
+  .journey-step { display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 2; }
+  .journey-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; border: 3px solid rgba(0,0,0,0.08);
+    background: var(--cream);
+  }
+  .journey-icon.done { background: white; border-color: var(--sage); }
+  .journey-icon.active { background: white; border-color: var(--amber); box-shadow: 0 0 0 4px rgba(232,168,56,0.2); }
+  .journey-icon.locked { opacity: 0.4; }
+  .journey-label { font-size: 10px; font-weight: 700; color: var(--mid); text-align: center; }
+  .journey-label.active { color: var(--amber); }
+  .journey-label.done { color: var(--sage); }
+
+  /* PROGRESS TO NEXT */
+  .next-badge-card {
+    background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(232,168,56,0.12));
+    border: 1px solid rgba(212,175,55,0.25);
+    border-radius: 14px; padding: 16px;
+  }
+  .nbc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .nbc-icon { font-size: 28px; }
+  .nbc-title { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .nbc-sub { font-size: 12px; color: var(--mid); margin-top: 2px; }
+  .progress-bar-bg { background: rgba(0,0,0,0.08); border-radius: 100px; height: 8px; margin-bottom: 8px; }
+  .progress-bar-fill { height: 8px; border-radius: 100px; background: linear-gradient(90deg, var(--amber), var(--gold)); transition: width 0.6s ease; }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--light); }
+
+  /* REQUIREMENTS */
+  .req-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .req-item { display: flex; align-items: center; gap: 10px; }
+  .req-check {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .req-done { background: rgba(56,161,105,0.15); color: #38A169; }
+  .req-pending { background: rgba(0,0,0,0.06); color: var(--light); }
+  .req-text { font-size: 13px; color: var(--mid); }
+  .req-text.done-text { color: var(--navy); }
+
+  /* ACHIEVEMENTS */
+  .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .achievement {
+    background: var(--cream); border-radius: 14px; padding: 14px 10px;
+    text-align: center; position: relative;
+  }
+  .achievement.locked { opacity: 0.4; }
+  .ach-icon { font-size: 26px; margin-bottom: 6px; }
+  .ach-name { font-size: 11px; font-weight: 700; color: var(--navy); }
+  .ach-desc { font-size: 10px; color: var(--light); margin-top: 2px; }
+  .ach-new {
+    position: absolute; top: 6px; right: 6px;
+    background: var(--terracotta); color: white;
+    font-size: 8px; font-weight: 700; padding: 2px 5px; border-radius: 100px;
+  }
+
+  /* RECENT POSTS */
+  .post-card {
+    background: var(--cream); border-radius: 14px; padding: 14px;
+    margin-bottom: 10px;
+  }
+  .post-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .post-type { font-size: 11px; font-weight: 700; color: var(--terracotta); }
+  .post-time { font-size: 11px; color: var(--light); }
+  .post-text { font-size: 13px; color: var(--mid); line-height: 1.5; margin-bottom: 8px; }
+  .post-likes { font-size: 12px; color: var(--light); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
+    display: flex; padding: 10px 0 16px;
+  }
+  .bnav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 4px; cursor: pointer; border: none; background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .bnav-icon { font-size: 22px; }
+  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
+  .bnav-item.active .bnav-label { color: var(--terracotta); }
+
+  .page-pad { padding-bottom: 100px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <div class="nav-title">Profile</div>
+  <button class="nav-more">⋯</button>
+</div>
+
+<div class="page-pad">
+
+  <!-- PROFILE HERO -->
+  <div class="profile-hero">
+    <div class="hero-bg"></div>
+    <div class="avatar-wrap">
+      <div class="badge-crown">🏆</div>
+      <div class="avatar-circle ring-ambassador" style="border:4px solid white;">
+        <div class="avatar-level-ring ring-ambassador"></div>
+        L
+      </div>
+    </div>
+
+    <div class="profile-info">
+      <div class="main-badge badge-ambassador">🏆 Community Ambassador</div>
+      <div class="profile-name">Lerato Molefe</div>
+      <div class="profile-loc">📍 Green Point, Cape Town · Member since Jan 2025</div>
+      <div class="profile-bio">"Passionate about building real community. I love connecting neighbors and making newcomers feel at home. Ask me anything about the area!"</div>
+
+      <div class="rep-score">
+        <div class="rep-icon">⭐</div>
+        <div class="rep-num">847</div>
+        <div class="rep-label">Reputation Points</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-num">142</div>
+          <div class="stat-label">Posts</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">38</div>
+          <div class="stat-label">Welcomed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">6mo</div>
+          <div class="stat-label">Member</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">284</div>
+          <div class="stat-label">Neighbors</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="profile-actions">
+    <button class="btn-msg" onclick="alert('Messaging coming soon!')">💬 Message</button>
+    <button class="btn-follow" id="followBtn" onclick="toggleFollow()">+ Follow</button>
+  </div>
+
+  <!-- BADGE JOURNEY -->
+  <div class="section">
+    <div class="section-title">🏅 Badge Journey</div>
+
+    <div class="badge-journey" id="journeyWrap">
+      <div class="badge-journey-fill" id="journeyFill" style="width:66%"></div>
+      <div class="journey-step">
+        <div class="journey-icon done">🏡</div>
+        <div class="journey-label done">Neighbor</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-icon done">⭐</div>
+        <div class="journey-label done">Star</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-icon active">🏆</div>
+        <div class="journey-label active">Ambassador</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-icon locked">👑</div>
+        <div class="journey-label">Legend</div>
+      </div>
+    </div>
+
+    <!-- PROGRESS TO NEXT -->
+    <div class="next-badge-card">
+      <div class="nbc-top">
+        <div class="nbc-icon">👑</div>
+        <div>
+          <div class="nbc-title">Next: Community Legend</div>
+          <div class="nbc-sub">847 / 1000 reputation points · 85% there!</div>
+        </div>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width:85%"></div>
+      </div>
+      <div class="progress-labels">
+        <span>847 pts</span>
+        <span>1,000 pts needed</span>
+      </div>
+
+      <div class="req-list">
+        <div class="req-item">
+          <div class="req-check req-done">✓</div>
+          <div class="req-text done-text">Member for at least 6 months</div>
+        </div>
+        <div class="req-item">
+          <div class="req-check req-done">✓</div>
+          <div class="req-text done-text">Welcomed 30+ newcomers</div>
+        </div>
+        <div class="req-item">
+          <div class="req-check req-done">✓</div>
+          <div class="req-text done-text">100+ quality community posts</div>
+        </div>
+        <div class="req-item">
+          <div class="req-check req-done">✓</div>
+          <div class="req-text done-text">Zero community violations</div>
+        </div>
+        <div class="req-item">
+          <div class="req-check req-pending">○</div>
+          <div class="req-text">Reach 1,000 reputation points</div>
+        </div>
+        <div class="req-item">
+          <div class="req-check req-pending">○</div>
+          <div class="req-text">Admin approval required</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT EACH BADGE MEANS -->
+  <div class="section">
+    <div class="section-title">🎖️ Badge Levels Explained</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:rgba(122,158,126,0.08);border-radius:14px;border:1px solid rgba(122,158,126,0.2);">
+        <div style="font-size:28px;">🏡</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Neighbor <span style="font-size:11px;color:var(--sage);font-weight:600;">· Level 1</span></div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.5;">Verified resident. Location confirmed, real person in the community.</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--sage);">100 pts</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:rgba(232,168,56,0.08);border-radius:14px;border:1px solid rgba(232,168,56,0.2);">
+        <div style="font-size:28px;">⭐</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Community Star <span style="font-size:11px;color:var(--amber);font-weight:600;">· Level 2</span></div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.5;">Active contributor. Posts regularly, helps neighbors, earns likes and trust.</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--amber);">400 pts</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:rgba(212,175,55,0.1);border-radius:14px;border:1px solid rgba(212,175,55,0.3);">
+        <div style="font-size:28px;">🏆</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Ambassador <span style="font-size:11px;color:var(--gold);font-weight:600;">· Level 3</span></div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.5;">Community pillar. Welcomes newcomers, trusted voice, zero violations, admin-approved.</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);">700 pts</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:rgba(26,35,50,0.05);border-radius:14px;border:1px solid rgba(26,35,50,0.1);opacity:0.6;">
+        <div style="font-size:28px;">👑</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;">Community Legend <span style="font-size:11px;color:var(--light);font-weight:600;">· Level 4</span></div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.5;">The rarest badge. Exceptional contributors who have shaped the entire community.</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--light);">1000 pts</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HOW TO EARN POINTS -->
+  <div class="section">
+    <div class="section-title">⭐ How to Earn Reputation</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+        <div style="font-size:13px;color:var(--mid);">👋 Welcome a newcomer</div>
+        <div style="font-size:13px;font-weight:700;color:var(--sage);">+10 pts</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+        <div style="font-size:13px;color:var(--mid);">💬 Post liked by neighbors</div>
+        <div style="font-size:13px;font-weight:700;color:var(--sage);">+2 pts each</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+        <div style="font-size:13px;color:var(--mid);">🎉 Organize a community event</div>
+        <div style="font-size:13px;font-weight:700;color:var(--sage);">+25 pts</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+        <div style="font-size:13px;color:var(--mid);">💼 Help someone find a job</div>
+        <div style="font-size:13px;font-weight:700;color:var(--sage);">+20 pts</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+        <div style="font-size:13px;color:var(--mid);">📅 Daily login streak (7 days)</div>
+        <div style="font-size:13px;font-weight:700;color:var(--sage);">+15 pts</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+        <div style="font-size:13px;color:var(--mid);">🔔 Valid safety alert reported</div>
+        <div style="font-size:13px;font-weight:700;color:var(--sage);">+15 pts</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+        <div style="font-size:13px;color:var(--red);">🚫 Post removed / violation</div>
+        <div style="font-size:13px;font-weight:700;color:var(--red);">-50 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div class="section">
+    <div class="section-title">🏅 Achievements</div>
+    <div class="achievements-grid">
+      <div class="achievement">
+        <div class="ach-new">NEW</div>
+        <div class="ach-icon">🤝</div>
+        <div class="ach-name">Super Welcomer</div>
+        <div class="ach-desc">Greeted 30+ arrivals</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon">🔥</div>
+        <div class="ach-name">On Fire</div>
+        <div class="ach-desc">30-day post streak</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon">💼</div>
+        <div class="ach-name">Job Connector</div>
+        <div class="ach-desc">Helped 5 people find work</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon">🎉</div>
+        <div class="ach-name">Party Starter</div>
+        <div class="ach-desc">Organized 3 events</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon">🛡️</div>
+        <div class="ach-name">Watchdog</div>
+        <div class="ach-desc">5 valid safety alerts</div>
+      </div>
+      <div class="achievement locked">
+        <div class="ach-icon">👑</div>
+        <div class="ach-name">Legend</div>
+        <div class="ach-desc">Reach 1000 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AMBASSADOR PERKS -->
+  <div class="section" style="background:linear-gradient(135deg,var(--navy),#2C3E6B);margin-bottom:10px;">
+    <div class="section-title" style="color:white;">🏆 Your Ambassador Perks</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:20px;">⭐</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);">Priority placement in the New Arrivals welcome screen</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:20px;">📢</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);">Posts boosted to top of neighborhood feed</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:20px;">🏆</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);">Gold ring and crown on your profile picture</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:20px;">🎯</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);">Early access to new Nearby features</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:20px;">💬</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);">Direct line to Nearby admin team</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT POSTS -->
+  <div class="section">
+    <div class="section-title">💬 Recent Posts</div>
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-type">🎉 Community Event</div>
+        <div class="post-time">2 days ago</div>
+      </div>
+      <div class="post-text">Hosting a neighborhood braai this Saturday! All welcome — bring something to share and come meet your neighbors 🔥</div>
+      <div class="post-likes">❤️ 34 likes · 💬 11 comments</div>
+    </div>
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-type">👋 Welcomed</div>
+        <div class="post-time">3 days ago</div>
+      </div>
+      <div class="post-text">Welcome to Green Point, Marcus! If you need tips on the best coffee spots or hiking trails nearby just shout 😊</div>
+      <div class="post-likes">❤️ 12 likes · +10 rep pts</div>
+    </div>
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-type">🔔 Safety Alert</div>
+        <div class="post-time">1 week ago</div>
+      </div>
+      <div class="post-text">Heads up — a few car break-ins on Regent Rd last night. Lock your cars and don't leave anything visible. Stay safe 🙏</div>
+      <div class="post-likes">❤️ 56 likes · +15 rep pts</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item" onclick="window.location.href='nearby-feed.html'">
+    <div class="bnav-icon">🏡</div>
+    <div class="bnav-label">Home</div>
+  </button>
+  <button class="bnav-item">
+    <div class="bnav-icon">🆕</div>
+    <div class="bnav-label">Arrivals</div>
+  </button>
+  <button class="bnav-item">
+    <div class="bnav-icon">💼</div>
+    <div class="bnav-label">Jobs</div>
+  </button>
+  <button class="bnav-item active">
+    <div class="bnav-icon">👤</div>
+    <div class="bnav-label">Profile</div>
+  </button>
+</div>
+
+<script>
+  function toggleFollow() {
+    var btn = document.getElementById('followBtn');
+    if (btn.classList.contains('following')) {
+      btn.classList.remove('following');
+      btn.textContent = '+ Follow';
+    } else {
+      btn.classList.add('following');
+      btn.textContent = '✓ Following';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8;
+    --terracotta: #C4622D;
+    --navy: #1A2332;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --mid: #4A5568;
+    --light: #8A96A8;
+    --white: #FDFAF4;
+    --gold: #D4AF37;
+    --green: #38A169;
+    --red: #E53E3E;
+    --blue: #2980B9;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #EEE9DF;
+    color: var(--navy);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: var(--white);
+    position: sticky; top: 0; z-index: 50;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+  }
+  .back-btn { background: none; border: none; font-size: 22px; cursor: pointer; }
+  .nav-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); }
+  .nav-title span { color: var(--terracotta); font-style: italic; }
+  .save-btn {
+    background: var(--navy); color: white; border: none;
+    border-radius: 100px; padding: 7px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 700; cursor: pointer;
+  }
+  .save-btn:active { background: var(--terracotta); }
+
+  /* PROFILE CARD */
+  .profile-card {
+    background: var(--white); margin: 10px;
+    border-radius: 18px; padding: 18px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .profile-av {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--terracotta), var(--amber));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 900; color: white; flex-shrink: 0;
+    position: relative;
+  }
+  .profile-av .crown { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 14px; }
+  .profile-info { flex: 1; }
+  .profile-name { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .profile-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(212,175,55,0.15); color: var(--gold);
+    padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700;
+  }
+  .profile-loc { font-size: 12px; color: var(--light); margin-top: 4px; }
+  .edit-btn {
+    background: var(--cream); border: none; border-radius: 10px;
+    padding: 8px 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; color: var(--mid); cursor: pointer;
+  }
+
+  /* SECURITY SCORE */
+  .sec-score-card {
+    background: linear-gradient(135deg, var(--navy), #2C3E6B);
+    margin: 0 10px 10px; border-radius: 18px; padding: 18px;
+    position: relative; overflow: hidden;
+  }
+  .sec-score-card::after {
+    content: '🔐'; position: absolute; right: -10px; top: -10px;
+    font-size: 80px; opacity: 0.06;
+  }
+  .sec-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .sec-title { font-size: 14px; font-weight: 700; color: white; }
+  .sec-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .sec-score-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: white; }
+  .sec-score-label { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .sec-bar-bg { background: rgba(255,255,255,0.1); border-radius: 100px; height: 8px; margin-bottom: 10px; }
+  .sec-bar-fill { height: 8px; border-radius: 100px; background: linear-gradient(90deg, var(--sage), var(--amber)); transition: width 0.6s; }
+  .sec-checks { display: flex; flex-direction: column; gap: 6px; }
+  .sec-check-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .sc-icon { font-size: 14px; }
+  .sc-text { flex: 1; color: rgba(255,255,255,0.65); }
+  .sc-status { font-size: 11px; font-weight: 700; }
+  .sc-done { color: var(--sage); }
+  .sc-pending { color: var(--amber); }
+
+  /* SECTION GROUP */
+  .settings-group { margin: 0 10px 10px; }
+  .group-title {
+    font-size: 11px; font-weight: 700; color: var(--light);
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 10px 6px 6px;
+  }
+  .settings-card {
+    background: var(--white); border-radius: 18px;
+    overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  /* SETTING ROW */
+  .setting-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.05);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-row:hover { background: rgba(0,0,0,0.02); }
+  .setting-row.danger:hover { background: rgba(229,62,62,0.04); }
+  .row-icon {
+    width: 38px; height: 38px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .row-body { flex: 1; }
+  .row-label { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .row-label.danger { color: var(--red); }
+  .row-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .row-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .row-value { font-size: 13px; color: var(--light); }
+  .row-arrow { font-size: 14px; color: var(--light); }
+  .row-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+  .badge-green { background: rgba(56,161,105,0.12); color: var(--green); }
+  .badge-amber { background: rgba(232,168,56,0.15); color: #9A6700; }
+  .badge-red { background: rgba(229,62,62,0.1); color: var(--red); }
+
+  /* TOGGLE */
+  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .tog { position: absolute; inset: 0; background: rgba(0,0,0,0.15); border-radius: 100px; cursor: pointer; transition: 0.2s; }
+  .tog::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+  input:checked + .tog { background: var(--terracotta); }
+  input:checked + .tog::before { transform: translateX(20px); }
+  input:checked.green-toggle + .tog { background: var(--green); }
+
+  /* SHEET */
+  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; }
+  .sheet-overlay.open { display: block; }
+  .sheet {
+    display: none; position: fixed; bottom: 0; left: 50%;
+    transform: translateX(-50%); width: 100%; max-width: 480px;
+    background: var(--white); border-radius: 24px 24px 0 0;
+    padding: 20px 20px 44px; z-index: 101; max-height: 88vh; overflow-y: auto;
+  }
+  .sheet.open { display: block; }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 18px; }
+  .sheet-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+  .sheet-sub { font-size: 13px; color: var(--light); margin-bottom: 18px; }
+
+  /* FIELD */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 12px 14px; border: 2px solid rgba(0,0,0,0.1);
+    border-radius: 12px; background: white; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--navy); outline: none; resize: none; appearance: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--terracotta); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* OTP */
+  .otp-row { display: flex; gap: 10px; justify-content: center; margin: 16px 0; }
+  .otp-box {
+    width: 48px; height: 56px; border: 2px solid rgba(0,0,0,0.1);
+    border-radius: 12px; text-align: center; font-size: 22px;
+    font-weight: 700; color: var(--navy); font-family: 'DM Sans', sans-serif;
+    outline: none;
+  }
+  .otp-box:focus { border-color: var(--terracotta); }
+
+  /* PASSWORD STRENGTH */
+  .pw-bars { display: flex; gap: 4px; margin: 8px 0 4px; }
+  .pw-bar { flex: 1; height: 3px; border-radius: 100px; background: rgba(0,0,0,0.08); transition: background 0.3s; }
+  .pw-bar.weak { background: var(--red); }
+  .pw-bar.med { background: var(--amber); }
+  .pw-bar.strong { background: var(--green); }
+  .pw-hint { font-size: 11px; color: var(--light); }
+
+  /* LOCATION OPTIONS */
+  .loc-option {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--cream); border-radius: 12px; padding: 13px 14px;
+    margin-bottom: 8px; cursor: pointer; border: 2px solid transparent;
+  }
+  .loc-option.on { border-color: var(--terracotta); background: rgba(196,98,45,0.05); }
+  .loc-option input { accent-color: var(--terracotta); width: 16px; height: 16px; }
+  .lo-name { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .lo-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
+
+  /* DANGER ZONE */
+  .danger-zone {
+    background: rgba(229,62,62,0.04); border: 1px solid rgba(229,62,62,0.15);
+    border-radius: 18px; margin: 0 10px 10px; padding: 18px;
+  }
+  .dz-title { font-size: 14px; font-weight: 700; color: var(--red); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .dz-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid rgba(229,62,62,0.1);
+  }
+  .dz-row:last-child { border-bottom: none; }
+  .dz-label { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .dz-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .dz-btn {
+    padding: 7px 14px; border-radius: 100px; border: 2px solid rgba(229,62,62,0.3);
+    color: var(--red); background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+  }
+  .dz-btn:hover { background: rgba(229,62,62,0.08); }
+
+  /* SUBMIT BTN */
+  .submit-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    background: var(--navy); color: white; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    font-weight: 700; cursor: pointer; margin-top: 8px;
+  }
+  .submit-btn:active { background: var(--terracotta); }
+  .submit-btn.danger { background: var(--red); }
+
+  /* VERSION */
+  .version-info { text-align: center; padding: 20px; color: var(--light); font-size: 12px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
+    display: flex; padding: 10px 0 16px;
+  }
+  .bnav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 4px; cursor: pointer; border: none; background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .bnav-icon { font-size: 22px; }
+  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
+  .bnav-item.active .bnav-label { color: var(--terracotta); }
+
+  .page-pad { padding-bottom: 110px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <div class="nav-title">Set<span>tings</span></div>
+  <button class="save-btn" onclick="saveSettings()">Save</button>
+</div>
+
+<div class="page-pad">
+
+  <!-- PROFILE CARD -->
+  <div class="profile-card" style="margin-top:10px;">
+    <div class="profile-av">
+      <div class="crown">🏆</div>
+      L
+    </div>
+    <div class="profile-info">
+      <div class="profile-name">Lerato Molefe</div>
+      <div class="profile-badge">🏆 Community Ambassador</div>
+      <div class="profile-loc">📍 Green Point · Cape Town</div>
+    </div>
+    <button class="edit-btn" onclick="openSheet('profileSheet')">Edit ✏️</button>
+  </div>
+
+  <!-- SECURITY SCORE -->
+  <div class="sec-score-card">
+    <div class="sec-top">
+      <div>
+        <div class="sec-title">🔐 Security Score</div>
+        <div class="sec-sub">Your account protection level</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="sec-score-num">92</div>
+        <div class="sec-score-label">/ 100 · Excellent</div>
+      </div>
+    </div>
+    <div class="sec-bar-bg"><div class="sec-bar-fill" style="width:92%"></div></div>
+    <div class="sec-checks">
+      <div class="sec-check-row"><div class="sc-icon">📧</div><div class="sc-text">Email verified</div><div class="sc-status sc-done">✓ Done</div></div>
+      <div class="sec-check-row"><div class="sc-icon">📱</div><div class="sc-text">Phone verified (OTP)</div><div class="sc-status sc-done">✓ Done</div></div>
+      <div class="sec-check-row"><div class="sc-icon">🔑</div><div class="sc-text">Strong password set</div><div class="sc-status sc-done">✓ Done</div></div>
+      <div class="sec-check-row"><div class="sc-icon">🛡️</div><div class="sc-text">Two-factor authentication</div><div class="sc-status sc-done">✓ Done</div></div>
+      <div class="sec-check-row"><div class="sc-icon">📍</div><div class="sc-text">Location privacy set</div><div class="sc-status sc-done">✓ Done</div></div>
+      <div class="sec-check-row"><div class="sc-icon">🔔</div><div class="sc-text">Login alerts enabled</div><div class="sc-status sc-pending">⚠ Enable for +8 pts</div></div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="settings-group">
+    <div class="group-title">👤 Account</div>
+    <div class="settings-card">
+      <div class="setting-row" onclick="openSheet('profileSheet')">
+        <div class="row-icon" style="background:rgba(196,98,45,0.1);">👤</div>
+        <div class="row-body"><div class="row-label">Edit Profile</div><div class="row-desc">Name, bio, photo, occupation</div></div>
+        <div class="row-right"><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="openSheet('locationSheet')">
+        <div class="row-icon" style="background:rgba(122,158,126,0.1);">📍</div>
+        <div class="row-body"><div class="row-label">Location Settings</div><div class="row-desc">Neighborhood level · Green Point</div></div>
+        <div class="row-right"><div class="row-value">Neighborhood</div><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="openSheet('notifSheet')">
+        <div class="row-icon" style="background:rgba(232,168,56,0.1);">🔔</div>
+        <div class="row-body"><div class="row-label">Notifications</div><div class="row-desc">Manage what alerts you receive</div></div>
+        <div class="row-right"><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="openSheet('languageSheet')">
+        <div class="row-icon" style="background:rgba(41,128,185,0.1);">🌍</div>
+        <div class="row-body"><div class="row-label">Language</div><div class="row-desc">App display language</div></div>
+        <div class="row-right"><div class="row-value">English</div><div class="row-arrow">›</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECURITY -->
+  <div class="settings-group">
+    <div class="group-title">🔐 Security & Privacy</div>
+    <div class="settings-card">
+      <div class="setting-row" onclick="openSheet('passwordSheet')">
+        <div class="row-icon" style="background:rgba(26,35,50,0.08);">🔑</div>
+        <div class="row-body"><div class="row-label">Change Password</div><div class="row-desc">Last changed 30 days ago</div></div>
+        <div class="row-right"><div class="row-badge badge-green">Strong</div><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="openSheet('twoFASheet')">
+        <div class="row-icon" style="background:rgba(56,161,105,0.1);">🛡️</div>
+        <div class="row-body"><div class="row-label">Two-Factor Authentication</div><div class="row-desc">Extra protection on every login</div></div>
+        <div class="row-right"><div class="row-badge badge-green">Enabled</div><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="openSheet('sessionsSheet')">
+        <div class="row-icon" style="background:rgba(232,168,56,0.1);">📱</div>
+        <div class="row-body"><div class="row-label">Active Sessions</div><div class="row-desc">Devices currently logged in</div></div>
+        <div class="row-right"><div class="row-value">2 devices</div><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(41,128,185,0.1);">🔔</div>
+        <div class="row-body"><div class="row-label">Login Alerts</div><div class="row-desc">Notify me of new logins</div></div>
+        <div class="row-right">
+          <label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label>
+        </div>
+      </div>
+      <div class="setting-row" onclick="openSheet('blockedSheet')">
+        <div class="row-icon" style="background:rgba(229,62,62,0.08);">🚫</div>
+        <div class="row-body"><div class="row-label">Blocked Users</div><div class="row-desc">Manage who can't contact you</div></div>
+        <div class="row-right"><div class="row-value">0 blocked</div><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="openSheet('dataSheet')">
+        <div class="row-icon" style="background:rgba(155,89,182,0.1);">📋</div>
+        <div class="row-body"><div class="row-label">My Data & Privacy</div><div class="row-desc">Download or manage your data</div></div>
+        <div class="row-right"><div class="row-arrow">›</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY TOGGLES -->
+  <div class="settings-group">
+    <div class="group-title">👁️ Visibility & Privacy</div>
+    <div class="settings-card">
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(122,158,126,0.1);">🏡</div>
+        <div class="row-body"><div class="row-label">Show on New Arrivals</div><div class="row-desc">Visible to neighbors when you join</div></div>
+        <div class="row-right"><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+      </div>
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(196,98,45,0.1);">👥</div>
+        <div class="row-body"><div class="row-label">Discoverable by Neighbors</div><div class="row-desc">Appear in community search</div></div>
+        <div class="row-right"><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+      </div>
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(232,168,56,0.1);">💼</div>
+        <div class="row-body"><div class="row-label">Show Job Interests</div><div class="row-desc">Let businesses match you to jobs</div></div>
+        <div class="row-right"><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+      </div>
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(26,35,50,0.07);">🟢</div>
+        <div class="row-body"><div class="row-label">Show Online Status</div><div class="row-desc">Let neighbors see when you're active</div></div>
+        <div class="row-right"><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+      </div>
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(41,128,185,0.1);">✓✓</div>
+        <div class="row-body"><div class="row-label">Read Receipts</div><div class="row-desc">Show when you've read messages</div></div>
+        <div class="row-right"><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMUNITY -->
+  <div class="settings-group">
+    <div class="group-title">🏅 Community & Badges</div>
+    <div class="settings-card">
+      <div class="setting-row" onclick="window.location.href='nearby-profile.html'">
+        <div class="row-icon" style="background:rgba(212,175,55,0.15);">🏆</div>
+        <div class="row-body"><div class="row-label">Ambassador Badge</div><div class="row-desc">847 rep pts · 85% to Legend</div></div>
+        <div class="row-right"><div class="row-badge badge-green">Active</div><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(196,98,45,0.1);">⭐</div>
+        <div class="row-body"><div class="row-label">Reputation Points</div><div class="row-desc">Earn points by helping the community</div></div>
+        <div class="row-right"><div class="row-value">847 pts</div><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(122,158,126,0.1);">🤝</div>
+        <div class="row-body"><div class="row-label">Welcomer Mode</div><div class="row-desc">Get notified of every new arrival</div></div>
+        <div class="row-right"><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPEARANCE -->
+  <div class="settings-group">
+    <div class="group-title">🎨 Appearance</div>
+    <div class="settings-card">
+      <div class="setting-row" onclick="openSheet('themeSheet')">
+        <div class="row-icon" style="background:rgba(196,98,45,0.1);">🌗</div>
+        <div class="row-body"><div class="row-label">Theme</div><div class="row-desc">Light, dark or system default</div></div>
+        <div class="row-right"><div class="row-value">Light</div><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row">
+        <div class="row-icon" style="background:rgba(26,35,50,0.07);">📝</div>
+        <div class="row-body"><div class="row-label">Larger Text</div><div class="row-desc">Increase font size across the app</div></div>
+        <div class="row-right"><label class="toggle"><input type="checkbox" /><span class="tog"></span></label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div class="settings-group">
+    <div class="group-title">💬 Support & Legal</div>
+    <div class="settings-card">
+      <div class="setting-row" onclick="showToast('Opening Help Centre...')">
+        <div class="row-icon" style="background:rgba(41,128,185,0.1);">❓</div>
+        <div class="row-body"><div class="row-label">Help Centre</div><div class="row-desc">FAQs and support articles</div></div>
+        <div class="row-right"><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="showToast('Opening chat support...')">
+        <div class="row-icon" style="background:rgba(122,158,126,0.1);">💬</div>
+        <div class="row-body"><div class="row-label">Contact Support</div><div class="row-desc">Chat with the Nearby team</div></div>
+        <div class="row-right"><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="showToast('Opening Privacy Policy...')">
+        <div class="row-icon" style="background:rgba(155,89,182,0.1);">🔒</div>
+        <div class="row-body"><div class="row-label">Privacy Policy</div><div class="row-desc">How we protect your data</div></div>
+        <div class="row-right"><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="showToast('Opening Terms of Service...')">
+        <div class="row-icon" style="background:rgba(26,35,50,0.07);">📄</div>
+        <div class="row-body"><div class="row-label">Terms of Service</div><div class="row-desc">Community rules and guidelines</div></div>
+        <div class="row-right"><div class="row-arrow">›</div></div>
+      </div>
+      <div class="setting-row" onclick="showToast('Rate us on the App Store!')">
+        <div class="row-icon" style="background:rgba(232,168,56,0.1);">⭐</div>
+        <div class="row-body"><div class="row-label">Rate Nearby</div><div class="row-desc">Love the app? Leave us a review</div></div>
+        <div class="row-right"><div class="row-arrow">›</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGOUT -->
+  <div class="settings-group">
+    <div class="settings-card">
+      <div class="setting-row danger" onclick="confirmLogout()">
+        <div class="row-icon" style="background:rgba(232,168,56,0.1);">🚪</div>
+        <div class="row-body"><div class="row-label">Sign Out</div><div class="row-desc">Log out of this device</div></div>
+        <div class="row-right"><div class="row-arrow" style="color:var(--amber);">›</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="danger-zone">
+    <div class="dz-title">⚠️ Danger Zone</div>
+    <div class="dz-row">
+      <div>
+        <div class="dz-label">Deactivate Account</div>
+        <div class="dz-desc">Temporarily hide your profile</div>
+      </div>
+      <button class="dz-btn" onclick="showToast('Account deactivation requires email confirmation')">Deactivate</button>
+    </div>
+    <div class="dz-row">
+      <div>
+        <div class="dz-label">Delete Account</div>
+        <div class="dz-desc">Permanently remove all your data</div>
+      </div>
+      <button class="dz-btn" onclick="openSheet('deleteSheet')">Delete</button>
+    </div>
+  </div>
+
+  <div class="version-info">Nearby v1.0.0 · Built with ❤️ for real communities<br/>© 2025 Nearby. All rights reserved.</div>
+
+</div>
+
+<!-- OVERLAY -->
+<div class="sheet-overlay" id="overlay" onclick="closeSheet()"></div>
+
+<!-- PROFILE SHEET -->
+<div class="sheet" id="profileSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Edit Profile</div>
+  <div class="sheet-sub">Changes are visible to your neighbors</div>
+  <div class="field-row">
+    <div class="field"><label>First Name</label><input type="text" value="Lerato" /></div>
+    <div class="field"><label>Last Name</label><input type="text" value="Molefe" /></div>
+  </div>
+  <div class="field"><label>Bio</label><textarea rows="3">Passionate about building real community. I love connecting neighbors!</textarea></div>
+  <div class="field"><label>Occupation</label><input type="text" value="Community Manager" /></div>
+  <div class="field"><label>Website / Instagram</label><input type="text" placeholder="@yourhandle" /></div>
+  <button class="submit-btn" onclick="closeSheet();showToast('Profile updated ✓')">Save Changes</button>
+</div>
+
+<!-- PASSWORD SHEET -->
+<div class="sheet" id="passwordSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">🔑 Change Password</div>
+  <div class="sheet-sub">Choose a strong password to keep your account secure</div>
+  <div class="field"><label>Current Password</label><input type="password" placeholder="Enter current password" /></div>
+  <div class="field">
+    <label>New Password</label>
+    <input type="password" id="newPw" placeholder="At least 8 characters" oninput="checkPwStrength(this)" />
+    <div class="pw-bars"><div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div><div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div></div>
+    <div class="pw-hint" id="pwHint">Enter a new password</div>
+  </div>
+  <div class="field"><label>Confirm New Password</label><input type="password" placeholder="Repeat new password" /></div>
+  <button class="submit-btn" onclick="closeSheet();showToast('Password updated securely 🔒')">Update Password</button>
+</div>
+
+<!-- 2FA SHEET -->
+<div class="sheet" id="twoFASheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">🛡️ Two-Factor Auth</div>
+  <div class="sheet-sub">We'll send a one-time code each time you log in from a new device</div>
+  <div style="background:rgba(56,161,105,0.08);border:1px solid rgba(56,161,105,0.2);border-radius:14px;padding:14px;margin-bottom:16px;">
+    <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:4px;">✓ 2FA is currently active</div>
+    <div style="font-size:12px;color:var(--mid);">Codes are sent to +27 82 *** **** via SMS</div>
+  </div>
+  <div class="field"><label>Verified Phone Number</label><input type="tel" value="+27 82 *** ****" readonly style="background:var(--cream);" /></div>
+  <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">Test 2FA — enter the code we'll send:</div>
+  <div class="otp-row">
+    <input class="otp-box" maxlength="1" oninput="otpNext(this,0)" />
+    <input class="otp-box" maxlength="1" oninput="otpNext(this,1)" />
+    <input class="otp-box" maxlength="1" oninput="otpNext(this,2)" />
+    <input class="otp-box" maxlength="1" oninput="otpNext(this,3)" />
+    <input class="otp-box" maxlength="1" oninput="otpNext(this,4)" />
+    <input class="otp-box" maxlength="1" oninput="otpNext(this,5)" />
+  </div>
+  <button class="submit-btn" onclick="closeSheet();showToast('2FA verified successfully 🛡️')">Verify Code</button>
+</div>
+
+<!-- SESSIONS SHEET -->
+<div class="sheet" id="sessionsSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">📱 Active Sessions</div>
+  <div class="sheet-sub">Devices currently logged into your account</div>
+  <div style="background:var(--cream);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;">
+    <div style="font-size:24px;">📱</div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;color:var(--navy);">iPhone 14 · Cape Town</div>
+      <div style="font-size:12px;color:var(--mid);">This device · Active now</div>
+      <div style="font-size:11px;color:var(--green);font-weight:600;margin-top:2px;">✓ Current session</div>
+    </div>
+  </div>
+  <div style="background:var(--cream);border-radius:14px;padding:14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;">
+    <div style="font-size:24px;">💻</div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;color:var(--navy);">MacBook Pro · Cape Town</div>
+      <div style="font-size:12px;color:var(--mid);">Last active 2 hours ago</div>
+    </div>
+    <button style="background:rgba(229,62,62,0.1);color:var(--red);border:none;border-radius:100px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;" onclick="showToast('Session ended ✓')">End</button>
+  </div>
+  <button class="submit-btn danger" onclick="closeSheet();showToast('All other sessions ended 🔒')">End All Other Sessions</button>
+</div>
+
+<!-- LOCATION SHEET -->
+<div class="sheet" id="locationSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">📍 Location Privacy</div>
+  <div class="sheet-sub">Control how precisely your location appears on Nearby</div>
+  <div class="loc-option on" onclick="pickLoc(this)">
+    <input type="radio" name="loc" checked />
+    <div><div class="lo-name">Neighborhood level</div><div class="lo-desc">Shows "Green Point" — recommended</div></div>
+  </div>
+  <div class="loc-option" onclick="pickLoc(this)">
+    <input type="radio" name="loc" />
+    <div><div class="lo-name">City level only</div><div class="lo-desc">Shows "Cape Town" — less precise</div></div>
+  </div>
+  <div class="loc-option" onclick="pickLoc(this)">
+    <input type="radio" name="loc" />
+    <div><div class="lo-name">Keep private</div><div class="lo-desc">Browse only — won't appear in searches</div></div>
+  </div>
+  <button class="submit-btn" style="margin-top:16px;" onclick="closeSheet();showToast('Location privacy updated ✓')">Save Location Settings</button>
+</div>
+
+<!-- NOTIFICATIONS SHEET -->
+<div class="sheet" id="notifSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">🔔 Notifications</div>
+  <div class="sheet-sub">Choose what alerts you receive</div>
+  <div style="display:flex;flex-direction:column;gap:0;">
+    <div class="setting-row"><div class="row-body"><div class="row-label">New Arrivals</div><div class="row-desc">New neighbors in your area</div></div><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+    <div class="setting-row"><div class="row-body"><div class="row-label">Job Matches</div><div class="row-desc">Jobs matching your interests</div></div><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+    <div class="setting-row"><div class="row-body"><div class="row-label">Community Events</div><div class="row-desc">Events and RSVPs in your area</div></div><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+    <div class="setting-row"><div class="row-body"><div class="row-label">Safety Alerts</div><div class="row-desc">Neighborhood watch posts</div></div><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+    <div class="setting-row"><div class="row-body"><div class="row-label">Likes & Comments</div><div class="row-desc">When neighbors interact with you</div></div><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+    <div class="setting-row"><div class="row-body"><div class="row-label">Messages</div><div class="row-desc">New message alerts</div></div><label class="toggle"><input type="checkbox" checked /><span class="tog"></span></label></div>
+    <div class="setting-row"><div class="row-body"><div class="row-label" style="color:var(--red);">🔐 Security Alerts</div><div class="row-desc">Login alerts · Always on</div></div><label class="toggle"><input type="checkbox" checked disabled /><span class="tog" style="background:var(--red);opacity:0.6;"></span></label></div>
+  </div>
+  <button class="submit-btn" style="margin-top:16px;" onclick="closeSheet();showToast('Notification settings saved ✓')">Save Settings</button>
+</div>
+
+<!-- THEME SHEET -->
+<div class="sheet" id="themeSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">🌗 Choose Theme</div>
+  <div class="sheet-sub">Personalize your Nearby experience</div>
+  <div class="loc-option on" onclick="pickLoc(this)"><input type="radio" name="theme" checked /><div><div class="lo-name">☀️ Light Mode</div><div class="lo-desc">Warm, bright interface</div></div></div>
+  <div class="loc-option" onclick="pickLoc(this)"><input type="radio" name="theme" /><div><div class="lo-name">🌙 Dark Mode</div><div class="lo-desc">Easy on the eyes at night</div></div></div>
+  <div class="loc-option" onclick="pickLoc(this)"><input type="radio" name="theme" /><div><div class="lo-name">📱 System Default</div><div class="lo-desc">Follows your device setting</div></div></div>
+  <button class="submit-btn" style="margin-top:16px;" onclick="closeSheet();showToast('Theme updated ✓')">Apply Theme</button>
+</div>
+
+<!-- DATA SHEET -->
+<div class="sheet" id="dataSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">📋 My Data & Privacy</div>
+  <div class="sheet-sub">You own your data. Here's what we have and how you can manage it.</div>
+  <div style="background:rgba(56,161,105,0.07);border-radius:14px;padding:14px;margin-bottom:16px;">
+    <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px;">🔒 Our Data Pledge</div>
+    <div style="font-size:12px;color:var(--mid);line-height:1.6;">We never sell your data. Location is encrypted with AES-256. Messages are end-to-end encrypted. You can delete everything at any time.</div>
+  </div>
+  <button style="width:100%;padding:12px;border-radius:12px;border:2px solid rgba(0,0,0,0.1);background:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;margin-bottom:8px;" onclick="showToast('Preparing your data export...')">📥 Download My Data</button>
+  <button style="width:100%;padding:12px;border-radius:12px;border:2px solid rgba(0,0,0,0.1);background:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;margin-bottom:8px;" onclick="showToast('Opening Privacy Policy...')">📄 Read Privacy Policy</button>
+  <button style="width:100%;padding:12px;border-radius:12px;border:2px solid rgba(229,62,62,0.3);background:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--red);cursor:pointer;" onclick="closeSheet();openSheet('deleteSheet')">🗑️ Delete All My Data</button>
+</div>
+
+<!-- BLOCKED SHEET -->
+<div class="sheet" id="blockedSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">🚫 Blocked Users</div>
+  <div class="sheet-sub">These users cannot message you or see your profile</div>
+  <div style="text-align:center;padding:40px 0;">
+    <div style="font-size:40px;margin-bottom:12px;">✅</div>
+    <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;">No blocked users</div>
+    <div style="font-size:13px;color:var(--light);">Your community is clean and safe</div>
+  </div>
+</div>
+
+<!-- LANGUAGE SHEET -->
+<div class="sheet" id="languageSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">🌍 Language</div>
+  <div class="sheet-sub">Choose your preferred language</div>
+  <div class="loc-option on" onclick="pickLoc(this)"><input type="radio" name="lang" checked /><div><div class="lo-name">🇬🇧 English</div></div></div>
+  <div class="loc-option" onclick="pickLoc(this)"><input type="radio" name="lang" /><div><div class="lo-name">🇿🇦 Afrikaans</div></div></div>
+  <div class="loc-option" onclick="pickLoc(this)"><input type="radio" name="lang" /><div><div class="lo-name">🇿🇦 Zulu</div></div></div>
+  <div class="loc-option" onclick="pickLoc(this)"><input type="radio" name="lang" /><div><div class="lo-name">🇿🇦 Xhosa</div></div></div>
+  <div class="loc-option" onclick="pickLoc(this)"><input type="radio" name="lang" /><div><div class="lo-name">🇵🇹 Portuguese</div></div></div>
+  <div class="loc-option" onclick="pickLoc(this)"><input type="radio" name="lang" /><div><div class="lo-name">🇫🇷 French</div></div></div>
+  <button class="submit-btn" style="margin-top:16px;" onclick="closeSheet();showToast('Language updated ✓')">Apply Language</button>
+</div>
+
+<!-- DELETE SHEET -->
+<div class="sheet" id="deleteSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" style="color:var(--red);">⚠️ Delete Account</div>
+  <div class="sheet-sub">This will permanently delete all your data. This cannot be undone.</div>
+  <div style="background:rgba(229,62,62,0.06);border:1px solid rgba(229,62,62,0.2);border-radius:14px;padding:14px;margin-bottom:16px;">
+    <div style="font-size:13px;color:var(--red);line-height:1.6;">All your posts, messages, reputation points and Ambassador badge will be permanently deleted. This action is irreversible.</div>
+  </div>
+  <div class="field"><label>Type DELETE to confirm</label><input type="text" id="deleteConfirm" placeholder="Type DELETE" /></div>
+  <button class="submit-btn danger" onclick="confirmDelete()">Permanently Delete Account</button>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item" onclick="window.location.href='nearby-feed.html'">
+    <div class="bnav-icon">🏡</div><div class="bnav-label">Home</div>
+  </button>
+  <button class="bnav-item" onclick="window.location.href='nearby-arrivals.html'">
+    <div class="bnav-icon">🆕</div><div class="bnav-label">Arrivals</div>
+  </button>
+  <button class="bnav-item" onclick="window.location.href='nearby-messages.html'">
+    <div class="bnav-icon">💬</div><div class="bnav-label">Messages</div>
+  </button>
+  <button class="bnav-item active" onclick="window.location.href='nearby-profile.html'">
+    <div class="bnav-icon">👤</div><div class="bnav-label">Profile</div>
+  </button>
+</div>
+
+<script>
+  function openSheet(id) {
+    document.getElementById(id).classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeSheet() {
+    document.querySelectorAll('.sheet').forEach(function(s){ s.classList.remove('open'); });
+    document.getElementById('overlay').classList.remove('open');
+  }
+  function pickLoc(el) {
+    var parent = el.parentElement;
+    parent.querySelectorAll('.loc-option').forEach(function(o){ o.classList.remove('on'); });
+    el.classList.add('on');
+  }
+  function saveSettings() { showToast('All settings saved ✓'); }
+  function confirmLogout() {
+    if (confirm('Sign out of Nearby?')) {
+      showToast('Signed out. See you soon! 👋');
+      setTimeout(function(){ window.location.href='nearby-auth.html'; }, 1500);
+    }
+  }
+  function confirmDelete() {
+    var val = document.getElementById('deleteConfirm').value;
+    if (val === 'DELETE') {
+      closeSheet();
+      showToast('Account deletion email sent. Check your inbox.');
+    } else {
+      showToast('Please type DELETE to confirm');
+    }
+  }
+  function checkPwStrength(input) {
+    var val = input.value;
+    var score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    var bars = ['pb1','pb2','pb3','pb4'];
+    bars.forEach(function(id, i) {
+      var el = document.getElementById(id);
+      el.className = 'pw-bar';
+      if (i < score) el.classList.add(score <= 1 ? 'weak' : score <= 2 ? 'med' : 'strong');
+    });
+    var hints = ['','Too weak — add numbers & symbols','Fair — try a capital letter','Good password!','Strong password ✓'];
+    document.getElementById('pwHint').textContent = val.length === 0 ? 'Enter a new password' : hints[score];
+  }
+  function otpNext(input, index) {
+    var boxes = document.querySelectorAll('.otp-box');
+    if (input.value && index < boxes.length - 1) boxes[index + 1].focus();
+  }
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 1800);
+    setTimeout(function(){ t.remove(); }, 2200);
+  }
+</script>
+</body>
+</html>

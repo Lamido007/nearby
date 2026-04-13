@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Phase 2: Backend Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8;
+    --terracotta: #C4622D;
+    --navy: #1A2332;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --mid: #4A5568;
+    --light: #8A96A8;
+    --white: #FDFAF4;
+    --gold: #D4AF37;
+    --green: #38A169;
+    --red: #E53E3E;
+    --blue: #2980B9;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #EEE9DF;
+    color: var(--navy);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: var(--navy);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: white; }
+  .logo span { color: var(--terracotta); }
+  .phase-tag {
+    background: rgba(196,98,45,0.3); color: #F0A070;
+    font-size: 11px; font-weight: 700; padding: 4px 12px;
+    border-radius: 100px; letter-spacing: 0.5px;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--navy), #2C3E6B);
+    padding: 28px 20px; position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: '{ }';
+    position: absolute; right: -10px; top: 10px;
+    font-size: 100px; font-weight: 900; opacity: 0.05;
+    color: white; font-family: monospace;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 900; color: white;
+    line-height: 1.1; letter-spacing: -1px; margin-bottom: 10px;
+  }
+  .hero-title em { color: var(--amber); font-style: italic; }
+  .hero-sub { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 20px; }
+  .hero-stats { display: flex; gap: 20px; }
+  .h-stat-num { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900; color: white; }
+  .h-stat-label { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+
+  /* PROGRESS */
+  .progress-card {
+    background: var(--white); margin: 10px;
+    border-radius: 18px; padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .prog-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+  .prog-step {
+    display: flex; gap: 12px; align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .prog-step:last-child { margin-bottom: 0; }
+  .prog-dot {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; margin-top: 1px;
+  }
+  .dot-done { background: var(--green); color: white; }
+  .dot-active { background: var(--terracotta); color: white; animation: pulse 2s infinite; }
+  .dot-next { background: rgba(0,0,0,0.08); color: var(--light); }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 transparent} 50%{box-shadow:0 0 0 6px rgba(196,98,45,0.2)} }
+  .prog-line { width: 2px; background: rgba(0,0,0,0.08); position: absolute; left: 13px; top: 30px; height: 100%; }
+  .prog-step-body { flex: 1; }
+  .prog-step-title { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .prog-step-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .prog-step-tag {
+    display: inline-block; margin-top: 4px;
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 100px;
+  }
+  .tag-done { background: rgba(56,161,105,0.12); color: var(--green); }
+  .tag-active { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+  .tag-next { background: rgba(0,0,0,0.06); color: var(--light); }
+
+  /* SECTION */
+  .section { margin: 0 10px 10px; }
+  .section-title {
+    font-size: 11px; font-weight: 700; color: var(--light);
+    letter-spacing: 1px; text-transform: uppercase; padding: 10px 6px 6px;
+  }
+  .card {
+    background: var(--white); border-radius: 18px; padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 10px;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 900; color: var(--navy); margin-bottom: 6px;
+  }
+  .card-sub { font-size: 13px; color: var(--mid); line-height: 1.6; margin-bottom: 14px; }
+
+  /* STEP CARD */
+  .step-card {
+    background: var(--white); border-radius: 18px;
+    overflow: hidden; margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .step-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px; cursor: pointer;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .step-num {
+    width: 36px; height: 36px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900; color: white; flex-shrink: 0;
+  }
+  .step-header-body { flex: 1; }
+  .step-header-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .step-header-sub { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .step-toggle { font-size: 18px; color: var(--light); transition: transform 0.3s; }
+  .step-toggle.open { transform: rotate(90deg); }
+  .step-body { padding: 16px; display: none; }
+  .step-body.open { display: block; }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: var(--navy); border-radius: 12px;
+    padding: 14px; margin: 10px 0; overflow-x: auto;
+    position: relative;
+  }
+  .code-block pre {
+    font-family: 'Courier New', monospace; font-size: 12px;
+    color: #A8D8A8; line-height: 1.6; white-space: pre; margin: 0;
+  }
+  .code-label {
+    font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6);
+    border: none; border-radius: 8px; padding: 4px 10px;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .copy-btn:active { background: rgba(255,255,255,0.2); }
+
+  /* TOOL CARD */
+  .tool-card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--cream); border-radius: 14px; padding: 14px;
+    margin-bottom: 10px; border: 2px solid transparent;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .tool-card:hover { border-color: var(--terracotta); }
+  .tool-card.recommended { border-color: rgba(56,161,105,0.4); background: rgba(56,161,105,0.04); }
+  .tool-icon { font-size: 28px; flex-shrink: 0; }
+  .tool-name { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .tool-desc { font-size: 12px; color: var(--mid); line-height: 1.4; }
+  .tool-badge {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 100px; flex-shrink: 0;
+  }
+  .badge-free { background: rgba(56,161,105,0.15); color: var(--green); }
+  .badge-recommended { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+
+  /* TABLE */
+  .db-table {
+    background: var(--cream); border-radius: 12px;
+    overflow: hidden; margin-bottom: 10px;
+  }
+  .db-table-title {
+    background: var(--navy); color: white; padding: 10px 14px;
+    font-size: 13px; font-weight: 700; display: flex;
+    align-items: center; gap: 8px;
+  }
+  .db-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; border-bottom: 1px solid rgba(0,0,0,0.06);
+    font-size: 12px;
+  }
+  .db-row:last-child { border-bottom: none; }
+  .db-col { font-family: 'Courier New', monospace; color: var(--terracotta); font-weight: 700; min-width: 100px; }
+  .db-type { color: var(--blue); min-width: 70px; }
+  .db-note { color: var(--light); }
+
+  /* CHECKLIST */
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+  .check-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--cream); border-radius: 12px; padding: 12px 14px;
+    cursor: pointer;
+  }
+  .check-item.done { background: rgba(56,161,105,0.08); }
+  .check-box {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 2px solid rgba(0,0,0,0.15); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; transition: all 0.2s;
+  }
+  .check-item.done .check-box { background: var(--green); border-color: var(--green); color: white; }
+  .check-text { font-size: 13px; color: var(--mid); }
+  .check-item.done .check-text { color: var(--navy); font-weight: 600; }
+
+  /* SECURITY TABLE */
+  .sec-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .sec-row:last-child { border-bottom: none; }
+  .sec-row-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .sec-row-title { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .sec-row-desc { font-size: 12px; color: var(--mid); margin-top: 2px; line-height: 1.5; }
+  .sec-row-status { margin-left: auto; font-size: 11px; font-weight: 700; flex-shrink: 0; padding: 2px 8px; border-radius: 100px; }
+  .status-done { background: rgba(56,161,105,0.12); color: var(--green); }
+  .status-build { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+
+  /* CTA */
+  .cta-card {
+    background: linear-gradient(135deg, var(--terracotta), #A34B1F);
+    border-radius: 18px; padding: 22px; margin: 0 10px 10px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .cta-card::after { content: '🚀'; position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; }
+  .cta-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: white; margin-bottom: 8px; }
+  .cta-sub { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 18px; }
+  .cta-btn {
+    display: inline-block; background: white; color: var(--terracotta);
+    border: none; border-radius: 100px; padding: 12px 28px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    font-weight: 700; cursor: pointer;
+  }
+
+  .page-pad { padding-bottom: 40px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="logo">Near<span>by</span></div>
+  <div class="phase-tag">⚙️ Phase 2 · Backend</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-title">Making it all <em>real.</em></div>
+  <div class="hero-sub">Phase 1 built every screen. Phase 2 connects a real database, live authentication, and gets Nearby live on the internet — free.</div>
+  <div class="hero-stats">
+    <div>
+      <div class="h-stat-num">10</div>
+      <div class="h-stat-label">Pages built</div>
+    </div>
+    <div>
+      <div class="h-stat-num">£0</div>
+      <div class="h-stat-label">Hosting cost</div>
+    </div>
+    <div>
+      <div class="h-stat-num">5</div>
+      <div class="h-stat-label">Steps to live</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-pad">
+
+  <!-- PHASE PROGRESS -->
+  <div class="progress-card" style="margin-top:10px;">
+    <div class="prog-title">📍 Your Build Journey</div>
+    <div class="prog-step">
+      <div class="prog-dot dot-done">✓</div>
+      <div class="prog-step-body">
+        <div class="prog-step-title">Phase 1 — All Pages Built</div>
+        <div class="prog-step-desc">Landing, Auth, Feed, Jobs, Profiles, Admin, Notifications, Messages, Settings</div>
+        <div class="prog-step-tag tag-done">✓ Complete — 10 pages</div>
+      </div>
+    </div>
+    <div class="prog-step">
+      <div class="prog-dot dot-active">2</div>
+      <div class="prog-step-body">
+        <div class="prog-step-title">Phase 2 — Backend & Database</div>
+        <div class="prog-step-desc">Connect Supabase, set up auth, real data, API calls</div>
+        <div class="prog-step-tag tag-active">⚡ You are here</div>
+      </div>
+    </div>
+    <div class="prog-step">
+      <div class="prog-dot dot-next">3</div>
+      <div class="prog-step-body">
+        <div class="prog-step-title">Phase 3 — Go Live</div>
+        <div class="prog-step-desc">Deploy to internet, custom domain, launch to real users</div>
+        <div class="prog-step-tag tag-next">Coming next</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT IS THE BACKEND -->
+  <div class="section">
+    <div class="section-title">📖 What is a Backend?</div>
+    <div class="card">
+      <div class="card-title">Think of it like this</div>
+      <div class="card-sub">Everything we built in Phase 1 is like a beautiful shop with displays, signs and counters — but nothing is real yet. The backend is the warehouse, staff and systems behind it that make everything actually work.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:10px;align-items:center;background:var(--cream);border-radius:12px;padding:12px 14px;">
+          <div style="font-size:22px;">🎨</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Frontend (Phase 1 — Done)</div>
+            <div style="font-size:12px;color:var(--mid);">What users see and interact with. All our HTML pages.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;background:rgba(196,98,45,0.08);border-radius:12px;padding:12px 14px;border:1px solid rgba(196,98,45,0.15);">
+          <div style="font-size:22px;">⚙️</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Backend (Phase 2 — Now)</div>
+            <div style="font-size:12px;color:var(--mid);">The database that stores users, posts, jobs. The server that handles logins and security.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;background:var(--cream);border-radius:12px;padding:12px 14px;">
+          <div style="font-size:22px;">🌐</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">Deployment (Phase 3)</div>
+            <div style="font-size:12px;color:var(--mid);">Putting it on the internet so real people can use it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="section">
+    <div class="section-title">🛠️ Tools We'll Use — All Free</div>
+
+    <div class="tool-card recommended">
+      <div class="tool-icon">⚡</div>
+      <div>
+        <div class="tool-name">Supabase</div>
+        <div class="tool-desc">Your database + authentication + real-time data. Like Firebase but open source. Free up to 50,000 users.</div>
+      </div>
+      <div>
+        <div class="tool-badge badge-free">Free</div>
+        <div class="tool-badge badge-recommended" style="margin-top:4px;">Recommended</div>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">▲</div>
+      <div>
+        <div class="tool-name">Vercel</div>
+        <div class="tool-desc">Hosts your app on the internet with a real URL. One click deploy, free forever for personal projects.</div>
+      </div>
+      <div class="tool-badge badge-free">Free</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">🌐</div>
+      <div>
+        <div class="tool-name">Namecheap</div>
+        <div class="tool-desc">Buy your domain name — nearby.io or getnearby.com. Around $12/year.</div>
+      </div>
+      <div class="tool-badge" style="background:rgba(232,168,56,0.15);color:#9A6700;">~$12/yr</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">📧</div>
+      <div>
+        <div class="tool-name">Resend</div>
+        <div class="tool-desc">Sends real emails — welcome emails, OTP codes, security alerts. Free for 3,000 emails/month.</div>
+      </div>
+      <div class="tool-badge badge-free">Free</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">🗺️</div>
+      <div>
+        <div class="tool-name">Google Maps API</div>
+        <div class="tool-desc">Real location detection and neighborhood mapping. Free up to 28,000 calls/month.</div>
+      </div>
+      <div class="tool-badge badge-free">Free tier</div>
+    </div>
+  </div>
+
+  <!-- STEP BY STEP -->
+  <div class="section">
+    <div class="section-title">📋 Step-by-Step Setup</div>
+
+    <!-- STEP 1 -->
+    <div class="step-card">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-num" style="background:var(--terracotta);">1</div>
+        <div class="step-header-body">
+          <div class="step-header-title">Create Your Supabase Project</div>
+          <div class="step-header-sub">5 minutes · Free account</div>
+        </div>
+        <div class="step-toggle">›</div>
+      </div>
+      <div class="step-body">
+        <div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:12px;">
+          Supabase is your entire backend in one place — database, user logins, real-time updates and file storage. All free.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+          <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mid);">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--terracotta);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">1</div>
+            Go to <b style="color:var(--navy);">supabase.com</b> and click "Start for free"
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mid);">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--terracotta);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">2</div>
+            Sign up with GitHub (recommended) or email
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mid);">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--terracotta);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">3</div>
+            Click <b style="color:var(--navy);">"New Project"</b> → Name it "nearby"
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mid);">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--terracotta);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">4</div>
+            Choose a region closest to your users (e.g. Europe West)
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mid);">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--terracotta);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">5</div>
+            Save your <b style="color:var(--navy);">Project URL</b> and <b style="color:var(--navy);">API Key</b> — you'll need these
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-label">Your Supabase Keys (from Settings → API)</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>SUPABASE_URL = https://xxxx.supabase.co
+SUPABASE_ANON_KEY = eyJhbGci...your-key-here</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-card">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-num" style="background:var(--navy);">2</div>
+        <div class="step-header-body">
+          <div class="step-header-title">Create Your Database Tables</div>
+          <div class="step-header-sub">Copy and paste SQL — 10 minutes</div>
+        </div>
+        <div class="step-toggle">›</div>
+      </div>
+      <div class="step-body">
+        <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:12px;">In Supabase go to <b style="color:var(--navy);">SQL Editor</b> and run each of these to create your database tables:</div>
+
+        <div class="db-table">
+          <div class="db-table-title">👥 users table</div>
+          <div class="db-row"><div class="db-col">id</div><div class="db-type">uuid</div><div class="db-note">Primary key</div></div>
+          <div class="db-row"><div class="db-col">full_name</div><div class="db-type">text</div><div class="db-note">Display name</div></div>
+          <div class="db-row"><div class="db-col">email</div><div class="db-type">text</div><div class="db-note">Unique</div></div>
+          <div class="db-row"><div class="db-col">avatar_url</div><div class="db-type">text</div><div class="db-note">Profile photo</div></div>
+          <div class="db-row"><div class="db-col">user_type</div><div class="db-type">text</div><div class="db-note">resident/newcomer/business/visitor</div></div>
+          <div class="db-row"><div class="db-col">neighborhood</div><div class="db-type">text</div><div class="db-note">Location area</div></div>
+          <div class="db-row"><div class="db-col">city</div><div class="db-type">text</div><div class="db-note">City name</div></div>
+          <div class="db-row"><div class="db-col">lat</div><div class="db-type">float8</div><div class="db-note">Encrypted latitude</div></div>
+          <div class="db-row"><div class="db-col">lng</div><div class="db-type">float8</div><div class="db-note">Encrypted longitude</div></div>
+          <div class="db-row"><div class="db-col">bio</div><div class="db-type">text</div><div class="db-note">Profile bio</div></div>
+          <div class="db-row"><div class="db-col">badge_level</div><div class="db-type">int</div><div class="db-note">1=Neighbor 2=Star 3=Ambassador 4=Legend</div></div>
+          <div class="db-row"><div class="db-col">rep_points</div><div class="db-type">int</div><div class="db-note">Reputation score</div></div>
+          <div class="db-row"><div class="db-col">is_newcomer</div><div class="db-type">bool</div><div class="db-note">Show in arrivals</div></div>
+          <div class="db-row"><div class="db-col">created_at</div><div class="db-type">timestamp</div><div class="db-note">Join date</div></div>
+        </div>
+
+        <div class="db-table">
+          <div class="db-table-title">📝 posts table</div>
+          <div class="db-row"><div class="db-col">id</div><div class="db-type">uuid</div><div class="db-note">Primary key</div></div>
+          <div class="db-row"><div class="db-col">user_id</div><div class="db-type">uuid</div><div class="db-note">Foreign key → users</div></div>
+          <div class="db-row"><div class="db-col">post_type</div><div class="db-type">text</div><div class="db-note">post/job/event/alert</div></div>
+          <div class="db-row"><div class="db-col">content</div><div class="db-type">text</div><div class="db-note">Post text body</div></div>
+          <div class="db-row"><div class="db-col">neighborhood</div><div class="db-type">text</div><div class="db-note">Where it's visible</div></div>
+          <div class="db-row"><div class="db-col">likes_count</div><div class="db-type">int</div><div class="db-note">Total likes</div></div>
+          <div class="db-row"><div class="db-col">is_flagged</div><div class="db-type">bool</div><div class="db-note">Admin moderation</div></div>
+          <div class="db-row"><div class="db-col">created_at</div><div class="db-type">timestamp</div><div class="db-note">Post date</div></div>
+        </div>
+
+        <div class="db-table">
+          <div class="db-table-title">💼 jobs table</div>
+          <div class="db-row"><div class="db-col">id</div><div class="db-type">uuid</div><div class="db-note">Primary key</div></div>
+          <div class="db-row"><div class="db-col">business_id</div><div class="db-type">uuid</div><div class="db-note">Foreign key → users</div></div>
+          <div class="db-row"><div class="db-col">title</div><div class="db-type">text</div><div class="db-note">Job title</div></div>
+          <div class="db-row"><div class="db-col">description</div><div class="db-type">text</div><div class="db-note">Full description</div></div>
+          <div class="db-row"><div class="db-col">job_type</div><div class="db-type">text</div><div class="db-note">full/part/freelance/remote</div></div>
+          <div class="db-row"><div class="db-col">pay</div><div class="db-type">text</div><div class="db-note">Salary / rate</div></div>
+          <div class="db-row"><div class="db-col">neighborhood</div><div class="db-type">text</div><div class="db-note">Job location</div></div>
+          <div class="db-row"><div class="db-col">is_active</div><div class="db-type">bool</div><div class="db-note">Still open?</div></div>
+          <div class="db-row"><div class="db-col">expires_at</div><div class="db-type">timestamp</div><div class="db-note">Auto-close date</div></div>
+        </div>
+
+        <div class="db-table">
+          <div class="db-table-title">💬 messages table</div>
+          <div class="db-row"><div class="db-col">id</div><div class="db-type">uuid</div><div class="db-note">Primary key</div></div>
+          <div class="db-row"><div class="db-col">sender_id</div><div class="db-type">uuid</div><div class="db-note">Foreign key → users</div></div>
+          <div class="db-row"><div class="db-col">receiver_id</div><div class="db-type">uuid</div><div class="db-note">Foreign key → users</div></div>
+          <div class="db-row"><div class="db-col">content</div><div class="db-type">text</div><div class="db-note">Encrypted message body</div></div>
+          <div class="db-row"><div class="db-col">is_read</div><div class="db-type">bool</div><div class="db-note">Read receipt</div></div>
+          <div class="db-row"><div class="db-col">created_at</div><div class="db-type">timestamp</div><div class="db-note">Sent time</div></div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">SQL — Run in Supabase SQL Editor</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>-- Create users table
+CREATE TABLE users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  full_name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  avatar_url TEXT,
+  user_type TEXT DEFAULT 'resident',
+  neighborhood TEXT,
+  city TEXT,
+  bio TEXT,
+  badge_level INT DEFAULT 1,
+  rep_points INT DEFAULT 0,
+  is_newcomer BOOL DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- Policy: users can only read their own data
+CREATE POLICY "Users read own data"
+ON users FOR SELECT
+USING (auth.uid() = id);
+
+-- Create posts table
+CREATE TABLE posts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  post_type TEXT DEFAULT 'post',
+  content TEXT NOT NULL,
+  neighborhood TEXT,
+  likes_count INT DEFAULT 0,
+  is_flagged BOOL DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-card">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-num" style="background:var(--sage);">3</div>
+        <div class="step-header-body">
+          <div class="step-header-title">Connect Auth to Your Pages</div>
+          <div class="step-header-sub">Add Supabase to your HTML files</div>
+        </div>
+        <div class="step-toggle">›</div>
+      </div>
+      <div class="step-body">
+        <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:12px;">Add this to the <b style="color:var(--navy);">&lt;head&gt;</b> of every HTML page. This connects your pages to Supabase.</div>
+        <div class="code-block">
+          <div class="code-label">Add to every HTML page &lt;head&gt;</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>&lt;script src="https://cdn.jsdelivr.net/
+  npm/@supabase/supabase-js@2"&gt;&lt;/script&gt;
+
+&lt;script&gt;
+const supabase = supabase.createClient(
+  'YOUR_SUPABASE_URL',
+  'YOUR_SUPABASE_ANON_KEY'
+)
+&lt;/script&gt;</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">Sign Up — replace button onclick in nearby-auth.html</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>async function handleSignup() {
+  const email = document.getElementById('signupEmail').value
+  const password = document.getElementById('signupPassword').value
+  const name = document.getElementById('firstName').value
+
+  const { data, error } = await supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: { full_name: name }
+    }
+  })
+
+  if (error) {
+    alert(error.message)
+  } else {
+    // Insert user profile
+    await supabase.from('users').insert({
+      id: data.user.id,
+      full_name: name,
+      email: email,
+      is_newcomer: true
+    })
+    window.location.href = 'nearby-onboarding.html'
+  }
+}</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">Sign In — replace login handler</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>async function handleLogin() {
+  const email = document.getElementById('loginEmail').value
+  const password = document.getElementById('loginPassword').value
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password
+  })
+
+  if (error) {
+    alert('Invalid email or password')
+  } else {
+    window.location.href = 'nearby-feed.html'
+  }
+}</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">Load Real Feed Posts</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>async function loadFeed() {
+  const { data: posts, error } = await supabase
+    .from('posts')
+    .select('*, users(full_name, avatar_url, badge_level)')
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  if (posts) {
+    posts.forEach(post => renderPostCard(post))
+  }
+}
+
+// Call on page load
+loadFeed()</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step-card">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-num" style="background:var(--amber);color:var(--navy);">4</div>
+        <div class="step-header-body">
+          <div class="step-header-title">Set Up Email & Security</div>
+          <div class="step-header-sub">OTP, welcome emails, alerts</div>
+        </div>
+        <div class="step-toggle">›</div>
+      </div>
+      <div class="step-body">
+        <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:12px;">Supabase handles authentication emails automatically. You just need to customize the templates.</div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+          <div style="background:var(--cream);border-radius:12px;padding:12px 14px;">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;">📧 Email Templates</div>
+            <div style="font-size:12px;color:var(--mid);">Go to Supabase → Authentication → Email Templates. Customize the welcome email with Nearby branding.</div>
+          </div>
+          <div style="background:var(--cream);border-radius:12px;padding:12px 14px;">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;">🛡️ Row Level Security</div>
+            <div style="font-size:12px;color:var(--mid);">Already included in our SQL above. This ensures users can only see their own private data — never another user's.</div>
+          </div>
+          <div style="background:var(--cream);border-radius:12px;padding:12px 14px;">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;">🔑 OAuth (Google Login)</div>
+            <div style="font-size:12px;color:var(--mid);">Go to Supabase → Authentication → Providers → Enable Google. Paste your Google Client ID and Secret.</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">Google OAuth Login</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>async function handleGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + '/nearby-feed.html'
+    }
+  })
+}</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">Protect Pages — add to every page top</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>// Check user is logged in
+const { data: { session } } = await supabase.auth.getSession()
+
+if (!session) {
+  // Not logged in — redirect to login
+  window.location.href = 'nearby-auth.html'
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step-card">
+      <div class="step-header" onclick="toggleStep(this)">
+        <div class="step-num" style="background:var(--green);">5</div>
+        <div class="step-header-body">
+          <div class="step-header-title">Deploy — Go Live Free</div>
+          <div class="step-header-sub">Your app live on the internet in 2 minutes</div>
+        </div>
+        <div class="step-toggle">›</div>
+      </div>
+      <div class="step-body">
+        <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:12px;">Vercel deploys your HTML files instantly for free. You get a real URL your users can visit.</div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+          <div style="display:flex;gap:10px;align-items:center;background:var(--cream);border-radius:12px;padding:12px 14px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">1</div>
+            <div style="font-size:13px;color:var(--mid);">Go to <b style="color:var(--navy);">vercel.com</b> → Sign up free with GitHub</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;background:var(--cream);border-radius:12px;padding:12px 14px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">2</div>
+            <div style="font-size:13px;color:var(--mid);">Upload your HTML files to <b style="color:var(--navy);">GitHub repository</b></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;background:var(--cream);border-radius:12px;padding:12px 14px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">3</div>
+            <div style="font-size:13px;color:var(--mid);">Click <b style="color:var(--navy);">"Import Project"</b> in Vercel → Select your repo</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;background:var(--cream);border-radius:12px;padding:12px 14px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">4</div>
+            <div style="font-size:13px;color:var(--mid);">Add your <b style="color:var(--navy);">Supabase keys</b> as Environment Variables</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;background:rgba(56,161,105,0.08);border:1px solid rgba(56,161,105,0.2);border-radius:12px;padding:12px 14px;">
+            <div style="font-size:18px;">🎉</div>
+            <div style="font-size:13px;color:var(--navy);font-weight:600;">Your app is live at <b>your-project.vercel.app</b></div>
+          </div>
+        </div>
+
+        <div style="background:rgba(41,128,185,0.08);border:1px solid rgba(41,128,185,0.2);border-radius:12px;padding:12px 14px;">
+          <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:4px;">🌐 Custom Domain</div>
+          <div style="font-size:12px;color:var(--mid);">In Vercel → Settings → Domains → add your domain from Namecheap. Takes 24 hours to connect. Then getnearby.com is live!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECURITY IMPLEMENTATION -->
+  <div class="section">
+    <div class="section-title">🔐 Security Implementation Checklist</div>
+    <div class="card">
+      <div class="sec-row">
+        <div class="sec-row-icon">🔒</div>
+        <div>
+          <div class="sec-row-title">HTTPS everywhere</div>
+          <div class="sec-row-desc">Vercel gives you SSL/HTTPS automatically. All data between users and the server is encrypted in transit.</div>
+        </div>
+        <div class="sec-row-status status-done">Auto ✓</div>
+      </div>
+      <div class="sec-row">
+        <div class="sec-row-icon">🛡️</div>
+        <div>
+          <div class="sec-row-title">Row Level Security (RLS)</div>
+          <div class="sec-row-desc">Supabase ensures users can only access their own data. No user can see another user's private information.</div>
+        </div>
+        <div class="sec-row-status status-done">SQL Done ✓</div>
+      </div>
+      <div class="sec-row">
+        <div class="sec-row-icon">🔑</div>
+        <div>
+          <div class="sec-row-title">JWT Authentication</div>
+          <div class="sec-row-desc">Supabase uses secure JSON Web Tokens for all sessions. Tokens expire and refresh automatically.</div>
+        </div>
+        <div class="sec-row-status status-done">Auto ✓</div>
+      </div>
+      <div class="sec-row">
+        <div class="sec-row-icon">📍</div>
+        <div>
+          <div class="sec-row-title">Location encryption</div>
+          <div class="sec-row-desc">Never store exact GPS. Store only neighborhood strings. Only show city or area name on profiles.</div>
+        </div>
+        <div class="sec-row-status status-build">Build →</div>
+      </div>
+      <div class="sec-row">
+        <div class="sec-row-icon">💬</div>
+        <div>
+          <div class="sec-row-title">Message encryption</div>
+          <div class="sec-row-desc">Use TweetNaCl.js library to encrypt messages client-side before sending to Supabase. Only the two users can decrypt.</div>
+        </div>
+        <div class="sec-row-status status-build">Build →</div>
+      </div>
+      <div class="sec-row">
+        <div class="sec-row-icon">🚦</div>
+        <div>
+          <div class="sec-row-title">Rate limiting</div>
+          <div class="sec-row-desc">Supabase has built-in rate limiting on auth endpoints. Add Vercel Edge Middleware for API rate limiting.</div>
+        </div>
+        <div class="sec-row-status status-done">Auto ✓</div>
+      </div>
+      <div class="sec-row">
+        <div class="sec-row-icon">🧹</div>
+        <div>
+          <div class="sec-row-title">Input sanitization</div>
+          <div class="sec-row-desc">All user inputs must be sanitized before inserting into database to prevent SQL injection and XSS attacks.</div>
+        </div>
+        <div class="sec-row-status status-build">Build →</div>
+      </div>
+      <div class="sec-row" style="border:none;">
+        <div class="sec-row-icon">📋</div>
+        <div>
+          <div class="sec-row-title">GDPR / POPIA Compliance</div>
+          <div class="sec-row-desc">Add data export and deletion endpoints. Required by law in South Africa (POPIA) and Europe (GDPR).</div>
+        </div>
+        <div class="sec-row-status status-build">Build →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAUNCH CHECKLIST -->
+  <div class="section">
+    <div class="section-title">✅ Pre-Launch Checklist</div>
+    <div class="checklist" id="launchList">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Supabase project created and keys saved</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">All database tables created with SQL</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Row Level Security policies enabled</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Supabase connected to all HTML pages</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Sign up and login working with real users</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Google OAuth connected</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Email verification working</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Page protection (redirect if not logged in)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Feed loading real posts from database</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Jobs board saving to database</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Messages encrypted and saving</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Admin dashboard showing real data</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Files uploaded to GitHub repo</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Deployed on Vercel — live URL working</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Custom domain connected (optional)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Tested on mobile device — everything working</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-card">
+    <div class="cta-title">Ready to go live? 🚀</div>
+    <div class="cta-sub">Once you complete Phase 2, Nearby will be a real, working platform that real people can sign up to and use. That's when you go to investors with proof.</div>
+    <button class="cta-btn" onclick="showToast('Building your future! Keep going 🚀')">Let's do this →</button>
+  </div>
+
+</div>
+
+<script>
+  function toggleStep(header) {
+    var body = header.nextElementSibling;
+    var arrow = header.querySelector('.step-toggle');
+    body.classList.toggle('open');
+    arrow.classList.toggle('open');
+  }
+
+  function toggleCheck(item) {
+    item.classList.toggle('done');
+    var box = item.querySelector('.check-box');
+    box.textContent = item.classList.contains('done') ? '✓' : '';
+    var done = document.querySelectorAll('.check-item.done').length;
+    var total = document.querySelectorAll('.check-item').length;
+    if (done === total) showToast('🎉 All done! You\'re ready to launch!');
+    else showToast(done + ' / ' + total + ' complete');
+  }
+
+  function copyCode(btn) {
+    var pre = btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(function() {
+      btn.textContent = 'Copied!';
+      setTimeout(function(){ btn.textContent = 'Copy'; }, 2000);
+    }).catch(function() {
+      btn.textContent = 'Copied!';
+      setTimeout(function(){ btn.textContent = 'Copy'; }, 2000);
+    });
+  }
+
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 2000);
+    setTimeout(function(){ t.remove(); }, 2500);
+  }
+</script>
+</body>
+</html>

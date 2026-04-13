@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Your Neighborhood</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8;
+    --terracotta: #C4622D;
+    --navy: #1A2332;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --mid: #4A5568;
+    --light: #8A96A8;
+    --white: #FDFAF4;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F0EBE1;
+    color: var(--navy);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    background: var(--white);
+    padding: 14px 16px 10px;
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+  }
+  .topnav-row1 {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .logo span { color: var(--terracotta); }
+  .nav-icons { display: flex; gap: 8px; }
+  .nav-icon {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--cream); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; position: relative;
+  }
+  .notif-dot {
+    position: absolute; top: 4px; right: 4px;
+    width: 8px; height: 8px; background: var(--terracotta);
+    border-radius: 50%; border: 2px solid var(--white);
+  }
+  .location-bar {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--mid);
+  }
+  .location-bar span { color: var(--navy); font-weight: 600; }
+
+  /* FILTER TABS */
+  .filter-tabs {
+    display: flex; gap: 8px; overflow-x: auto;
+    padding: 12px 16px; background: var(--white);
+    scrollbar-width: none;
+  }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .ftab {
+    flex-shrink: 0; padding: 7px 16px; border-radius: 100px;
+    border: 2px solid rgba(0,0,0,0.1); background: transparent;
+    font-size: 13px; font-weight: 600; color: var(--mid);
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .ftab.active { background: var(--navy); border-color: var(--navy); color: white; }
+
+  /* FEED */
+  .feed { padding: 12px 16px 100px; }
+
+  /* NEW ARRIVALS STRIP */
+  .section-label {
+    font-size: 12px; font-weight: 700; color: var(--terracotta);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 10px; margin-top: 4px;
+  }
+  .arrivals-strip {
+    display: flex; gap: 12px; overflow-x: auto;
+    padding-bottom: 4px; margin-bottom: 16px;
+    scrollbar-width: none;
+  }
+  .arrivals-strip::-webkit-scrollbar { display: none; }
+  .arrival-card {
+    flex-shrink: 0; background: var(--white); border-radius: 16px;
+    padding: 14px 12px; text-align: center; width: 100px;
+    border: 2px solid rgba(196,98,45,0.15);
+    cursor: pointer;
+  }
+  .arrival-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: white;
+    margin: 0 auto 8px; position: relative;
+  }
+  .new-ring {
+    position: absolute; inset: -3px; border-radius: 50%;
+    border: 2px solid var(--terracotta);
+  }
+  .arrival-name { font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+  .arrival-sub { font-size: 10px; color: var(--light); }
+
+  /* POST CARD */
+  .card {
+    background: var(--white); border-radius: 18px;
+    padding: 16px; margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .card-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .card-meta { flex: 1; }
+  .card-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .card-detail { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .card-more { font-size: 20px; color: var(--light); background: none; border: none; cursor: pointer; padding: 4px; }
+
+  /* Post type badges */
+  .type-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 700; margin-bottom: 8px;
+  }
+  .badge-job { background: rgba(122,158,126,0.15); color: var(--sage); }
+  .badge-event { background: rgba(232,168,56,0.15); color: #B07D10; }
+  .badge-alert { background: rgba(229,62,62,0.1); color: #C53030; }
+  .badge-social { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+  .badge-new { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+
+  .card-text { font-size: 14px; color: var(--mid); line-height: 1.6; margin-bottom: 12px; }
+
+  /* Job card extras */
+  .job-details {
+    background: var(--cream); border-radius: 12px; padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .job-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .job-item { font-size: 12px; color: var(--mid); }
+  .job-item b { color: var(--navy); display: block; font-size: 13px; }
+
+  /* Event card extras */
+  .event-details {
+    background: linear-gradient(135deg, rgba(232,168,56,0.1), rgba(196,98,45,0.08));
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+    border: 1px solid rgba(232,168,56,0.2);
+  }
+  .event-row { display: flex; gap: 20px; }
+  .event-item { font-size: 12px; color: var(--mid); }
+  .event-item b { color: var(--navy); font-size: 13px; display: block; }
+
+  /* Image placeholder */
+  .card-image {
+    width: 100%; height: 160px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--cream), rgba(196,98,45,0.1));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; margin-bottom: 12px;
+  }
+
+  /* Card actions */
+  .card-actions {
+    display: flex; align-items: center; gap: 4px;
+    padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .action-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 7px 12px; border-radius: 100px;
+    border: none; background: transparent; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 500; color: var(--light);
+    transition: background 0.15s, color 0.15s;
+  }
+  .action-btn:hover { background: var(--cream); color: var(--navy); }
+  .action-btn.liked { color: var(--terracotta); }
+  .action-spacer { flex: 1; }
+  .apply-btn {
+    padding: 8px 18px; border-radius: 100px;
+    background: var(--navy); color: white;
+    border: none; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .apply-btn:active { background: var(--terracotta); }
+  .rsvp-btn {
+    padding: 8px 18px; border-radius: 100px;
+    background: var(--amber); color: var(--navy);
+    border: none; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+
+  /* New arrival special card */
+  .arrival-full-card {
+    background: linear-gradient(135deg, var(--navy), #243044);
+    border-radius: 18px; padding: 18px; margin-bottom: 12px; color: white;
+  }
+  .afc-tag { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .afc-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .afc-name { font-size: 16px; font-weight: 700; }
+  .afc-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .afc-text { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 14px; }
+  .afc-actions { display: flex; gap: 8px; }
+  .afc-btn {
+    flex: 1; padding: 10px; border-radius: 100px; text-align: center;
+    font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .afc-btn-primary { background: var(--terracotta); color: white; }
+  .afc-btn-secondary { background: rgba(255,255,255,0.1); color: white; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
+    display: flex; padding: 10px 0 16px;
+  }
+  .bnav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 4px; cursor: pointer; padding: 4px 0;
+    border: none; background: none; font-family: 'DM Sans', sans-serif;
+  }
+  .bnav-icon { font-size: 22px; }
+  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
+  .bnav-item.active .bnav-label { color: var(--terracotta); }
+  .bnav-item.active .bnav-icon { filter: none; }
+
+  /* FAB */
+  .fab {
+    position: fixed; bottom: 80px; right: 20px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--terracotta); color: white;
+    border: none; font-size: 24px; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(196,98,45,0.4);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Post composer */
+  .composer {
+    display: none; position: fixed; bottom: 0; left: 50%;
+    transform: translateX(-50%); width: 100%; max-width: 480px;
+    background: var(--white); border-radius: 24px 24px 0 0;
+    padding: 20px 16px 32px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+    z-index: 200;
+  }
+  .composer.open { display: block; }
+  .comp-handle {
+    width: 40px; height: 4px; background: rgba(0,0,0,0.1);
+    border-radius: 100px; margin: 0 auto 16px;
+  }
+  .comp-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+  .comp-types { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; }
+  .comp-type {
+    flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 100px;
+    border: 2px solid rgba(0,0,0,0.1); background: white;
+    font-size: 13px; font-weight: 600; color: var(--mid);
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+  .comp-type.on { border-color: var(--terracotta); color: var(--terracotta); background: rgba(196,98,45,0.06); }
+  .comp-input {
+    width: 100%; border: 2px solid rgba(0,0,0,0.1); border-radius: 14px;
+    padding: 12px 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; color: var(--navy); resize: none; outline: none;
+    margin-bottom: 14px;
+  }
+  .comp-input:focus { border-color: var(--terracotta); }
+  .comp-footer { display: flex; justify-content: space-between; align-items: center; }
+  .comp-post {
+    padding: 11px 28px; border-radius: 100px;
+    background: var(--navy); color: white; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    font-weight: 700; cursor: pointer;
+  }
+  .comp-cancel {
+    background: none; border: none; font-size: 14px;
+    color: var(--light); cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 150; }
+  .overlay.open { display: block; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="topnav-row1">
+    <div class="logo">Near<span>by</span></div>
+    <div class="nav-icons">
+      <button class="nav-icon" onclick="alert('Search coming soon!')">🔍</button>
+      <button class="nav-icon" onclick="alert('Messages coming soon!')">💬</button>
+      <button class="nav-icon" onclick="alert('3 new notifications!')">
+        🔔
+        <div class="notif-dot"></div>
+      </button>
+    </div>
+  </div>
+  <div class="location-bar">📍 <span>Green Point, Cape Town</span> &nbsp;·&nbsp; 24 neighbors online</div>
+</div>
+
+<!-- FILTER TABS -->
+<div class="filter-tabs">
+  <button class="ftab active" onclick="setTab(this)">🏡 All</button>
+  <button class="ftab" onclick="setTab(this)">🆕 New Arrivals</button>
+  <button class="ftab" onclick="setTab(this)">💼 Jobs</button>
+  <button class="ftab" onclick="setTab(this)">🎉 Events</button>
+  <button class="ftab" onclick="setTab(this)">🔔 Alerts</button>
+  <button class="ftab" onclick="setTab(this)">🏪 Businesses</button>
+</div>
+
+<!-- FEED -->
+<div class="feed">
+
+  <!-- NEW ARRIVALS STRIP -->
+  <div class="section-label">👋 New in your area</div>
+  <div class="arrivals-strip">
+    <div class="arrival-card">
+      <div class="arrival-avatar" style="background:var(--terracotta);">
+        M <div class="new-ring"></div>
+      </div>
+      <div class="arrival-name">Marcus</div>
+      <div class="arrival-sub">2 days ago</div>
+    </div>
+    <div class="arrival-card">
+      <div class="arrival-avatar" style="background:var(--sage);">
+        A <div class="new-ring"></div>
+      </div>
+      <div class="arrival-name">Amara</div>
+      <div class="arrival-sub">4 days ago</div>
+    </div>
+    <div class="arrival-card">
+      <div class="arrival-avatar" style="background:var(--amber); color:var(--navy);">
+        K <div class="new-ring"></div>
+      </div>
+      <div class="arrival-name">Kofi</div>
+      <div class="arrival-sub">1 week ago</div>
+    </div>
+    <div class="arrival-card">
+      <div class="arrival-avatar" style="background:#9B59B6;">
+        S <div class="new-ring"></div>
+      </div>
+      <div class="arrival-name">Sara</div>
+      <div class="arrival-sub">1 week ago</div>
+    </div>
+    <div class="arrival-card">
+      <div class="arrival-avatar" style="background:#2980B9;">
+        T <div class="new-ring"></div>
+      </div>
+      <div class="arrival-name">Thabo</div>
+      <div class="arrival-sub">2 weeks ago</div>
+    </div>
+  </div>
+
+  <!-- NEW ARRIVAL FULL CARD -->
+  <div class="arrival-full-card">
+    <div class="afc-tag">👋 New Arrival — say hello!</div>
+    <div class="afc-row">
+      <div class="avatar" style="background:var(--terracotta); width:52px;height:52px;font-size:20px;">M</div>
+      <div>
+        <div class="afc-name">Marcus Johnson</div>
+        <div class="afc-sub">📍 Moved to Green Point · 2 days ago · From Johannesburg</div>
+      </div>
+    </div>
+    <div class="afc-text">"Hey neighbors! Just moved here from Joburg. I'm a graphic designer, love hiking and great coffee. Looking to meet people and explore the area!"</div>
+    <div class="afc-actions">
+      <button class="afc-btn afc-btn-primary" onclick="this.textContent='👋 Said hello!'">👋 Say Hello</button>
+      <button class="afc-btn afc-btn-secondary">View Profile</button>
+    </div>
+  </div>
+
+  <!-- JOB POST -->
+  <div class="card">
+    <div class="card-header">
+      <div class="avatar" style="background:var(--sage);">B</div>
+      <div class="card-meta">
+        <div class="card-name">Blue Moon Bakery</div>
+        <div class="card-detail">🏪 Local Business · 0.3km away · 2 hrs ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-job">💼 Job Opening</span>
+    <div class="card-text">We're looking for a friendly part-time sales assistant to join our team! No experience needed — just a great attitude and love for people.</div>
+    <div class="job-details">
+      <div class="job-row">
+        <div class="job-item"><b>⏰ Hours</b>Part-time</div>
+        <div class="job-item"><b>💰 Pay</b>Negotiable</div>
+        <div class="job-item"><b>📍 Location</b>On-site</div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 12</button>
+      <button class="action-btn">💬 4</button>
+      <button class="action-btn">↗️ Share</button>
+      <div class="action-spacer"></div>
+      <button class="apply-btn" onclick="this.textContent='✓ Applied!'">Apply Now</button>
+    </div>
+  </div>
+
+  <!-- EVENT POST -->
+  <div class="card">
+    <div class="card-header">
+      <div class="avatar" style="background:#9B59B6;">L</div>
+      <div class="card-meta">
+        <div class="card-name">Lerato M.</div>
+        <div class="card-detail">🏠 Resident · 1.1km away · 5 hrs ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-event">🎉 Community Event</span>
+    <div class="card-text">Hosting a neighborhood braai this Saturday! All welcome — bring something to share and come meet your neighbors. Kids and dogs welcome 🐶🔥</div>
+    <div class="event-details">
+      <div class="event-row">
+        <div class="event-item"><b>📅 Date</b>Saturday, 12 Apr</div>
+        <div class="event-item"><b>🕐 Time</b>1:00 PM</div>
+        <div class="event-item"><b>📍 Where</b>Block B Garden</div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 34</button>
+      <button class="action-btn">💬 11</button>
+      <button class="action-btn">↗️ Share</button>
+      <div class="action-spacer"></div>
+      <button class="rsvp-btn" onclick="this.textContent='✓ Going!'">RSVP</button>
+    </div>
+  </div>
+
+  <!-- SOCIAL POST -->
+  <div class="card">
+    <div class="card-header">
+      <div class="avatar" style="background:#2980B9;">D</div>
+      <div class="card-meta">
+        <div class="card-name">David K.</div>
+        <div class="card-detail">🏠 Resident · 0.6km away · 8 hrs ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-social">💬 Community Post</span>
+    <div class="card-image">☕</div>
+    <div class="card-text">Anyone know a great independent coffee spot near Green Point that's not a chain? My usual place closed down and I'm heartbroken ☕😭</div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 28</button>
+      <button class="action-btn">💬 17</button>
+      <button class="action-btn">↗️ Share</button>
+    </div>
+  </div>
+
+  <!-- ALERT POST -->
+  <div class="card">
+    <div class="card-header">
+      <div class="avatar" style="background:#E53E3E;">N</div>
+      <div class="card-meta">
+        <div class="card-name">Neighborhood Watch</div>
+        <div class="card-detail">🔔 Community Alert · 12 hrs ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-alert">🔔 Safety Alert</span>
+    <div class="card-text">Heads up — a few car break-ins were reported on Regent Rd last night. Please make sure your cars are locked and nothing is left visible inside. Stay safe everyone 🙏</div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 56</button>
+      <button class="action-btn">💬 8</button>
+      <button class="action-btn">↗️ Share</button>
+    </div>
+  </div>
+
+  <!-- SECOND JOB -->
+  <div class="card">
+    <div class="card-header">
+      <div class="avatar" style="background:var(--amber); color:var(--navy);">G</div>
+      <div class="card-meta">
+        <div class="card-name">Green Thumb Garden Centre</div>
+        <div class="card-detail">🏪 Local Business · 1.8km away · 1 day ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-job">💼 Job Opening</span>
+    <div class="card-text">Looking for a weekend gardening assistant. Must love plants! Flexible hours, great pay. Locals only please — we want someone who knows the neighborhood.</div>
+    <div class="job-details">
+      <div class="job-row">
+        <div class="job-item"><b>⏰ Hours</b>Weekends</div>
+        <div class="job-item"><b>💰 Pay</b>R120/hr</div>
+        <div class="job-item"><b>📍 Location</b>On-site</div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 9</button>
+      <button class="action-btn">💬 2</button>
+      <button class="action-btn">↗️ Share</button>
+      <div class="action-spacer"></div>
+      <button class="apply-btn" onclick="this.textContent='✓ Applied!'">Apply Now</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openComposer()">✏️</button>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeComposer()"></div>
+
+<!-- POST COMPOSER -->
+<div class="composer" id="composer">
+  <div class="comp-handle"></div>
+  <div class="comp-title">Share with your neighborhood</div>
+  <div class="comp-types">
+    <button class="comp-type on" onclick="setCompType(this)">💬 Post</button>
+    <button class="comp-type" onclick="setCompType(this)">💼 Job</button>
+    <button class="comp-type" onclick="setCompType(this)">🎉 Event</button>
+    <button class="comp-type" onclick="setCompType(this)">🔔 Alert</button>
+  </div>
+  <textarea class="comp-input" rows="4" placeholder="What's happening in your neighborhood?"></textarea>
+  <div class="comp-footer">
+    <button class="comp-cancel" onclick="closeComposer()">Cancel</button>
+    <button class="comp-post" onclick="postToFeed()">Post Nearby</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item active" onclick="setNav(this)">
+    <div class="bnav-icon">🏡</div>
+    <div class="bnav-label">Home</div>
+  </button>
+  <button class="bnav-item" onclick="setNav(this); window.location.href='nearby-arrivals.html'">
+    <div class="bnav-icon">🆕</div>
+    <div class="bnav-label">Arrivals</div>
+  </button>
+  <button class="bnav-item" onclick="setNav(this)">
+    <div class="bnav-icon">💼</div>
+    <div class="bnav-label">Jobs</div>
+  </button>
+  <button class="bnav-item" onclick="setNav(this)">
+    <div class="bnav-icon">👤</div>
+    <div class="bnav-label">Profile</div>
+  </button>
+</div>
+
+<script>
+  function setTab(el) {
+    document.querySelectorAll('.ftab').forEach(function(t){ t.classList.remove('active'); });
+    el.classList.add('active');
+  }
+  function setNav(el) {
+    document.querySelectorAll('.bnav-item').forEach(function(n){ n.classList.remove('active'); });
+    el.classList.add('active');
+  }
+  function likePost(btn) {
+    var liked = btn.classList.toggle('liked');
+    var num = parseInt(btn.textContent.replace(/\D/g,''));
+    btn.textContent = (liked ? '❤️ ' : '🤍 ') + (liked ? num+1 : num-1);
+  }
+  function openComposer() {
+    document.getElementById('composer').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeComposer() {
+    document.getElementById('composer').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+  function setCompType(el) {
+    document.querySelectorAll('.comp-type').forEach(function(c){ c.classList.remove('on'); });
+    el.classList.add('on');
+  }
+  function postToFeed() {
+    var txt = document.querySelector('.comp-input').value.trim();
+    if (!txt) { alert('Write something to post!'); return; }
+    alert('Post shared with your neighborhood! 🎉');
+    closeComposer();
+    document.querySelector('.comp-input').value = '';
+  }
+</script>
+</body>
+</html>

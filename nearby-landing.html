@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Your Community, Connected</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F5F0E8;
+    --warm-white: #FDFAF4;
+    --terracotta: #C4622D;
+    --terracotta-light: #E07A4A;
+    --navy: #1A2332;
+    --navy-mid: #243044;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --text-dark: #1A2332;
+    --text-mid: #4A5568;
+    --text-light: #8A96A8;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--warm-white);
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(253,250,244,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(196,98,45,0.1);
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 900;
+    color: var(--navy);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--terracotta); }
+  .nav-links { display: flex; gap: 36px; align-items: center; }
+  .nav-links a {
+    text-decoration: none; color: var(--text-mid);
+    font-size: 15px; font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--terracotta); }
+  .nav-cta {
+    background: var(--navy); color: white !important;
+    padding: 10px 24px; border-radius: 100px;
+    transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--terracotta) !important; color: white !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    padding: 140px 48px 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -200px; right: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(196,98,45,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse 6s ease-in-out infinite;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -100px; left: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(122,158,126,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse 8s ease-in-out infinite reverse;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+  }
+
+  .hero-text { position: relative; z-index: 2; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(196,98,45,0.1); color: var(--terracotta);
+    padding: 8px 16px; border-radius: 100px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 28px;
+    animation: fadeUp 0.8s ease forwards;
+  }
+  .hero-tag::before {
+    content: ''; width: 8px; height: 8px;
+    background: var(--terracotta); border-radius: 50%;
+    animation: blink 2s ease infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(48px, 5vw, 76px);
+    font-weight: 900; line-height: 1.05;
+    letter-spacing: -2px;
+    color: var(--navy);
+    margin-bottom: 24px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  h1 em { color: var(--terracotta); font-style: italic; }
+
+  .hero-sub {
+    font-size: 18px; line-height: 1.7;
+    color: var(--text-mid); max-width: 480px;
+    margin-bottom: 40px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+  .btn-primary {
+    background: var(--terracotta); color: white;
+    padding: 16px 36px; border-radius: 100px;
+    font-size: 16px; font-weight: 600;
+    border: none; cursor: pointer;
+    text-decoration: none; display: inline-block;
+    transition: all 0.3s; box-shadow: 0 8px 32px rgba(196,98,45,0.3);
+    transform: translateY(0);
+  }
+  .btn-primary:hover {
+    background: var(--terracotta-light);
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(196,98,45,0.4);
+  }
+  .btn-secondary {
+    background: transparent; color: var(--navy);
+    padding: 16px 36px; border-radius: 100px;
+    font-size: 16px; font-weight: 600;
+    border: 2px solid rgba(26,35,50,0.2); cursor: pointer;
+    text-decoration: none; display: inline-block;
+    transition: all 0.3s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--navy);
+    background: var(--navy); color: white;
+  }
+
+  .hero-stats {
+    display: flex; gap: 40px; margin-top: 52px;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 700; color: var(--navy);
+  }
+  .stat-label { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+
+  /* Hero Visual */
+  .hero-visual {
+    position: relative; z-index: 2;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+  .phone-mockup {
+    width: 300px; margin: 0 auto;
+    background: var(--navy);
+    border-radius: 48px;
+    padding: 16px;
+    box-shadow: 0 40px 80px rgba(26,35,50,0.25), 0 0 0 1px rgba(255,255,255,0.1);
+    position: relative;
+    transform: rotate(3deg);
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: rotate(3deg) translateY(0); }
+    50% { transform: rotate(3deg) translateY(-12px); }
+  }
+  .phone-screen {
+    background: var(--cream); border-radius: 36px;
+    overflow: hidden; min-height: 520px; padding: 24px 20px;
+  }
+  .phone-notch {
+    width: 80px; height: 6px; background: var(--navy);
+    border-radius: 100px; margin: 0 auto 20px;
+  }
+  .app-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .app-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; color: var(--navy); }
+  .app-logo span { color: var(--terracotta); }
+  .notif-dot {
+    width: 32px; height: 32px; background: var(--terracotta);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 12px; font-weight: 700;
+  }
+
+  .new-arrival-badge {
+    background: linear-gradient(135deg, var(--terracotta), var(--amber));
+    border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; color: white;
+  }
+  .badge-title { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; opacity: 0.8; margin-bottom: 6px; }
+  .badge-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; }
+  .badge-loc { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+  .feed-card {
+    background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .feed-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: white; flex-shrink: 0;
+  }
+  .feed-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .feed-role { font-size: 11px; color: var(--text-light); }
+  .feed-text { font-size: 12px; color: var(--text-mid); line-height: 1.5; }
+  .job-tag {
+    display: inline-block; background: rgba(122,158,126,0.15); color: var(--sage);
+    padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 600;
+    margin-top: 8px;
+  }
+
+  /* Floating cards around phone */
+  .float-card {
+    position: absolute; background: white; border-radius: 16px;
+    padding: 12px 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    white-space: nowrap;
+  }
+  .float-card-1 {
+    top: 60px; left: -120px;
+    animation: float2 5s ease-in-out infinite;
+  }
+  .float-card-2 {
+    bottom: 100px; right: -110px;
+    animation: float2 6s ease-in-out infinite reverse;
+  }
+  @keyframes float2 {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .float-label { font-size: 11px; color: var(--text-light); margin-bottom: 4px; }
+  .float-value { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .float-icon { font-size: 20px; margin-bottom: 4px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── HOW IT WORKS ── */
+  .section {
+    padding: 100px 48px;
+  }
+  .section-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--terracotta);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 4vw, 56px); font-weight: 900;
+    line-height: 1.1; letter-spacing: -1.5px;
+    color: var(--navy); margin-bottom: 20px;
+  }
+  .section-sub {
+    font-size: 18px; color: var(--text-mid); line-height: 1.7;
+    max-width: 560px; margin-bottom: 60px;
+  }
+
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+  }
+  .step {
+    background: var(--cream); border-radius: 24px; padding: 40px 32px;
+    position: relative; overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .step:hover { transform: translateY(-8px); box-shadow: 0 24px 48px rgba(26,35,50,0.1); }
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 80px; font-weight: 900; line-height: 1;
+    color: rgba(196,98,45,0.1); position: absolute;
+    top: 16px; right: 24px;
+  }
+  .step-icon { font-size: 40px; margin-bottom: 20px; }
+  .step h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px; font-weight: 700; color: var(--navy);
+    margin-bottom: 12px;
+  }
+  .step p { font-size: 15px; color: var(--text-mid); line-height: 1.6; }
+
+  /* ── FEATURES ── */
+  .features-section {
+    padding: 100px 48px;
+    background: var(--navy);
+    position: relative; overflow: hidden;
+  }
+  .features-section::before {
+    content: '';
+    position: absolute; top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(196,98,45,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .features-section .section-title { color: white; }
+  .features-section .section-sub { color: rgba(255,255,255,0.6); }
+  .features-section .section-label { color: var(--amber); }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  }
+  .feature {
+    background: rgba(255,255,255,0.05);
+    padding: 40px 36px;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.3s;
+    position: relative;
+  }
+  .feature:hover { background: rgba(255,255,255,0.08); }
+  .feature-icon {
+    width: 52px; height: 52px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin-bottom: 20px;
+    background: rgba(196,98,45,0.2);
+  }
+  .feature h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700; color: white;
+    margin-bottom: 12px;
+  }
+  .feature p { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+  .feature-tag {
+    display: inline-block; margin-top: 16px;
+    background: rgba(232,168,56,0.2); color: var(--amber);
+    padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  }
+
+  /* ── COMMUNITY ROLES ── */
+  .roles-section { padding: 100px 48px; background: var(--cream); }
+  .roles-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+    margin-top: 60px;
+  }
+  .role-card {
+    background: white; border-radius: 24px; padding: 36px 28px;
+    text-align: center; transition: all 0.3s;
+    border: 2px solid transparent;
+  }
+  .role-card:hover {
+    border-color: var(--terracotta);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(196,98,45,0.12);
+  }
+  .role-emoji { font-size: 48px; margin-bottom: 16px; display: block; }
+  .role-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 10px;
+  }
+  .role-card p { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials { padding: 100px 48px; }
+  .testimonials-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+    margin-top: 60px;
+  }
+  .testimonial {
+    background: var(--cream); border-radius: 24px; padding: 36px;
+    position: relative;
+  }
+  .testimonial::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 80px; color: var(--terracotta); opacity: 0.3;
+    position: absolute; top: 16px; left: 28px; line-height: 1;
+  }
+  .testimonial-text {
+    font-size: 16px; color: var(--text-dark); line-height: 1.7;
+    margin-bottom: 24px; margin-top: 20px;
+    font-style: italic;
+  }
+  .testimonial-author { display: flex; align-items: center; gap: 12px; }
+  .t-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; color: white;
+  }
+  .t-name { font-weight: 600; font-size: 15px; color: var(--navy); }
+  .t-location { font-size: 12px; color: var(--text-light); }
+
+  /* ── CTA ── */
+  .cta-section {
+    padding: 120px 48px; text-align: center;
+    background: linear-gradient(135deg, var(--terracotta) 0%, #A34B1F 100%);
+    position: relative; overflow: hidden;
+  }
+  .cta-section::before {
+    content: 'Nearby';
+    font-family: 'Playfair Display', serif;
+    font-size: 300px; font-weight: 900;
+    color: rgba(255,255,255,0.04);
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap; pointer-events: none;
+  }
+  .cta-section .section-title { color: white; margin-bottom: 16px; }
+  .cta-section .section-sub { color: rgba(255,255,255,0.7); margin: 0 auto 48px; }
+  .cta-inputs {
+    display: flex; gap: 12px; max-width: 500px; margin: 0 auto;
+    background: rgba(255,255,255,0.15); border-radius: 100px; padding: 8px;
+  }
+  .cta-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    padding: 12px 20px; font-size: 16px; color: white;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .cta-input::placeholder { color: rgba(255,255,255,0.5); }
+  .btn-white {
+    background: white; color: var(--terracotta);
+    padding: 14px 28px; border-radius: 100px;
+    font-size: 15px; font-weight: 700; border: none; cursor: pointer;
+    white-space: nowrap; transition: all 0.3s;
+  }
+  .btn-white:hover { background: var(--cream); transform: scale(1.03); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy); color: rgba(255,255,255,0.5);
+    padding: 60px 48px 40px;
+  }
+  .footer-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 48px;
+  }
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 900; color: white;
+  }
+  .footer-logo span { color: var(--terracotta); }
+  .footer-tagline { font-size: 14px; color: rgba(255,255,255,0.4); margin-top: 8px; }
+  .footer-links { display: flex; gap: 60px; }
+  .footer-col h4 { color: white; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+  .footer-col a {
+    display: block; color: rgba(255,255,255,0.4); text-decoration: none;
+    font-size: 14px; margin-bottom: 10px; transition: color 0.2s;
+  }
+  .footer-col a:hover { color: white; }
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 32px; display: flex; justify-content: space-between;
+    font-size: 13px;
+  }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 120px 24px 60px; }
+    .hero-visual { display: none; }
+    .section, .features-section, .roles-section, .testimonials { padding: 70px 24px; }
+    .steps, .features-grid, .testimonials-grid { grid-template-columns: 1fr; }
+    .roles-grid { grid-template-columns: repeat(2, 1fr); }
+    .footer-top { flex-direction: column; gap: 40px; }
+    .footer-links { flex-direction: column; gap: 32px; }
+    .cta-inputs { flex-direction: column; border-radius: 24px; }
+    .btn-white { border-radius: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Near<span>by</span></div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#features">Features</a>
+    <a href="#community">Community</a>
+    <a href="#join" class="nav-cta">Join Nearby</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-tag">Now in Beta — Join Your Neighborhood</div>
+    <h1>Your world starts <em>right here.</em></h1>
+    <p class="hero-sub">
+      Nearby connects you with the people, businesses, and opportunities
+      within your community — whether you've lived there for years or just arrived.
+    </p>
+    <div class="hero-actions">
+      <a href="#join" class="btn-primary">Get Early Access</a>
+      <a href="#how" class="btn-secondary">See How It Works</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">12k+</div>
+        <div class="stat-label">Early Sign-ups</div>
+      </div>
+      <div>
+        <div class="stat-num">340+</div>
+        <div class="stat-label">Neighborhoods</div>
+      </div>
+      <div>
+        <div class="stat-num">98%</div>
+        <div class="stat-label">Would Recommend</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div style="position: relative; display: flex; justify-content: center;">
+      <div class="float-card float-card-1">
+        <div class="float-icon">📍</div>
+        <div class="float-label">New Arrival</div>
+        <div class="float-value">Sarah just moved nearby!</div>
+      </div>
+
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="app-header">
+            <div class="app-logo">Near<span>by</span></div>
+            <div class="notif-dot">3</div>
+          </div>
+
+          <div class="new-arrival-badge">
+            <div class="badge-title">👋 New in your area</div>
+            <div class="badge-name">Marcus Johnson</div>
+            <div class="badge-loc">📍 Moved to Greenfield 2 days ago</div>
+          </div>
+
+          <div class="feed-card">
+            <div class="feed-card-header">
+              <div class="avatar" style="background: var(--terracotta);">B</div>
+              <div>
+                <div class="feed-name">Blue Moon Bakery</div>
+                <div class="feed-role">🏪 Local Business · 0.3km away</div>
+              </div>
+            </div>
+            <div class="feed-text">We're hiring a part-time sales assistant! Flexible hours, great team. Locals preferred 🙌</div>
+            <span class="job-tag">💼 Hiring Now</span>
+          </div>
+
+          <div class="feed-card">
+            <div class="feed-card-header">
+              <div class="avatar" style="background: var(--sage);">A</div>
+              <div>
+                <div class="feed-name">Amara O.</div>
+                <div class="feed-role">👩‍🎨 Artist · 3 blocks away</div>
+              </div>
+            </div>
+            <div class="feed-text">Open studio this Saturday! Come see my work & meet local creatives 🎨</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="float-card float-card-2">
+        <div class="float-icon">🏪</div>
+        <div class="float-label">Job posted</div>
+        <div class="float-value">12 applicants nearby</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-label">How It Works</div>
+  <h2 class="section-title">Simple. Local. <em style="color:var(--terracotta);font-style:italic;">Real.</em></h2>
+  <p class="section-sub">Three steps to becoming part of your community — online and offline.</p>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <div class="step-icon">📍</div>
+      <h3>Set Your Location</h3>
+      <p>Join using your neighborhood or current location. Your privacy is fully in your control — choose how precise you want to be.</p>
+    </div>
+    <div class="step reveal reveal-delay-1">
+      <div class="step-num">2</div>
+      <div class="step-icon">👥</div>
+      <h3>Discover Your People</h3>
+      <p>See who lives nearby, browse community profiles, and spot newcomers in the New Arrivals section. Real neighbors, real connections.</p>
+    </div>
+    <div class="step reveal reveal-delay-2">
+      <div class="step-num">3</div>
+      <div class="step-icon">🌱</div>
+      <h3>Grow Together</h3>
+      <p>Find local jobs, share opportunities, organize events, and build the kind of community that actually looks out for each other.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="section-label">Platform Features</div>
+  <h2 class="section-title" style="color:white;">Everything your <em style="color:var(--amber);font-style:italic;">community</em> needs</h2>
+  <p class="section-sub">Built from the ground up for real-world local connection.</p>
+
+  <div class="features-grid">
+    <div class="feature reveal">
+      <div class="feature-icon">👋</div>
+      <h3>New Arrivals</h3>
+      <p>Moved to a new area? Get a warm digital welcome. Locals can greet you, share tips, and help you settle in fast.</p>
+      <span class="feature-tag">Unique to Nearby</span>
+    </div>
+    <div class="feature reveal reveal-delay-1">
+      <div class="feature-icon">💼</div>
+      <h3>Local Opportunities</h3>
+      <p>Shops, businesses and residents post jobs, gigs and services seen only by people in the area. Hire local, work local.</p>
+    </div>
+    <div class="feature reveal reveal-delay-2">
+      <div class="feature-icon">🗺️</div>
+      <h3>Neighborhood Feed</h3>
+      <p>A real-time stream of what's happening around you — events, announcements, offers and stories from your actual community.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">🏪</div>
+      <h3>Business Profiles</h3>
+      <p>Local shops get a digital presence without needing a website. Post daily specials, job openings, events and more.</p>
+    </div>
+    <div class="feature reveal reveal-delay-1">
+      <div class="feature-icon">🔒</div>
+      <h3>Privacy First</h3>
+      <p>You control your location precision — from street level to city-wide. No data selling, ever. Built for trust.</p>
+      <span class="feature-tag">Trust & Safety</span>
+    </div>
+    <div class="feature reveal reveal-delay-2">
+      <div class="feature-icon">🌍</div>
+      <h3>Visitor Mode</h3>
+      <p>Traveling or visiting a new city? Activate visitor mode to discover local gems and connect with residents as you explore.</p>
+    </div>
+  </div>
+</section>
+
+<!-- COMMUNITY ROLES -->
+<section class="roles-section" id="community">
+  <div class="section-label">Who It's For</div>
+  <h2 class="section-title">Built for <em style="color:var(--terracotta);font-style:italic;">everyone</em> in the neighborhood</h2>
+
+  <div class="roles-grid">
+    <div class="role-card reveal">
+      <span class="role-emoji">🏠</span>
+      <h3>Residents</h3>
+      <p>Connect with neighbors, discover local events, and be part of a community that actually knows your name.</p>
+    </div>
+    <div class="role-card reveal reveal-delay-1">
+      <span class="role-emoji">🆕</span>
+      <h3>Newcomers</h3>
+      <p>Moving is hard. Nearby makes it easy to find your footing, meet people, and feel at home — from day one.</p>
+    </div>
+    <div class="role-card reveal reveal-delay-2">
+      <span class="role-emoji">🏪</span>
+      <h3>Local Businesses</h3>
+      <p>Reach customers who are literally around the corner. Post jobs, promote specials, and build community loyalty.</p>
+    </div>
+    <div class="role-card reveal reveal-delay-3">
+      <span class="role-emoji">✈️</span>
+      <h3>Visitors</h3>
+      <p>Explore any city like a local. Discover what residents actually love — not what tourist guides tell you to visit.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="section-label">Early Voices</div>
+  <h2 class="section-title">What people are <em style="color:var(--terracotta);font-style:italic;">saying</em></h2>
+
+  <div class="testimonials-grid">
+    <div class="testimonial reveal">
+      <p class="testimonial-text">I moved to a new city and within a week I had met three neighbors and found a part-time job at the café downstairs. I've never settled in anywhere this fast.</p>
+      <div class="testimonial-author">
+        <div class="t-avatar" style="background: var(--terracotta);">M</div>
+        <div>
+          <div class="t-name">Maria S.</div>
+          <div class="t-location">📍 New to Cape Town</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial reveal reveal-delay-1">
+      <p class="testimonial-text">As a small bakery owner, I posted a job opening and had 8 local applicants by the next morning. That kind of reach used to be impossible for us.</p>
+      <div class="testimonial-author">
+        <div class="t-avatar" style="background: var(--sage);">D</div>
+        <div>
+          <div class="t-name">David K.</div>
+          <div class="t-location">📍 Local Business Owner</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial reveal reveal-delay-2">
+      <p class="testimonial-text">I've lived on my street for 6 years and never spoke to my neighbors. Through Nearby I discovered we share the same hobby. We meet weekly now.</p>
+      <div class="testimonial-author">
+        <div class="t-avatar" style="background: var(--amber);">L</div>
+        <div>
+          <div class="t-name">Lerato M.</div>
+          <div class="t-location">📍 Johannesburg, SA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="join">
+  <h2 class="section-title">Join your community <em style="font-style:italic;">today.</em></h2>
+  <p class="section-sub">Be among the first in your neighborhood. Early access is free — always.</p>
+  <div class="cta-inputs">
+    <input class="cta-input" type="email" placeholder="Enter your email address..." />
+    <button class="btn-white">Get Early Access</button>
+  </div>
+  <p style="color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 16px;">No spam. No data selling. Just your community.</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">Near<span>by</span></div>
+      <div class="footer-tagline">Your community, connected.</div>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a href="#">Features</a>
+        <a href="#">For Businesses</a>
+        <a href="#">For Newcomers</a>
+        <a href="#">Visitor Mode</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Blog</a>
+        <a href="#">Careers</a>
+        <a href="#">Press</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Nearby. All rights reserved.</span>
+    <span>Built for real communities 🌍</span>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+
+  // CTA button
+  document.querySelector('.btn-white').addEventListener('click', () => {
+    const input = document.querySelector('.cta-input');
+    if (input.value.includes('@')) {
+      input.value = '';
+      input.placeholder = '🎉 You\'re on the list! Welcome to Nearby.';
+    } else {
+      input.style.outline = '2px solid rgba(255,255,255,0.5)';
+      input.placeholder = 'Please enter a valid email...';
+      setTimeout(() => { input.style.outline = 'none'; }, 2000);
+    }
+  });
+</script>
+</body>
+</html>
