@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Business Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8;
+    --terracotta: #C4622D;
+    --navy: #1A2332;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --mid: #4A5568;
+    --light: #8A96A8;
+    --white: #FDFAF4;
+    --gold: #D4AF37;
+    --green: #38A169;
+    --red: #E53E3E;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #EEE9DF;
+    color: var(--navy);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: var(--white);
+    position: sticky; top: 0; z-index: 50;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+  }
+  .back-btn { background: none; border: none; font-size: 22px; cursor: pointer; }
+  .nav-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; }
+  .report-btn {
+    background: none; border: none; font-size: 20px;
+    cursor: pointer; color: var(--light); padding: 4px;
+  }
+
+  /* HERO */
+  .biz-hero {
+    background: var(--white); margin-bottom: 10px;
+    position: relative; overflow: hidden;
+  }
+  .hero-cover {
+    height: 120px;
+    background: linear-gradient(135deg, var(--navy), #3A5080);
+    position: relative;
+  }
+  .hero-cover-pattern {
+    position: absolute; inset: 0; opacity: 0.1;
+    background-image: repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%);
+    background-size: 12px 12px;
+  }
+
+  .biz-logo-wrap {
+    position: relative; margin: -36px 0 0 16px;
+    width: 72px; z-index: 2;
+  }
+  .biz-logo {
+    width: 72px; height: 72px; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; color: white;
+    border: 4px solid var(--white);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .verified-crown {
+    position: absolute; top: -8px; right: -8px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--green); border: 3px solid var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+
+  /* SECURITY BADGE */
+  .security-strip {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(56,161,105,0.08);
+    border-bottom: 1px solid rgba(56,161,105,0.15);
+    padding: 8px 16px;
+    font-size: 12px; color: var(--green); font-weight: 600;
+  }
+  .security-strip .sec-icon { font-size: 14px; }
+  .security-strip .sec-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); animation: pulse 2s infinite;
+    margin-left: auto; flex-shrink: 0;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+  .biz-info { padding: 12px 16px 16px; }
+  .biz-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .biz-name { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .verified-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(56,161,105,0.1); color: var(--green);
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 700;
+  }
+  .biz-category { font-size: 13px; color: var(--mid); margin-bottom: 6px; }
+  .biz-loc { font-size: 13px; color: var(--light); margin-bottom: 12px; }
+
+  /* RATING */
+  .rating-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .stars { font-size: 16px; }
+  .rating-num { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .rating-count { font-size: 12px; color: var(--light); }
+  .rating-bar { flex: 1; height: 4px; background: rgba(0,0,0,0.08); border-radius: 4px; }
+  .rating-fill { height: 4px; border-radius: 4px; background: var(--amber); }
+
+  /* STATS */
+  .biz-stats {
+    display: flex; gap: 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    padding-top: 14px; margin-top: 4px;
+  }
+  .biz-stat { flex: 1; text-align: center; }
+  .biz-stat:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.06); }
+  .bs-num { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); }
+  .bs-label { font-size: 10px; color: var(--light); margin-top: 2px; }
+
+  /* ACTION BUTTONS */
+  .biz-actions { display: flex; gap: 8px; padding: 12px 16px; background: var(--white); margin-bottom: 10px; }
+  .btn-msg { flex: 2; padding: 12px; border-radius: 12px; background: var(--navy); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-follow { flex: 1; padding: 12px; border-radius: 12px; background: transparent; color: var(--navy); border: 2px solid rgba(0,0,0,0.12); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-follow.on { background: rgba(196,98,45,0.1); border-color: var(--terracotta); color: var(--terracotta); }
+  .btn-call { flex: 1; padding: 12px; border-radius: 12px; background: rgba(56,161,105,0.1); color: var(--green); border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  /* SECTION */
+  .section { background: var(--white); border-radius: 18px; margin: 0 10px 10px; padding: 18px; }
+  .sec-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+
+  /* ABOUT */
+  .about-text { font-size: 14px; color: var(--mid); line-height: 1.7; margin-bottom: 14px; }
+  .info-list { display: flex; flex-direction: column; gap: 10px; }
+  .info-row { display: flex; align-items: center; gap: 10px; }
+  .info-icon { font-size: 18px; width: 20px; text-align: center; flex-shrink: 0; }
+  .info-text { font-size: 13px; color: var(--mid); }
+  .info-text b { color: var(--navy); }
+
+  /* HOURS */
+  .hours-grid { display: flex; flex-direction: column; gap: 6px; }
+  .hour-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+  .hour-row:last-child { border-bottom: none; }
+  .hour-day { font-size: 13px; color: var(--mid); }
+  .hour-day.today { font-weight: 700; color: var(--navy); }
+  .hour-time { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .hour-closed { font-size: 13px; color: var(--light); }
+  .open-now { display: inline-flex; align-items: center; gap: 5px; background: rgba(56,161,105,0.1); color: var(--green); padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-bottom: 12px; }
+  .open-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+
+  /* JOBS */
+  .job-mini {
+    background: var(--cream); border-radius: 14px; padding: 14px;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
+  }
+  .jm-icon { font-size: 24px; flex-shrink: 0; }
+  .jm-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .jm-detail { font-size: 12px; color: var(--mid); }
+  .jm-btn {
+    margin-left: auto; padding: 8px 14px; border-radius: 100px;
+    background: var(--navy); color: white; border: none;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; flex-shrink: 0;
+  }
+  .jm-btn:active { background: var(--terracotta); }
+
+  /* REVIEWS */
+  .review-card { background: var(--cream); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+  .rev-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .rev-av { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
+  .rev-name { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .rev-meta { font-size: 11px; color: var(--light); margin-top: 2px; }
+  .rev-stars { margin-left: auto; font-size: 13px; }
+  .rev-text { font-size: 13px; color: var(--mid); line-height: 1.6; }
+  .rev-verified { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--green); font-weight: 600; margin-top: 6px; }
+
+  /* WRITE REVIEW */
+  .write-review { background: var(--cream); border-radius: 14px; padding: 14px; }
+  .wr-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+  .star-picker { display: flex; gap: 8px; margin-bottom: 10px; }
+  .star-pick { font-size: 24px; cursor: pointer; opacity: 0.3; transition: opacity 0.15s, transform 0.15s; }
+  .star-pick.lit { opacity: 1; transform: scale(1.1); }
+  .review-input { width: 100%; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 10px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; resize: none; outline: none; background: white; }
+  .review-input:focus { border-color: var(--terracotta); }
+  .submit-rev { margin-top: 10px; width: 100%; padding: 11px; border-radius: 12px; background: var(--navy); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+
+  /* ── SECURITY SECTION ── */
+  .security-section {
+    background: linear-gradient(135deg, var(--navy), #2C3E6B);
+    border-radius: 18px; margin: 0 10px 10px; padding: 18px;
+  }
+  .sec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .sec-header-icon { font-size: 24px; }
+  .sec-header-title { font-size: 15px; font-weight: 700; color: white; }
+  .sec-header-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+  .security-items { display: flex; flex-direction: column; gap: 10px; }
+  .sec-item {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.07); border-radius: 12px; padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .sec-item-icon { font-size: 20px; flex-shrink: 0; }
+  .sec-item-text { flex: 1; }
+  .sec-item-title { font-size: 13px; font-weight: 600; color: white; }
+  .sec-item-desc { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+  .sec-check { font-size: 16px; color: var(--green); flex-shrink: 0; }
+
+  /* REPORT */
+  .report-section {
+    background: rgba(229,62,62,0.05); border: 1px solid rgba(229,62,62,0.15);
+    border-radius: 14px; margin: 0 10px 10px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .rep-icon { font-size: 22px; flex-shrink: 0; }
+  .rep-text { flex: 1; }
+  .rep-title { font-size: 13px; font-weight: 700; color: var(--red); }
+  .rep-sub { font-size: 11px; color: var(--light); margin-top: 2px; }
+  .rep-btn { background: rgba(229,62,62,0.1); color: var(--red); border: none; border-radius: 100px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+
+  /* MESSAGE SHEET */
+  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; }
+  .sheet-overlay.open { display: block; }
+  .sheet { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-radius: 24px 24px 0 0; padding: 20px 20px 40px; z-index: 101; }
+  .sheet.open { display: block; }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 16px; }
+  .sheet-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+  .sheet-sub { font-size: 13px; color: var(--light); margin-bottom: 16px; }
+  .sec-note { display: flex; align-items: center; gap: 6px; background: rgba(56,161,105,0.08); border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; font-size: 12px; color: var(--green); font-weight: 500; }
+  .msg-input { width: 100%; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; resize: none; outline: none; margin-bottom: 10px; }
+  .msg-input:focus { border-color: var(--terracotta); }
+  .send-btn { width: 100%; padding: 13px; border-radius: 12px; background: var(--navy); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+  /* REPORT SHEET */
+  .report-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .rep-option { display: flex; align-items: center; gap: 10px; background: var(--cream); border-radius: 12px; padding: 13px 14px; cursor: pointer; border: 2px solid transparent; }
+  .rep-option.on { border-color: var(--red); background: rgba(229,62,62,0.05); }
+  .rep-option input { accent-color: var(--red); }
+  .rep-option-text { font-size: 14px; color: var(--navy); }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-top: 1px solid rgba(0,0,0,0.08); display: flex; padding: 10px 0 16px; }
+  .bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif; }
+  .bnav-icon { font-size: 22px; }
+  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
+  .bnav-item.active .bnav-label { color: var(--terracotta); }
+
+  .page-pad { padding-bottom: 100px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <div class="nav-title">Business Profile</div>
+  <button class="report-btn" onclick="openReport()">⚑</button>
+</div>
+
+<div class="page-pad">
+
+  <!-- SECURITY STRIP -->
+  <div class="security-strip">
+    <span class="sec-icon">🔒</span>
+    Identity verified · Location confirmed · Zero violations
+    <div class="sec-dot"></div>
+  </div>
+
+  <!-- HERO -->
+  <div class="biz-hero">
+    <div class="hero-cover">
+      <div class="hero-cover-pattern"></div>
+    </div>
+    <div style="padding: 0 16px 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px;">
+        <div class="biz-logo-wrap">
+          <div class="biz-logo" style="background:var(--sage);">B</div>
+          <div class="verified-crown">✓</div>
+        </div>
+        <div style="display:flex; gap:8px; padding-top:8px;">
+          <div style="background:var(--cream);border-radius:100px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--mid);">🕐 Open Now</div>
+        </div>
+      </div>
+
+      <div class="biz-name-row">
+        <div class="biz-name">Blue Moon Bakery</div>
+        <div class="verified-pill">✓ Verified Business</div>
+      </div>
+      <div class="biz-category">🥐 Bakery & Café · Local Business</div>
+      <div class="biz-loc">📍 12 Main Rd, Sea Point · 0.3km from you</div>
+
+      <div class="rating-row">
+        <div class="stars">⭐⭐⭐⭐⭐</div>
+        <div class="rating-num">4.8</div>
+        <div class="rating-count">(124 reviews)</div>
+        <div style="flex:1">
+          <div class="rating-bar"><div class="rating-fill" style="width:96%"></div></div>
+        </div>
+      </div>
+
+      <div class="biz-stats">
+        <div class="biz-stat"><div class="bs-num">2</div><div class="bs-label">Jobs Open</div></div>
+        <div class="biz-stat"><div class="bs-num">124</div><div class="bs-label">Reviews</div></div>
+        <div class="biz-stat"><div class="bs-num">348</div><div class="bs-label">Followers</div></div>
+        <div class="biz-stat"><div class="bs-num">3yr</div><div class="bs-label">On Nearby</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="biz-actions">
+    <button class="btn-msg" onclick="openMessage()">💬 Message</button>
+    <button class="btn-follow" id="followBtn" onclick="toggleFollow()">+ Follow</button>
+    <button class="btn-call" onclick="showToast('Calling Blue Moon Bakery...')">📞 Call</button>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="section">
+    <div class="sec-title">📖 About</div>
+    <div class="about-text">Blue Moon Bakery has been serving the Sea Point community since 2021. We bake everything fresh daily — from sourdough to pastries. A community favourite run by locals, for locals.</div>
+    <div class="info-list">
+      <div class="info-row"><div class="info-icon">🌐</div><div class="info-text"><b>Website:</b> bluemoonbakery.co.za</div></div>
+      <div class="info-row"><div class="info-icon">📱</div><div class="info-text"><b>WhatsApp:</b> +27 82 *** **** <span style="color:var(--green);font-size:11px;font-weight:600;">(Verified)</span></div></div>
+      <div class="info-row"><div class="info-icon">📧</div><div class="info-text"><b>Email:</b> info@bluemoon.co.za</div></div>
+      <div class="info-row"><div class="info-icon">📍</div><div class="info-text"><b>Address:</b> 12 Main Rd, Sea Point, Cape Town</div></div>
+      <div class="info-row"><div class="info-icon">🗓️</div><div class="info-text"><b>Established:</b> March 2021</div></div>
+    </div>
+  </div>
+
+  <!-- HOURS -->
+  <div class="section">
+    <div class="sec-title">🕐 Opening Hours</div>
+    <div class="open-now"><div class="open-dot"></div> Open Now · Closes at 6:00 PM</div>
+    <div class="hours-grid">
+      <div class="hour-row"><div class="hour-day">Monday</div><div class="hour-time">07:00 – 18:00</div></div>
+      <div class="hour-row"><div class="hour-day">Tuesday</div><div class="hour-time">07:00 – 18:00</div></div>
+      <div class="hour-row"><div class="hour-day">Wednesday</div><div class="hour-time">07:00 – 18:00</div></div>
+      <div class="hour-row"><div class="hour-day">Thursday</div><div class="hour-time">07:00 – 18:00</div></div>
+      <div class="hour-row today"><div class="hour-day today">Friday (Today)</div><div class="hour-time">07:00 – 18:00</div></div>
+      <div class="hour-row"><div class="hour-day">Saturday</div><div class="hour-time">08:00 – 14:00</div></div>
+      <div class="hour-row"><div class="hour-day">Sunday</div><div class="hour-closed">Closed</div></div>
+    </div>
+  </div>
+
+  <!-- JOBS -->
+  <div class="section">
+    <div class="sec-title">💼 Current Openings</div>
+    <div class="job-mini">
+      <div class="jm-icon">🛒</div>
+      <div>
+        <div class="jm-title">Sales Assistant</div>
+        <div class="jm-detail">Part-time · R80–100/hr · Urgent</div>
+      </div>
+      <button class="jm-btn" onclick="window.location.href='nearby-jobs.html'">Apply</button>
+    </div>
+    <div class="job-mini">
+      <div class="jm-icon">☕</div>
+      <div>
+        <div class="jm-title">Junior Barista</div>
+        <div class="jm-detail">Full-time · R7,500/mo · Start May</div>
+      </div>
+      <button class="jm-btn" onclick="window.location.href='nearby-jobs.html'">Apply</button>
+    </div>
+  </div>
+
+  <!-- REVIEWS -->
+  <div class="section">
+    <div class="sec-title">⭐ Neighbor Reviews</div>
+
+    <div class="review-card">
+      <div class="rev-top">
+        <div class="rev-av" style="background:var(--terracotta);">L</div>
+        <div>
+          <div class="rev-name">Lerato M. 🏆</div>
+          <div class="rev-meta">Ambassador · Green Point · 2 weeks ago</div>
+        </div>
+        <div class="rev-stars">⭐⭐⭐⭐⭐</div>
+      </div>
+      <div class="rev-text">Best sourdough in Sea Point, no debate! The staff are incredibly friendly and always remember your name. This place is the heart of the neighborhood.</div>
+      <div class="rev-verified">✓ Verified neighbor review</div>
+    </div>
+
+    <div class="review-card">
+      <div class="rev-top">
+        <div class="rev-av" style="background:var(--sage);">M</div>
+        <div>
+          <div class="rev-name">Marcus J.</div>
+          <div class="rev-meta">Newcomer · Green Point · 1 week ago</div>
+        </div>
+        <div class="rev-stars">⭐⭐⭐⭐⭐</div>
+      </div>
+      <div class="rev-text">First place I tried when I moved here and I've been back every morning since. Lerato actually recommended it — she was right!</div>
+      <div class="rev-verified">✓ Verified neighbor review</div>
+    </div>
+
+    <div class="review-card">
+      <div class="rev-top">
+        <div class="rev-av" style="background:#9B59B6;">P</div>
+        <div>
+          <div class="rev-name">Priya N.</div>
+          <div class="rev-meta">Resident · Bo-Kaap · 3 weeks ago</div>
+        </div>
+        <div class="rev-stars">⭐⭐⭐⭐</div>
+      </div>
+      <div class="rev-text">Love this place for weekend breakfast. Slightly pricey but quality justifies it. The oat croissants are outstanding.</div>
+      <div class="rev-verified">✓ Verified neighbor review</div>
+    </div>
+
+    <!-- WRITE A REVIEW -->
+    <div class="write-review" style="margin-top:10px;">
+      <div class="wr-title">Leave a Review</div>
+      <div class="star-picker" id="stars">
+        <div class="star-pick" onclick="rateStar(1)">⭐</div>
+        <div class="star-pick" onclick="rateStar(2)">⭐</div>
+        <div class="star-pick" onclick="rateStar(3)">⭐</div>
+        <div class="star-pick" onclick="rateStar(4)">⭐</div>
+        <div class="star-pick" onclick="rateStar(5)">⭐</div>
+      </div>
+      <textarea class="review-input" rows="3" placeholder="Share your experience with neighbors..."></textarea>
+      <button class="submit-rev" onclick="submitReview()">Post Review →</button>
+    </div>
+  </div>
+
+  <!-- ── SECURITY SECTION ── -->
+  <div class="security-section">
+    <div class="sec-header">
+      <div class="sec-header-icon">🔐</div>
+      <div>
+        <div class="sec-header-title">Security & Trust Status</div>
+        <div class="sec-header-sub">All checks passed · Last verified 7 days ago</div>
+      </div>
+    </div>
+    <div class="security-items">
+      <div class="sec-item">
+        <div class="sec-item-icon">🏛️</div>
+        <div class="sec-item-text">
+          <div class="sec-item-title">Business Registration Verified</div>
+          <div class="sec-item-desc">CIPC registration confirmed by Nearby admin</div>
+        </div>
+        <div class="sec-check">✓</div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-item-icon">📍</div>
+        <div class="sec-item-text">
+          <div class="sec-item-title">Location Confirmed</div>
+          <div class="sec-item-desc">Physical address verified and matched</div>
+        </div>
+        <div class="sec-check">✓</div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-item-icon">📱</div>
+        <div class="sec-item-text">
+          <div class="sec-item-title">Phone Number Verified</div>
+          <div class="sec-item-desc">OTP confirmed on registration</div>
+        </div>
+        <div class="sec-check">✓</div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-item-icon">📧</div>
+        <div class="sec-item-text">
+          <div class="sec-item-title">Email Address Verified</div>
+          <div class="sec-item-desc">Email link confirmed on signup</div>
+        </div>
+        <div class="sec-check">✓</div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-item-icon">🛡️</div>
+        <div class="sec-item-text">
+          <div class="sec-item-title">Zero Violations</div>
+          <div class="sec-item-desc">No reports or flags in 3 years</div>
+        </div>
+        <div class="sec-check">✓</div>
+      </div>
+      <div class="sec-item">
+        <div class="sec-item-icon">🔒</div>
+        <div class="sec-item-text">
+          <div class="sec-item-title">Data Encrypted</div>
+          <div class="sec-item-desc">All contact info protected · Never sold</div>
+        </div>
+        <div class="sec-check">✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT SECTION -->
+  <div class="report-section">
+    <div class="rep-icon">🚩</div>
+    <div class="rep-text">
+      <div class="rep-title">Something wrong?</div>
+      <div class="rep-sub">Report fake info, scam or inappropriate content</div>
+    </div>
+    <button class="rep-btn" onclick="openReport()">Report</button>
+  </div>
+
+</div>
+
+<!-- OVERLAY -->
+<div class="sheet-overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- MESSAGE SHEET -->
+<div class="sheet" id="msgSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Message Business</div>
+  <div class="sheet-sub">Blue Moon Bakery · Typically replies within 2 hours</div>
+  <div class="sec-note">🔒 Your message is end-to-end encrypted. Your personal contact info is never shared automatically.</div>
+  <textarea class="msg-input" rows="4" placeholder="Hi! I'm interested in your job opening / I have a question about..."></textarea>
+  <button class="send-btn" onclick="sendMsg()">Send Securely →</button>
+</div>
+
+<!-- REPORT SHEET -->
+<div class="sheet" id="reportSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" style="color:var(--red);">🚩 Report Business</div>
+  <div class="sheet-sub">Your report is anonymous and reviewed by our admin team within 24 hours.</div>
+  <div class="report-options">
+    <div class="rep-option" onclick="pickReport(this)"><input type="radio" name="rep" /> <div class="rep-option-text">Fake or misleading information</div></div>
+    <div class="rep-option" onclick="pickReport(this)"><input type="radio" name="rep" /> <div class="rep-option-text">Scam or fraudulent activity</div></div>
+    <div class="rep-option" onclick="pickReport(this)"><input type="radio" name="rep" /> <div class="rep-option-text">Does not exist at this location</div></div>
+    <div class="rep-option" onclick="pickReport(this)"><input type="radio" name="rep" /> <div class="rep-option-text">Inappropriate content or images</div></div>
+    <div class="rep-option" onclick="pickReport(this)"><input type="radio" name="rep" /> <div class="rep-option-text">Other</div></div>
+  </div>
+  <textarea class="msg-input" rows="3" placeholder="Add any additional details (optional)..."></textarea>
+  <button class="send-btn" style="background:var(--red);" onclick="submitReport()">Submit Report →</button>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item" onclick="window.location.href='nearby-feed.html'">
+    <div class="bnav-icon">🏡</div><div class="bnav-label">Home</div>
+  </button>
+  <button class="bnav-item" onclick="window.location.href='nearby-arrivals.html'">
+    <div class="bnav-icon">🆕</div><div class="bnav-label">Arrivals</div>
+  </button>
+  <button class="bnav-item active">
+    <div class="bnav-icon">🏪</div><div class="bnav-label">Business</div>
+  </button>
+  <button class="bnav-item" onclick="window.location.href='nearby-profile.html'">
+    <div class="bnav-icon">👤</div><div class="bnav-label">Profile</div>
+  </button>
+</div>
+
+<script>
+  var starRating = 0;
+
+  function toggleFollow() {
+    var btn = document.getElementById('followBtn');
+    btn.classList.toggle('on');
+    btn.textContent = btn.classList.contains('on') ? '✓ Following' : '+ Follow';
+    showToast(btn.classList.contains('on') ? 'Following Blue Moon Bakery!' : 'Unfollowed');
+  }
+
+  function openMessage() {
+    document.getElementById('msgSheet').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function openReport() {
+    document.getElementById('reportSheet').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function closeAll() {
+    document.querySelectorAll('.sheet').forEach(function(s){ s.classList.remove('open'); });
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function sendMsg() {
+    closeAll();
+    showToast('Message sent securely 🔒');
+  }
+
+  function pickReport(el) {
+    document.querySelectorAll('.rep-option').forEach(function(o){ o.classList.remove('on'); });
+    el.classList.add('on');
+  }
+
+  function submitReport() {
+    closeAll();
+    showToast('Report submitted anonymously. Thank you 🛡️');
+  }
+
+  function rateStar(n) {
+    starRating = n;
+    document.querySelectorAll('.star-pick').forEach(function(s, i) {
+      s.classList.toggle('lit', i < n);
+    });
+  }
+
+  function submitReview() {
+    if (!starRating) { showToast('Please select a star rating first'); return; }
+    showToast('Review posted! Thank you ⭐');
+    starRating = 0;
+    document.querySelectorAll('.star-pick').forEach(function(s){ s.classList.remove('lit'); });
+    document.querySelector('.review-input').value = '';
+  }
+
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 1800);
+    setTimeout(function(){ t.remove(); }, 2200);
+  }
+</script>
+</body>
+</html>
