@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Jobs Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8;
+    --terracotta: #C4622D;
+    --navy: #1A2332;
+    --sage: #7A9E7E;
+    --amber: #E8A838;
+    --mid: #4A5568;
+    --light: #8A96A8;
+    --white: #FDFAF4;
+    --gold: #D4AF37;
+    --red: #E53E3E;
+    --green: #38A169;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #EEE9DF;
+    color: var(--navy);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    background: var(--white);
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .logo span { color: var(--terracotta); }
+  .nav-icons { display: flex; gap: 8px; }
+  .nav-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--cream); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    position: relative;
+  }
+  .notif-dot {
+    position: absolute; top: 4px; right: 4px;
+    width: 7px; height: 7px; background: var(--terracotta);
+    border-radius: 50%; border: 2px solid var(--white);
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--navy), #2C3E6B);
+    padding: 22px 20px 20px; position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -40px; right: -40px;
+    width: 150px; height: 150px;
+    background: radial-gradient(circle, rgba(232,168,56,0.15), transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-tag {
+    display: inline-block; background: rgba(122,158,126,0.25);
+    color: #9EC4A2; padding: 4px 12px; border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 900; color: white;
+    line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 6px;
+  }
+  .hero-title em { color: var(--amber); font-style: italic; }
+  .hero-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 16px; }
+
+  /* SEARCH BAR */
+  .search-bar {
+    display: flex; gap: 8px; align-items: center;
+    background: white; border-radius: 14px; padding: 10px 14px;
+    margin-bottom: 0; position: relative; z-index: 2;
+  }
+  .search-bar input {
+    flex: 1; border: none; outline: none; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--navy); background: transparent;
+  }
+  .search-bar input::placeholder { color: var(--light); }
+  .search-icon { font-size: 16px; color: var(--light); flex-shrink: 0; }
+  .search-btn {
+    background: var(--terracotta); color: white; border: none;
+    border-radius: 10px; padding: 7px 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+  }
+
+  /* FILTER CHIPS ROW */
+  .chips-row {
+    display: flex; gap: 8px; overflow-x: auto;
+    padding: 12px 16px; background: var(--white);
+    scrollbar-width: none; border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .chips-row::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0; padding: 6px 14px; border-radius: 100px;
+    border: 2px solid rgba(0,0,0,0.1); background: transparent;
+    font-size: 12px; font-weight: 600; color: var(--mid);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap;
+  }
+  .chip.on { background: var(--navy); border-color: var(--navy); color: white; }
+
+  /* STATS STRIP */
+  .stats-strip {
+    display: flex; background: var(--white);
+    padding: 12px 16px; gap: 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 10px;
+  }
+  .strip-stat { flex: 1; text-align: center; }
+  .strip-stat:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.07); }
+  .strip-num { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); }
+  .strip-label { font-size: 10px; color: var(--light); margin-top: 2px; }
+
+  /* SECTION */
+  .section-label {
+    font-size: 11px; font-weight: 700; color: var(--terracotta);
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 0 16px; margin: 4px 0 10px;
+  }
+
+  /* JOB CARD */
+  .job-card {
+    background: var(--white); border-radius: 18px;
+    margin: 0 10px 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    overflow: hidden; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .job-card:active { transform: scale(0.98); }
+  .job-card.featured {
+    border: 2px solid rgba(232,168,56,0.4);
+    box-shadow: 0 4px 20px rgba(232,168,56,0.15);
+  }
+  .featured-strip {
+    background: linear-gradient(90deg, var(--amber), var(--gold));
+    padding: 5px 16px;
+    font-size: 10px; font-weight: 700; color: var(--navy);
+    letter-spacing: 0.5px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .job-inner { padding: 16px; }
+  .job-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+
+  .biz-logo {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; color: white;
+    flex-shrink: 0;
+  }
+
+  .job-info { flex: 1; }
+  .job-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .biz-name { font-size: 13px; color: var(--mid); margin-bottom: 4px; }
+  .biz-verified { color: var(--sage); font-size: 12px; }
+  .job-loc { font-size: 12px; color: var(--light); }
+
+  .save-btn {
+    background: none; border: none; font-size: 22px; cursor: pointer;
+    color: var(--light); flex-shrink: 0; padding: 4px;
+  }
+  .save-btn.saved { color: var(--terracotta); }
+
+  /* JOB TAGS */
+  .job-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .job-tag {
+    padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  }
+  .tag-type { background: rgba(122,158,126,0.12); color: var(--sage); }
+  .tag-time { background: rgba(26,35,50,0.07); color: var(--mid); }
+  .tag-pay { background: rgba(56,161,105,0.1); color: var(--green); }
+  .tag-urgent { background: rgba(229,62,62,0.1); color: var(--red); }
+  .tag-new { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+  .tag-remote { background: rgba(41,128,185,0.1); color: #2980B9; }
+
+  /* JOB DESCRIPTION */
+  .job-desc {
+    font-size: 13px; color: var(--mid); line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  /* JOB DETAILS GRID */
+  .job-details {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; background: var(--cream); border-radius: 12px;
+    padding: 12px; margin-bottom: 12px;
+  }
+  .jd-item { }
+  .jd-label { font-size: 10px; font-weight: 700; color: var(--light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .jd-val { font-size: 13px; font-weight: 600; color: var(--navy); }
+
+  /* REQUIREMENTS */
+  .req-list { margin-bottom: 12px; }
+  .req-title { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .req-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; color: var(--mid); }
+  .req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--terracotta); flex-shrink: 0; }
+
+  /* APPLICANTS BAR */
+  .applicants-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .applicant-avatars { display: flex; }
+  .app-av {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid var(--white); margin-left: -6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: white;
+  }
+  .app-av:first-child { margin-left: 0; }
+  .app-text { font-size: 12px; color: var(--light); }
+  .app-text b { color: var(--navy); }
+  .deadline { margin-left: auto; font-size: 11px; color: var(--red); font-weight: 600; }
+
+  /* CARD ACTIONS */
+  .job-actions { display: flex; gap: 8px; }
+  .btn-apply {
+    flex: 2; padding: 12px; border-radius: 12px;
+    background: var(--navy); color: white; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    font-weight: 700; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-apply:active { background: var(--terracotta); }
+  .btn-apply.applied { background: var(--green); }
+  .btn-apply.featured-apply { background: var(--terracotta); }
+  .btn-share {
+    flex: 1; padding: 12px; border-radius: 12px;
+    background: transparent; color: var(--mid);
+    border: 2px solid rgba(0,0,0,0.1);
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+  }
+
+  /* POST A JOB CTA */
+  .post-cta {
+    background: linear-gradient(135deg, var(--terracotta), #A34B1F);
+    border-radius: 18px; margin: 0 10px 12px; padding: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .post-cta-icon { font-size: 36px; flex-shrink: 0; }
+  .post-cta-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; color: white; margin-bottom: 4px; }
+  .post-cta-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 12px; line-height: 1.5; }
+  .post-cta-btn {
+    display: inline-block; background: white; color: var(--terracotta);
+    border: none; border-radius: 100px; padding: 9px 20px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 700; cursor: pointer;
+  }
+
+  /* POST JOB SHEET */
+  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; }
+  .sheet-overlay.open { display: block; }
+  .sheet {
+    display: none; position: fixed; bottom: 0; left: 50%;
+    transform: translateX(-50%); width: 100%; max-width: 480px;
+    background: var(--white); border-radius: 24px 24px 0 0;
+    padding: 20px 20px 40px; z-index: 101; max-height: 85vh; overflow-y: auto;
+  }
+  .sheet.open { display: block; }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 18px; }
+  .sheet-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+  .sheet-sub { font-size: 13px; color: var(--light); margin-bottom: 20px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 12px 14px; border: 2px solid rgba(0,0,0,0.1);
+    border-radius: 12px; background: white; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--navy); outline: none; resize: none;
+    appearance: none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--terracotta); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .submit-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    background: var(--navy); color: white; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    font-weight: 700; cursor: pointer; margin-top: 6px;
+  }
+  .submit-btn:active { background: var(--terracotta); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
+    display: flex; padding: 10px 0 16px;
+  }
+  .bnav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 4px; cursor: pointer; border: none; background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .bnav-icon { font-size: 22px; }
+  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
+  .bnav-item.active .bnav-label { color: var(--terracotta); }
+
+  /* FAB */
+  .fab {
+    position: fixed; bottom: 80px; right: 20px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--terracotta); color: white; border: none;
+    font-size: 22px; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(196,98,45,0.4);
+    display: flex; align-items: center; justify-content: center; z-index: 50;
+  }
+
+  .feed-pad { padding-bottom: 110px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="logo">Near<span>by</span></div>
+  <div class="nav-icons">
+    <button class="nav-icon" onclick="openSheet()">✏️</button>
+    <button class="nav-icon">
+      🔔
+      <div class="notif-dot"></div>
+    </button>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">💼 Local Opportunities</div>
+  <div class="hero-title">Jobs <em>near you</em></div>
+  <div class="hero-sub">Work close to home. Support local businesses. Build your community.</div>
+  <div class="search-bar">
+    <div class="search-icon">🔍</div>
+    <input type="text" placeholder="Search jobs, skills, businesses..." id="searchIn" oninput="filterJobs()" />
+    <button class="search-btn">Search</button>
+  </div>
+</div>
+
+<!-- FILTER CHIPS -->
+<div class="chips-row">
+  <button class="chip on" onclick="setChip(this)">🏡 All Jobs</button>
+  <button class="chip" onclick="setChip(this)">⏰ Part-time</button>
+  <button class="chip" onclick="setChip(this)">🕐 Full-time</button>
+  <button class="chip" onclick="setChip(this)">🎯 Gig / Casual</button>
+  <button class="chip" onclick="setChip(this)">💻 Remote</button>
+  <button class="chip" onclick="setChip(this)">🆕 Posted Today</button>
+</div>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="strip-stat">
+    <div class="strip-num">138</div>
+    <div class="strip-label">Open Jobs</div>
+  </div>
+  <div class="strip-stat">
+    <div class="strip-num">47</div>
+    <div class="strip-label">Businesses Hiring</div>
+  </div>
+  <div class="strip-stat">
+    <div class="strip-num">93</div>
+    <div class="strip-label">Applied This Week</div>
+  </div>
+</div>
+
+<div class="feed-pad">
+
+  <!-- FEATURED -->
+  <div class="section-label">⭐ Featured Opportunities</div>
+
+  <!-- FEATURED JOB 1 -->
+  <div class="job-card featured">
+    <div class="featured-strip">⭐ Featured · Boosted by Blue Moon Bakery</div>
+    <div class="job-inner">
+      <div class="job-top">
+        <div class="biz-logo" style="background:var(--sage);">B</div>
+        <div class="job-info">
+          <div class="job-title">Sales Assistant</div>
+          <div class="biz-name">Blue Moon Bakery <span class="biz-verified">✓ Verified</span></div>
+          <div class="job-loc">📍 Sea Point · 0.3km away</div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">🤍</button>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag tag-type">🏪 Retail</span>
+        <span class="job-tag tag-time">⏰ Part-time</span>
+        <span class="job-tag tag-pay">💰 R80–100/hr</span>
+        <span class="job-tag tag-urgent">🔥 Urgent</span>
+      </div>
+      <div class="job-desc">Friendly part-time sales assistant needed for our busy bakery. Great team, flexible shifts, staff discounts. No experience needed — we'll train you!</div>
+      <div class="job-details">
+        <div class="jd-item"><div class="jd-label">Start Date</div><div class="jd-val">Immediately</div></div>
+        <div class="jd-item"><div class="jd-label">Hours/Week</div><div class="jd-val">20–25 hrs</div></div>
+        <div class="jd-item"><div class="jd-label">Experience</div><div class="jd-val">Not required</div></div>
+        <div class="jd-item"><div class="jd-label">Languages</div><div class="jd-val">English / Afrikaans</div></div>
+      </div>
+      <div class="applicants-row">
+        <div class="applicant-avatars">
+          <div class="app-av" style="background:var(--terracotta);">M</div>
+          <div class="app-av" style="background:var(--sage);">A</div>
+          <div class="app-av" style="background:#9B59B6;">K</div>
+        </div>
+        <div class="app-text"><b>12 neighbors</b> applied</div>
+        <div class="deadline">⏳ Closes in 3 days</div>
+      </div>
+      <div class="job-actions">
+        <button class="btn-apply featured-apply" onclick="applyNow(this)">Apply Now →</button>
+        <button class="btn-share" onclick="shareJob()">↗️ Share</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL JOBS -->
+  <div class="section-label" style="margin-top:8px;">📋 All Local Jobs</div>
+
+  <!-- JOB 2 -->
+  <div class="job-card">
+    <div class="job-inner">
+      <div class="job-top">
+        <div class="biz-logo" style="background:var(--amber);color:var(--navy);">G</div>
+        <div class="job-info">
+          <div class="job-title">Weekend Gardening Assistant</div>
+          <div class="biz-name">Green Thumb Garden Centre <span class="biz-verified">✓ Verified</span></div>
+          <div class="job-loc">📍 Green Point · 1.8km away</div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">🤍</button>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag tag-type">🌿 Gardening</span>
+        <span class="job-tag tag-time">⏰ Weekends</span>
+        <span class="job-tag tag-pay">💰 R120/hr</span>
+        <span class="job-tag tag-new">🆕 New</span>
+      </div>
+      <div class="job-desc">Must love plants! Help customers, maintain displays and assist with deliveries on Saturdays and Sundays. Great pay, beautiful environment.</div>
+      <div class="job-details">
+        <div class="jd-item"><div class="jd-label">Start Date</div><div class="jd-val">Next Weekend</div></div>
+        <div class="jd-item"><div class="jd-label">Hours/Week</div><div class="jd-val">16 hrs</div></div>
+        <div class="jd-item"><div class="jd-label">Experience</div><div class="jd-val">Preferred</div></div>
+        <div class="jd-item"><div class="jd-label">Transport</div><div class="jd-val">Own transport</div></div>
+      </div>
+      <div class="req-list">
+        <div class="req-title">Requirements</div>
+        <div class="req-item"><div class="req-dot"></div>Passion for plants and outdoors</div>
+        <div class="req-item"><div class="req-dot"></div>Physically fit, able to lift</div>
+        <div class="req-item"><div class="req-dot"></div>Weekend availability</div>
+      </div>
+      <div class="applicants-row">
+        <div class="applicant-avatars">
+          <div class="app-av" style="background:var(--sage);">L</div>
+          <div class="app-av" style="background:#9B59B6;">P</div>
+        </div>
+        <div class="app-text"><b>9 neighbors</b> applied</div>
+        <div class="deadline">⏳ Closes in 7 days</div>
+      </div>
+      <div class="job-actions">
+        <button class="btn-apply" onclick="applyNow(this)">Apply Now →</button>
+        <button class="btn-share" onclick="shareJob()">↗️ Share</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOB 3 -->
+  <div class="job-card">
+    <div class="job-inner">
+      <div class="job-top">
+        <div class="biz-logo" style="background:#2980B9;">C</div>
+        <div class="job-info">
+          <div class="job-title">Barista / Cashier</div>
+          <div class="biz-name">Cape Town Eats Café</div>
+          <div class="job-loc">📍 Bo-Kaap · 2.1km away</div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">🤍</button>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag tag-type">☕ Hospitality</span>
+        <span class="job-tag tag-time">🕐 Full-time</span>
+        <span class="job-tag tag-pay">💰 R8,500/mo</span>
+      </div>
+      <div class="job-desc">Looking for an energetic barista and cashier. Coffee experience is a bonus but attitude matters most. You'll be the face of our busy café!</div>
+      <div class="job-details">
+        <div class="jd-item"><div class="jd-label">Start Date</div><div class="jd-val">1 May 2025</div></div>
+        <div class="jd-item"><div class="jd-label">Hours/Week</div><div class="jd-val">40 hrs</div></div>
+        <div class="jd-item"><div class="jd-label">Experience</div><div class="jd-val">Advantageous</div></div>
+        <div class="jd-item"><div class="jd-label">Benefits</div><div class="jd-val">Meals included</div></div>
+      </div>
+      <div class="applicants-row">
+        <div class="applicant-avatars">
+          <div class="app-av" style="background:var(--terracotta);">M</div>
+          <div class="app-av" style="background:var(--amber);color:var(--navy);">K</div>
+          <div class="app-av" style="background:#9B59B6;">S</div>
+          <div class="app-av" style="background:var(--sage);">T</div>
+        </div>
+        <div class="app-text"><b>21 neighbors</b> applied</div>
+        <div class="deadline">⏳ Closes in 5 days</div>
+      </div>
+      <div class="job-actions">
+        <button class="btn-apply" onclick="applyNow(this)">Apply Now →</button>
+        <button class="btn-share" onclick="shareJob()">↗️ Share</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOB 4 — Remote -->
+  <div class="job-card">
+    <div class="job-inner">
+      <div class="job-top">
+        <div class="biz-logo" style="background:#9B59B6;">D</div>
+        <div class="job-info">
+          <div class="job-title">Social Media Manager</div>
+          <div class="biz-name">Digital Den Agency</div>
+          <div class="job-loc">📍 City Bowl · 3km away</div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">🤍</button>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag tag-type">📱 Digital</span>
+        <span class="job-tag tag-time">🎯 Freelance</span>
+        <span class="job-tag tag-pay">💰 R6,000/mo</span>
+        <span class="job-tag tag-remote">💻 Remote</span>
+      </div>
+      <div class="job-desc">Manage social media accounts for local Cape Town businesses. Creative mind needed. Work from anywhere — all you need is a laptop and good ideas!</div>
+      <div class="job-details">
+        <div class="jd-item"><div class="jd-label">Start Date</div><div class="jd-val">Flexible</div></div>
+        <div class="jd-item"><div class="jd-label">Hours/Week</div><div class="jd-val">20 hrs</div></div>
+        <div class="jd-item"><div class="jd-label">Experience</div><div class="jd-val">1+ year</div></div>
+        <div class="jd-item"><div class="jd-label">Work Style</div><div class="jd-val">Remote</div></div>
+      </div>
+      <div class="applicants-row">
+        <div class="applicant-avatars">
+          <div class="app-av" style="background:var(--terracotta);">A</div>
+        </div>
+        <div class="app-text"><b>6 neighbors</b> applied</div>
+        <div class="deadline">⏳ Closes in 14 days</div>
+      </div>
+      <div class="job-actions">
+        <button class="btn-apply" onclick="applyNow(this)">Apply Now →</button>
+        <button class="btn-share" onclick="shareJob()">↗️ Share</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST A JOB CTA -->
+  <div class="post-cta">
+    <div class="post-cta-icon">🏪</div>
+    <div>
+      <div class="post-cta-title">Own a business?</div>
+      <div class="post-cta-sub">Post a job and reach qualified candidates who already live in your neighborhood. Fast, local, trusted.</div>
+      <button class="post-cta-btn" onclick="openSheet()">Post a Job Free →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openSheet()">+</button>
+
+<!-- SHEET OVERLAY -->
+<div class="sheet-overlay" id="overlay" onclick="closeSheet()"></div>
+
+<!-- POST JOB SHEET -->
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Post a Job 💼</div>
+  <div class="sheet-sub">Reach local, qualified candidates in your neighborhood</div>
+
+  <div class="field">
+    <label>Job Title</label>
+    <input type="text" placeholder="e.g. Sales Assistant, Chef, Driver..." />
+  </div>
+  <div class="field">
+    <label>Business Name</label>
+    <input type="text" placeholder="Your business name" />
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <label>Job Type</label>
+      <select>
+        <option>Part-time</option>
+        <option>Full-time</option>
+        <option>Freelance / Gig</option>
+        <option>Remote</option>
+        <option>Internship</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Pay / Salary</label>
+      <input type="text" placeholder="e.g. R80/hr or R8,500/mo" />
+    </div>
+  </div>
+  <div class="field">
+    <label>Location</label>
+    <input type="text" placeholder="Neighborhood or address" />
+  </div>
+  <div class="field">
+    <label>Job Description</label>
+    <textarea rows="4" placeholder="Describe the role, requirements and what you offer..."></textarea>
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <label>Start Date</label>
+      <input type="text" placeholder="e.g. Immediately" />
+    </div>
+    <div class="field">
+      <label>Closing Date</label>
+      <input type="date" />
+    </div>
+  </div>
+  <div class="field">
+    <label>Contact / Apply Via</label>
+    <input type="text" placeholder="Email or WhatsApp number" />
+  </div>
+  <button class="submit-btn" onclick="submitJob()">Post Job to Nearby →</button>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item" onclick="window.location.href='nearby-feed.html'">
+    <div class="bnav-icon">🏡</div>
+    <div class="bnav-label">Home</div>
+  </button>
+  <button class="bnav-item" onclick="window.location.href='nearby-arrivals.html'">
+    <div class="bnav-icon">🆕</div>
+    <div class="bnav-label">Arrivals</div>
+  </button>
+  <button class="bnav-item active">
+    <div class="bnav-icon">💼</div>
+    <div class="bnav-label">Jobs</div>
+  </button>
+  <button class="bnav-item" onclick="window.location.href='nearby-profile.html'">
+    <div class="bnav-icon">👤</div>
+    <div class="bnav-label">Profile</div>
+  </button>
+</div>
+
+<script>
+  function setChip(el) {
+    document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+    el.classList.add('on');
+  }
+
+  function toggleSave(btn) {
+    btn.classList.toggle('saved');
+    btn.textContent = btn.classList.contains('saved') ? '❤️' : '🤍';
+    if (btn.classList.contains('saved')) showToast('Job saved! ✓');
+  }
+
+  function applyNow(btn) {
+    if (btn.classList.contains('applied')) return;
+    btn.classList.add('applied');
+    btn.textContent = '✓ Application Sent!';
+    showToast('Application submitted! Good luck 🤞');
+  }
+
+  function shareJob() {
+    showToast('Job link copied! ↗️');
+  }
+
+  function openSheet() {
+    document.getElementById('sheet').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function closeSheet() {
+    document.getElementById('sheet').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function submitJob() {
+    closeSheet();
+    showToast('Job posted! Neighbors can now see it 🎉');
+  }
+
+  function filterJobs() {
+    var term = document.getElementById('searchIn').value.toLowerCase();
+    document.querySelectorAll('.job-card').forEach(function(c) {
+      c.style.display = c.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+    });
+  }
+
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 1800);
+    setTimeout(function(){ t.remove(); }, 2200);
+  }
+</script>
+</body>
+</html>
