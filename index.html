@@ -1,17 +1,353 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=/home.html">
-  <script>
-    // Check if user is logged in (optional)
-    const supabaseUrl = 'https://heyxaatplgcgjwqvtjof.supabase.co';
-    const supabaseKey = 'wYlIdK...'; // Replace with your full key
-    // Simple redirect for now
-    window.location.href = '/home.html';
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Nearby – The neighborhood that knows you</title>
+  
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js" defer></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(145deg, #f9f7f3 0%, #fff 100%);
+      color: #1e1e2a;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      width: 100%;
+      flex: 1;
+    }
+    
+    /* Header */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: #2d6a4f;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1e1e2a;
+      letter-spacing: -0.5px;
+    }
+    
+    .logo-badge {
+      background: #f4a261;
+      color: white;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+    
+    /* Hero */
+    .hero {
+      margin-bottom: 40px;
+    }
+    
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      color: #1e1e2a;
+    }
+    
+    .hero-accent {
+      color: #2d6a4f;
+      display: inline-block;
+      border-bottom: 4px solid #f4a261;
+    }
+    
+    .hero p {
+      font-size: 18px;
+      color: #4a4a5e;
+      margin-bottom: 32px;
+    }
+    
+    /* Feature pills */
+    .feature-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    
+    .pill {
+      background: #fff;
+      border: 1px solid #e0e0e8;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #2d2d3a;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    
+    .pill i {
+      margin-right: 6px;
+    }
+    
+    /* Stats */
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      background: rgba(45, 106, 79, 0.05);
+      padding: 20px 16px;
+      border-radius: 24px;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 28px;
+      font-weight: 800;
+      color: #2d6a4f;
+    }
+    
+    .stat-label {
+      font-size: 13px;
+      color: #5a5a70;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* CTA Buttons */
+    .cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+    
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px 20px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 18px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .btn-primary {
+      background: #2d6a4f;
+      color: white;
+      box-shadow: 0 8px 20px rgba(45, 106, 79, 0.25);
+    }
+    
+    .btn-primary:active {
+      transform: scale(0.98);
+      background: #1e4a37;
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #2d6a4f;
+      border: 1.5px solid #2d6a4f;
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: #4a4a5e;
+      border: 1px solid #d0d0da;
+    }
+    
+    /* Auth state message */
+    .auth-status {
+      text-align: center;
+      margin-bottom: 16px;
+      font-size: 15px;
+      color: #5a5a70;
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: auto;
+      padding-top: 32px;
+      text-align: center;
+      font-size: 13px;
+      color: #8a8a9a;
+    }
+    
+    .footer a {
+      color: #2d6a4f;
+      text-decoration: none;
+    }
+    
+    /* Nigerian context */
+    .location-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    
+    .location-badge span {
+      background: #f4f1ea;
+      padding: 6px 16px;
+      border-radius: 40px;
+      font-size: 14px;
+      color: #2d2d3a;
+    }
+    
+    /* Responsive */
+    @media (min-width: 480px) {
+      .container {
+        padding: 32px 24px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <p>Redirecting to Nearby...</p>
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">N</div>
+      <span class="logo-text">Nearby</span>
+      <span class="logo-badge">NG</span>
+    </div>
+    
+    <!-- Hero -->
+    <div class="hero">
+      <h1>
+        The neighborhood <br>
+        that <span class="hero-accent">actually knows you</span>
+      </h1>
+      <p>
+        Connect with people, businesses, and opportunities right where you live.
+      </p>
+    </div>
+    
+    <!-- Feature pills -->
+    <div class="feature-pills">
+      <div class="pill">🏠 New Arrivals Welcome</div>
+      <div class="pill">💼 Local Jobs</div>
+      <div class="pill">🤝 Ambassador Rewards</div>
+      <div class="pill">🔐 Private Messaging</div>
+    </div>
+    
+    <!-- Nigerian cities badge -->
+    <div class="location-badge">
+      <span>🇳🇬 Lagos</span>
+      <span>🇳🇬 Abuja</span>
+      <span>🇳🇬 Coming: Kano, PH</span>
+    </div>
+    
+    <!-- Stats (mock but shows community growth) -->
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-number">340+</div>
+        <div class="stat-label">Neighbors</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">12</div>
+        <div class="stat-label">Communities</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">98%</div>
+        <div class="stat-label">Positive Vibes</div>
+      </div>
+    </div>
+    
+    <!-- Dynamic CTA (changes based on login state) -->
+    <div id="cta-container">
+      <!-- Default (logged out) will be shown if JS fails -->
+      <div class="cta-group">
+        <a href="signup.html" class="btn btn-primary">Get Early Access →</a>
+        <a href="login.html" class="btn btn-secondary">I already have an account</a>
+      </div>
+      <div class="auth-status" id="auth-message">
+        Join your neighbors in Lagos & Abuja
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <p>© 2026 Nearby · Built for Naija 🇳🇬</p>
+      <p style="margin-top: 8px;">
+        <a href="#">About</a> · <a href="#">Privacy</a> · <a href="#">Community Guidelines</a>
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    // Check authentication state and update UI accordingly
+    (async function() {
+      try {
+        // Wait for Supabase to be available (from supabase-config.js)
+        if (typeof supabase === 'undefined') {
+          console.warn('Supabase not loaded yet, showing default CTA');
+          return;
+        }
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        const ctaContainer = document.getElementById('cta-container');
+        const authMessage = document.getElementById('auth-message');
+        
+        if (session && session.user) {
+          // User is logged in - show "Go to Feed" button
+          ctaContainer.innerHTML = `
+            <div class="cta-group">
+              <a href="home.html" class="btn btn-primary">🏡 Go to Your Feed</a>
+              <button id="logout-btn" class="btn btn-outline">Sign Out</button>
+            </div>
+          `;
+          authMessage.textContent = `Welcome back! You're part of the neighborhood.`;
+          
+          // Add logout handler
+          document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.reload();
+          });
+        } else {
+          // Not logged in - keep signup/login buttons (already there, just update message)
+          authMessage.textContent = 'Join 340+ neighbors in Lagos & Abuja';
+        }
+      } catch (e) {
+        console.error('Auth check error:', e);
+        // Keep default buttons
+      }
+    })();
+  </script>
 </body>
 </html>
