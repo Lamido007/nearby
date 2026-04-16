@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nearby Feed</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js" defer></script>
+  <style>
+    /* Basic feed styling */
+    .post-card {
+      border: 1px solid #ddd;
+      padding: 16px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .post-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+    .post-content {
+      margin: 12px 0;
+    }
+    .post-actions {
+      display: flex;
+      gap: 16px;
+    }
+    .whatsapp-share {
+      background-color: #25D366;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nearby Feed</h1>
+    <button id="logout-btn">Logout</button>
+  </header>
+
+  <main id="feed-container">
+    <p>Loading posts...</p>
+  </main>
+
+  <script>
+    let currentUser = null;
+
+    // Check auth on page load
+    async function init() {
+      const session = await getSession();
+      if (!session) {
+        window.location.href = 'login.html';
+        return;
+      }
+      currentUser = await getCurrentUser();
+      loadFeed();
+      
+      // Set up realtime subscription for new posts
+      supabase
+        .channel('public:posts')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
+          // Prepend new post to feed
+          prependPost(payload.new);
+        })
+        .subscribe();
+    }
+
+    async function loadFeed() {
+      const container = document.getElementById('feed-container');
+      container.innerHTML = '<p>Loading...</p>';
+      
+      const { data: posts, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          users:user_id (full_name, username, avatar_url, ambassador_level)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      
+      if (error) {
+        container.innerHTML = `<p>Error loading feed: ${error.message}</p>`;
+        return;
+      }
+      
+      if (posts.length === 0) {
+        container.innerHTML = '<p>No posts yet. Be the first to share!</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      posts.forEach(post => renderPost(post, container));
+    }
+
+    function renderPost(post, container) {
+      const card = document.createElement('div');
+      card.className = 'post-card';
+      card.dataset.postId = post.id;
+      
+      const user = post.users || {};
+      const avatarUrl = user.avatar_url || 'https://via.placeholder.com/40';
+      
+      card.innerHTML = `
+        <div class="post-header">
+          <img src="${avatarUrl}" class="post-avatar" alt="${user.full_name || 'User'}">
+          <div>
+            <strong>${user.full_name || 'Anonymous'}</strong>
+            <span class="ambassador-badge">${user.ambassador_level || 'Neighbor'}</span>
+            <div class="post-time">${new Date(post.created_at).toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="post-content">${escapeHtml(post.content || '')}</div>
+        ${post.image_url ? `<img src="${post.image_url}" style="max-width:100%; border-radius:8px;">` : ''}
+        <div class="post-actions">
+          <button class="like-btn">❤️ ${post.likes_count || 0}</button>
+          <button class="comment-btn">💬 ${post.comments_count || 0}</button>
+          <button class="whatsapp-share" data-content="${escapeHtml(post.content).replace(/"/g, '&quot;')}">📱 Share on WhatsApp</button>
+        </div>
+      `;
+      
+      // Attach WhatsApp share listener
+      card.querySelector('.whatsapp-share').addEventListener('click', (e) => {
+        const content = e.target.dataset.content;
+        const url = window.location.origin + '/post.html?id=' + post.id; // placeholder
+        const text = `Check out this post on Nearby: "${content}" ${url}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      });
+      
+      container.appendChild(card);
+    }
+
+    function prependPost(post) {
+      const container = document.getElementById('feed-container');
+      // Fetch user details (could be cached)
+      supabase
+        .from('users')
+        .select('full_name, username, avatar_url, ambassador_level')
+        .eq('id', post.user_id)
+        .single()
+        .then(({ data: user }) => {
+          const postWithUser = { ...post, users: user };
+          const tempDiv = document.createElement('div');
+          renderPost(postWithUser, tempDiv);
+          container.prepend(tempDiv.firstChild);
+        });
+    }
+
+    // Simple escape to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+
+    init();
+  </script>
+</body>
+</html>
