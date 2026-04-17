@@ -9,7 +9,7 @@
 // ============================================
 
 const SUPABASE_URL = 'https://heyxaatplgcgjwqvtjof.supabase.co'
-const SUPABASE_ANON_KEY = 'wYlIdKMnacfA13JWMOjkxw_-hIh_Orx'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleXhhYXRwbGdjZ2p3cXZ0am9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjM3MjksImV4cCI6MjA5MTU5OTcyOX0.GUOCMK6-zM5TNaLJ0lxSsCsLP-xGKKWX_izOhnHna0Q'
 
 // Initialize Supabase client
 const { createClient } = supabase
