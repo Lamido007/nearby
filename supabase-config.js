@@ -1,6 +1,6 @@
 // supabase-config.js
 const SUPABASE_URL = 'https://heyxaatplgcgjwqvtjof.supabase.co';
-const SUPABASE_ANON_KEY = 'wYlIdK...'; // <-- REPLACE WITH YOUR FULL ANON KEY
+const SUPABASE_ANON_KEY = 'wYlIdKMnacfA13JWMOjkxw_-hIh_Orx';
 
 // Initialize Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
