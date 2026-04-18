@@ -1,702 +1,291 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Nearby — Your Neighborhood</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --cream: #F5F0E8; --terracotta: #C4622D; --navy: #1A2332;
-    --sage: #7A9E7E; --amber: #E8A838; --mid: #4A5568;
-    --light: #8A96A8; --white: #FDFAF4; --whatsapp: #25D366;
-  }
-  body {
-    font-family: 'DM Sans', sans-serif; background: #F0EBE1;
-    color: var(--navy); min-height: 100vh; max-width: 480px; margin: 0 auto;
-  }
-
-  /* TOP NAV */
-  .topnav {
-    background: var(--white); padding: 14px 16px 10px;
-    position: sticky; top: 0; z-index: 100;
-    border-bottom: 1px solid rgba(0,0,0,0.07);
-  }
-  .topnav-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
-  .logo span { color: var(--terracotta); }
-  .nav-icons { display: flex; gap: 8px; }
-  .nav-icon {
-    width: 38px; height: 38px; border-radius: 50%; background: var(--cream);
-    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 18px; position: relative; text-decoration: none;
-  }
-  .notif-dot {
-    position: absolute; top: 4px; right: 4px;
-    width: 8px; height: 8px; background: var(--terracotta);
-    border-radius: 50%; border: 2px solid var(--white);
-  }
-  .location-bar { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mid); }
-  .location-bar span { color: var(--navy); font-weight: 600; }
-  #notif-badge { display: none; }
-
-  /* FILTER TABS */
-  .filter-tabs {
-    display: flex; gap: 8px; overflow-x: auto;
-    padding: 12px 16px; background: var(--white); scrollbar-width: none;
-  }
-  .filter-tabs::-webkit-scrollbar { display: none; }
-  .ftab {
-    flex-shrink: 0; padding: 7px 16px; border-radius: 100px;
-    border: 2px solid rgba(0,0,0,0.1); background: transparent;
-    font-size: 13px; font-weight: 600; color: var(--mid);
-    cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap;
-  }
-  .ftab.active { background: var(--navy); border-color: var(--navy); color: white; }
-
-  /* FEED */
-  .feed { padding: 12px 16px 100px; }
-
-  /* LOADING STATE */
-  .feed-loading {
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .skeleton-card {
-    background: var(--white); border-radius: 18px; padding: 16px;
-    animation: shimmer 1.5s ease infinite;
-  }
-  .skeleton-line {
-    height: 12px; border-radius: 100px; background: rgba(0,0,0,0.06); margin-bottom: 8px;
-  }
-  .skeleton-line.wide { width: 80%; }
-  .skeleton-line.mid { width: 55%; }
-  .skeleton-line.short { width: 35%; }
-  .skeleton-circle { width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.06); }
-  .skeleton-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
-  .skeleton-meta { flex: 1; }
-  @keyframes shimmer { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-  /* EMPTY STATE */
-  .empty-state {
-    text-align: center; padding: 60px 20px; display: none;
-  }
-  .empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
-  .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
-  .empty-state p { font-size: 14px; color: var(--mid); line-height: 1.6; margin-bottom: 24px; }
-  .empty-state button {
-    padding: 12px 28px; border-radius: 100px;
-    background: var(--terracotta); color: white; border: none;
-    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
-  }
-
-  /* NEW ARRIVALS STRIP */
-  .section-label {
-    font-size: 12px; font-weight: 700; color: var(--terracotta);
-    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; margin-top: 4px;
-  }
-  .arrivals-strip {
-    display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: none;
-  }
-  .arrivals-strip::-webkit-scrollbar { display: none; }
-  .arrival-card {
-    flex-shrink: 0; background: var(--white); border-radius: 16px;
-    padding: 14px 12px; text-align: center; width: 100px;
-    border: 2px solid rgba(196,98,45,0.15); cursor: pointer;
-    transition: transform 0.2s;
-  }
-  .arrival-card:hover { transform: translateY(-2px); }
-  .arrival-avatar {
-    width: 52px; height: 52px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; font-weight: 700; color: white;
-    margin: 0 auto 8px; position: relative;
-  }
-  .new-ring { position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--terracotta); }
-  .arrival-name { font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
-  .arrival-sub { font-size: 10px; color: var(--light); }
-
-  /* POST CARD */
-  .card { background: var(--white); border-radius: 18px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .avatar {
-    width: 44px; height: 44px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px; font-weight: 700; color: white; flex-shrink: 0;
-  }
-  .card-meta { flex: 1; min-width: 0; }
-  .card-name { font-size: 14px; font-weight: 700; color: var(--navy); }
-  .card-detail { font-size: 12px; color: var(--light); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .card-more { font-size: 20px; color: var(--light); background: none; border: none; cursor: pointer; padding: 4px; }
-  .badge-pill {
-    display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px;
-    border-radius: 100px; margin-left: 4px; vertical-align: middle;
-  }
-  .badge-1 { background: rgba(122,158,126,0.2); color: var(--sage); }
-  .badge-2 { background: rgba(232,168,56,0.2); color: #B07D10; }
-  .badge-3 { background: rgba(196,98,45,0.2); color: var(--terracotta); }
-  .badge-4 { background: rgba(155,89,182,0.2); color: #9B59B6; }
-
-  /* Post type badges */
-  .type-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-bottom: 8px;
-  }
-  .tbadge-job { background: rgba(122,158,126,0.15); color: var(--sage); }
-  .tbadge-event { background: rgba(232,168,56,0.15); color: #B07D10; }
-  .tbadge-alert { background: rgba(229,62,62,0.1); color: #C53030; }
-  .tbadge-post { background: rgba(196,98,45,0.1); color: var(--terracotta); }
-  .tbadge-welcome { background: rgba(122,158,126,0.12); color: var(--sage); }
-
-  .card-text { font-size: 14px; color: var(--mid); line-height: 1.6; margin-bottom: 12px; }
-
-  .job-details { background: var(--cream); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
-  .job-row { display: flex; gap: 16px; flex-wrap: wrap; }
-  .job-item { font-size: 12px; color: var(--mid); }
-  .job-item b { color: var(--navy); display: block; font-size: 13px; }
-
-  /* Card actions */
-  .card-actions {
-    display: flex; align-items: center; gap: 4px;
-    padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06);
-  }
-  .action-btn {
-    display: flex; align-items: center; gap: 5px;
-    padding: 7px 10px; border-radius: 100px;
-    border: none; background: transparent; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--light);
-    transition: background 0.15s, color 0.15s;
-  }
-  .action-btn:hover { background: var(--cream); color: var(--navy); }
-  .action-btn.liked { color: var(--terracotta); }
-  /* WhatsApp share button */
-  .wa-btn {
-    display: flex; align-items: center; gap: 5px;
-    padding: 7px 10px; border-radius: 100px;
-    border: none; background: transparent; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    color: var(--whatsapp); transition: background 0.15s;
-  }
-  .wa-btn:hover { background: rgba(37,211,102,0.1); }
-  .action-spacer { flex: 1; }
-  .apply-btn {
-    padding: 8px 16px; border-radius: 100px; background: var(--navy); color: white;
-    border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
-    transition: background 0.2s;
-  }
-  .apply-btn:hover { background: var(--terracotta); }
-  .apply-btn:disabled { background: var(--sage); cursor: default; }
-
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 100%; max-width: 480px;
-    background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
-    display: flex; padding: 10px 0 16px;
-  }
-  .bnav-item {
-    flex: 1; display: flex; flex-direction: column; align-items: center;
-    gap: 4px; cursor: pointer; padding: 4px 0;
-    border: none; background: none; font-family: 'DM Sans', sans-serif;
-    text-decoration: none;
-  }
-  .bnav-icon { font-size: 22px; }
-  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
-  .bnav-item.active .bnav-label { color: var(--terracotta); }
-
-  /* FAB */
-  .fab {
-    position: fixed; bottom: 80px; right: 20px;
-    width: 52px; height: 52px; border-radius: 50%;
-    background: var(--terracotta); color: white;
-    border: none; font-size: 24px; cursor: pointer;
-    box-shadow: 0 6px 20px rgba(196,98,45,0.4);
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s;
-  }
-  .fab:hover { transform: scale(1.1); }
-
-  /* POST COMPOSER */
-  .composer {
-    display: none; position: fixed; bottom: 0; left: 50%;
-    transform: translateX(-50%); width: 100%; max-width: 480px;
-    background: var(--white); border-radius: 24px 24px 0 0;
-    padding: 20px 16px 32px;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.15); z-index: 200;
-  }
-  .composer.open { display: block; }
-  .comp-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 16px; }
-  .comp-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
-  .comp-types { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; scrollbar-width: none; }
-  .comp-types::-webkit-scrollbar { display: none; }
-  .comp-type {
-    flex-shrink: 0; display: flex; align-items: center; gap: 6px;
-    padding: 7px 14px; border-radius: 100px;
-    border: 2px solid rgba(0,0,0,0.1); background: white;
-    font-size: 13px; font-weight: 600; color: var(--mid);
-    cursor: pointer; font-family: 'DM Sans', sans-serif;
-  }
-  .comp-type.on { border-color: var(--terracotta); color: var(--terracotta); background: rgba(196,98,45,0.06); }
-  .comp-input {
-    width: 100%; border: 2px solid rgba(0,0,0,0.1); border-radius: 14px;
-    padding: 12px 14px; font-family: 'DM Sans', sans-serif;
-    font-size: 15px; color: var(--navy); resize: none; outline: none; margin-bottom: 14px;
-  }
-  .comp-input:focus { border-color: var(--terracotta); }
-  .comp-footer { display: flex; justify-content: space-between; align-items: center; }
-  .comp-post {
-    padding: 11px 28px; border-radius: 100px; background: var(--navy); color: white;
-    border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
-  }
-  .comp-post:disabled { opacity: 0.6; cursor: default; }
-  .comp-cancel { background: none; border: none; font-size: 14px; color: var(--light); cursor: pointer; font-family: 'DM Sans', sans-serif; }
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 150; }
-  .overlay.open { display: block; }
-
-  /* Toast notification */
-  .toast {
-    position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
-    background: var(--navy); color: white; padding: 12px 20px;
-    border-radius: 100px; font-size: 14px; font-weight: 600;
-    z-index: 999; white-space: nowrap;
-    animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.5s both;
-  }
-  @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-  @keyframes fadeOut { to { opacity: 0; } }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--cream:#F5F0E8;--tc:#C4622D;--navy:#1A2332;--sage:#7A9E7E;--amber:#E8A838;--mid:#4A5568;--light:#8A96A8;--white:#FDFAF4;--wa:#25D366}
+body{font-family:'DM Sans',sans-serif;background:#F0EBE1;color:var(--navy);min-height:100vh;max-width:480px;margin:0 auto}
+.topnav{background:var(--white);padding:14px 16px 10px;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(0,0,0,.07)}
+.r1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--navy)}
+.logo span{color:var(--tc)}
+.icons{display:flex;gap:8px}
+.ni{width:38px;height:38px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;text-decoration:none}
+.ndot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--tc);border-radius:50%;border:2px solid var(--white);display:none}
+.locbar{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mid)}
+.locbar b{color:var(--navy);font-weight:600}
+.sbadge{margin-left:auto;background:rgba(122,158,126,.12);padding:3px 10px;border-radius:100px;font-size:12px;font-weight:700;color:var(--sage)}
+.live-bar{display:flex;align-items:center;gap:6px;padding:7px 16px;background:rgba(56,161,105,.07);border-bottom:1px solid rgba(56,161,105,.12);font-size:12px;color:#38A169;font-weight:600}
+.ldot{width:7px;height:7px;border-radius:50%;background:#38A169;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ftabs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:var(--white);scrollbar-width:none}
+.ftabs::-webkit-scrollbar{display:none}
+.ftab{flex-shrink:0;padding:7px 16px;border-radius:100px;border:2px solid rgba(0,0,0,.1);background:transparent;font-size:13px;font-weight:600;color:var(--mid);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s}
+.ftab.on{background:var(--navy);border-color:var(--navy);color:white}
+.feed{padding:12px 16px 100px}
+.sk-card{background:var(--white);border-radius:18px;padding:16px;margin-bottom:12px;animation:shimmer 1.5s ease infinite}
+.sk-row{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.sk-ci{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.07);flex-shrink:0}
+.sk-m{flex:1}
+.skl{height:12px;border-radius:100px;background:rgba(0,0,0,.07);margin-bottom:6px}
+.skl.w80{width:80%}.skl.w60{width:60%}.skl.w40{width:40%}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+.sec-lbl{font-size:12px;font-weight:700;color:var(--tc);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.arr-strip{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none}
+.arr-strip::-webkit-scrollbar{display:none}
+.arr-card{flex-shrink:0;background:var(--white);border-radius:16px;padding:14px 12px;text-align:center;width:100px;border:2px solid rgba(196,98,45,.15);cursor:pointer;transition:transform .2s}
+.arr-card:active{transform:scale(.96)}
+.arr-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;margin:0 auto 8px;position:relative}
+.arr-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--tc)}
+.arr-name{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arr-sub{font-size:10px;color:var(--light)}
+.card{background:var(--white);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:white;flex-shrink:0;overflow:hidden;position:relative;cursor:pointer}
+.av img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.cm{flex:1;min-width:0}
+.cn{font-size:14px;font-weight:700;color:var(--navy)}
+.cd{font-size:12px;color:var(--light);margin-top:2px}
+.bp{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:100px;margin-left:4px;vertical-align:middle}
+.bp1{background:rgba(122,158,126,.2);color:var(--sage)}.bp2{background:rgba(232,168,56,.2);color:#B07D10}.bp3{background:rgba(212,175,55,.2);color:#8B6914}.bp4{background:rgba(155,89,182,.2);color:#9B59B6}
+.cmenu{font-size:22px;color:var(--light);background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0;line-height:1}
+.tb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;margin-bottom:8px}
+.tbp{background:rgba(196,98,45,.1);color:var(--tc)}.tbj{background:rgba(122,158,126,.15);color:var(--sage)}.tbe{background:rgba(232,168,56,.15);color:#B07D10}.tba{background:rgba(229,62,62,.1);color:#C53030}.tbw{background:rgba(122,158,126,.12);color:var(--sage)}
+.ct{font-size:14px;color:var(--mid);line-height:1.65;margin-bottom:12px;word-break:break-word}
+.ca{display:flex;align-items:center;gap:2px;padding-top:10px;border-top:1px solid rgba(0,0,0,.06)}
+.ab{display:flex;align-items:center;gap:4px;padding:7px 10px;border-radius:100px;border:none;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--light);transition:all .15s}
+.ab:hover{background:var(--cream);color:var(--navy)}.ab.liked{color:var(--tc)}
+.wab{display:flex;align-items:center;gap:4px;padding:7px 10px;border-radius:100px;border:none;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--wa);transition:all .15s}
+.wab:hover{background:rgba(37,211,102,.1)}
+.dov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200}
+.dov.open{display:block}
+.cdr{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--white);border-radius:24px 24px 0 0;z-index:201;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,.2);transition:transform .35s cubic-bezier(.32,.72,0,1)}
+.cdr.open{transform:translateX(-50%) translateY(0)}
+.dh{padding:16px 20px 12px;border-bottom:1px solid rgba(0,0,0,.07);flex-shrink:0}
+.dhandle{width:40px;height:4px;background:rgba(0,0,0,.1);border-radius:100px;margin:0 auto 14px}
+.dtitle{font-size:16px;font-weight:700;color:var(--navy)}
+.clist{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.ci{display:flex;gap:10px;animation:fsl .25s ease}
+@keyframes fsl{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.cav2{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0}
+.cb{background:var(--cream);border-radius:14px 14px 14px 4px;padding:10px 13px;flex:1}
+.cbn{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.cbt{font-size:13px;color:var(--mid);line-height:1.5}
+.ctime{font-size:11px;color:var(--light);margin-top:5px}
+.noc{text-align:center;padding:30px 20px;color:var(--light);font-size:14px}
+.cinbar{display:flex;gap:10px;padding:12px 16px;border-top:1px solid rgba(0,0,0,.07);background:var(--white);flex-shrink:0;align-items:flex-end}
+.cinput{flex:1;border:2px solid rgba(0,0,0,.1);border-radius:22px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--navy);outline:none;resize:none;max-height:100px;line-height:1.4}
+.cinput:focus{border-color:var(--tc)}
+.sbtn{width:40px;height:40px;border-radius:50%;background:var(--tc);color:white;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+.sbtn:hover{transform:scale(1.1)}.sbtn:disabled{background:var(--light);cursor:default;transform:none}
+.cmp{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--white);border-radius:24px 24px 0 0;padding:20px 16px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.15);z-index:200}
+.cmp.open{display:block}
+.chandl{width:40px;height:4px;background:rgba(0,0,0,.1);border-radius:100px;margin:0 auto 16px}
+.cmpw{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.cmpav{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;flex-shrink:0}
+.cmpwho{font-size:13px;color:var(--mid)}.cmpwho b{color:var(--navy)}
+.cmpts{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.cmpts::-webkit-scrollbar{display:none}
+.cmptype{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;border:2px solid rgba(0,0,0,.1);background:white;font-size:13px;font-weight:600;color:var(--mid);cursor:pointer;font-family:'DM Sans',sans-serif}
+.cmptype.on{border-color:var(--tc);color:var(--tc);background:rgba(196,98,45,.06)}
+.cmpinput{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:14px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--navy);resize:none;outline:none;margin-bottom:14px;min-height:80px}
+.cmpinput:focus{border-color:var(--tc)}
+.cmpft{display:flex;justify-content:space-between;align-items:center}
+.cmppost{padding:11px 28px;border-radius:100px;background:var(--navy);color:white;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.cmppost:disabled{opacity:.6;cursor:default}
+.cmpcancel{background:none;border:none;font-size:14px;color:var(--light);cursor:pointer;font-family:'DM Sans',sans-serif}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
+.ov.open{display:block}
+.fab{position:fixed;bottom:80px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--tc);color:white;border:none;font-size:24px;cursor:pointer;box-shadow:0 6px 20px rgba(196,98,45,.4);display:flex;align-items:center;justify-content:center;z-index:100}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--white);border-top:1px solid rgba(0,0,0,.08);display:flex;padding:10px 0 16px;z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:'DM Sans',sans-serif;text-decoration:none}
+.bni-i{font-size:22px}.bni-l{font-size:10px;font-weight:600;color:var(--light)}
+.bni.on .bni-l{color:var(--tc)}
+.empty{text-align:center;padding:60px 20px;display:none}
+.empty .emoji{font-size:48px;margin-bottom:16px}
+.empty h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.empty p{font-size:14px;color:var(--mid);line-height:1.6;margin-bottom:24px}
+.empty button{padding:12px 28px;border-radius:100px;background:var(--tc);color:white;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:999;white-space:nowrap;pointer-events:none}
 </style>
 </head>
 <body>
-
-<!-- TOP NAV -->
 <div class="topnav">
-  <div class="topnav-row1">
-    <div class="logo">Near<span>by</span></div>
-    <div class="nav-icons">
-      <a href="nearby-notifications.html" class="nav-icon">
-        🔔
-        <div class="notif-dot" id="notif-badge"></div>
-      </a>
-      <a href="nearby-messages.html" class="nav-icon">💬</a>
-      <a href="nearby-profile.html" class="nav-icon">👤</a>
-    </div>
-  </div>
-  <div class="location-bar">
-    📍 <span id="user-neighborhood">Your Neighborhood</span>
-    <span style="color:var(--light)">·</span>
-    <span id="user-badge-display" style="font-size:11px;"></span>
-  </div>
+<div class="r1">
+<div class="logo">Near<span>by</span></div>
+<div class="icons">
+<a href="nearby-notifications.html" class="ni">🔔<div class="ndot" id="ndot"></div></a>
+<a href="nearby-messages.html" class="ni">💬</a>
+<a href="nearby-profile.html" class="ni">👤</a>
 </div>
-
-<!-- FILTER TABS -->
-<div class="filter-tabs">
-  <button class="ftab active" onclick="setTab(this, 'all')">🏡 All</button>
-  <button class="ftab" onclick="setTab(this, 'post')">💬 Posts</button>
-  <button class="ftab" onclick="setTab(this, 'job')">💼 Jobs</button>
-  <button class="ftab" onclick="setTab(this, 'event')">🎉 Events</button>
-  <button class="ftab" onclick="setTab(this, 'alert')">🔔 Alerts</button>
-  <button class="ftab" onclick="setTab(this, 'welcome')">🆕 Arrivals</button>
 </div>
-
-<!-- FEED -->
+<div class="locbar">📍 <b id="nbn">Your Neighborhood</b><div class="sbadge" id="nbs">🏆 —</div></div>
+</div>
+<div class="live-bar"><div class="ldot"></div>Live feed — updates instantly</div>
+<div class="ftabs">
+<button class="ftab on" onclick="setTab(this,'all')">🏡 All</button>
+<button class="ftab" onclick="setTab(this,'post')">💬 Posts</button>
+<button class="ftab" onclick="setTab(this,'job')">💼 Jobs</button>
+<button class="ftab" onclick="setTab(this,'event')">🎉 Events</button>
+<button class="ftab" onclick="setTab(this,'alert')">🔔 Alerts</button>
+<button class="ftab" onclick="setTab(this,'welcome')">🆕 Arrivals</button>
+</div>
 <div class="feed">
-
-  <!-- LOADING SKELETONS -->
-  <div class="feed-loading" id="feed-loading">
-    <div class="skeleton-card">
-      <div class="skeleton-row"><div class="skeleton-circle"></div><div class="skeleton-meta"><div class="skeleton-line wide"></div><div class="skeleton-line short"></div></div></div>
-      <div class="skeleton-line wide"></div><div class="skeleton-line mid"></div><div class="skeleton-line short"></div>
-    </div>
-    <div class="skeleton-card">
-      <div class="skeleton-row"><div class="skeleton-circle"></div><div class="skeleton-meta"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div></div>
-      <div class="skeleton-line wide"></div><div class="skeleton-line wide"></div>
-    </div>
-    <div class="skeleton-card">
-      <div class="skeleton-row"><div class="skeleton-circle"></div><div class="skeleton-meta"><div class="skeleton-line wide"></div><div class="skeleton-line mid"></div></div></div>
-      <div class="skeleton-line mid"></div>
-    </div>
-  </div>
-
-  <!-- NEW ARRIVALS STRIP (hidden until loaded) -->
-  <div id="arrivals-section" style="display:none">
-    <div class="section-label">🆕 New in your neighborhood</div>
-    <div class="arrivals-strip" id="arrivals-strip"></div>
-  </div>
-
-  <!-- POSTS CONTAINER -->
-  <div id="posts-container"></div>
-
-  <!-- EMPTY STATE -->
-  <div class="empty-state" id="empty-state">
-    <div class="emoji">🏘️</div>
-    <h3>Your neighborhood is quiet...</h3>
-    <p>Be the first to post! Share something with your neighbors — a hello, a tip, or something you need.</p>
-    <button onclick="openComposer()">Start the Conversation</button>
-  </div>
-
+<div id="loading">
+<div class="sk-card"><div class="sk-row"><div class="sk-ci"></div><div class="sk-m"><div class="skl w80"></div><div class="skl w40"></div></div></div><div class="skl w80"></div><div class="skl w60"></div></div>
+<div class="sk-card"><div class="sk-row"><div class="sk-ci"></div><div class="sk-m"><div class="skl w60"></div><div class="skl w40"></div></div></div><div class="skl w80"></div></div>
+<div class="sk-card"><div class="sk-row"><div class="sk-ci"></div><div class="sk-m"><div class="skl w80"></div><div class="skl w40"></div></div></div><div class="skl w60"></div></div>
 </div>
-
-<!-- FAB -->
-<button class="fab" onclick="openComposer()">✏️</button>
-
-<!-- OVERLAY -->
-<div class="overlay" id="overlay" onclick="closeComposer()"></div>
-
-<!-- POST COMPOSER -->
-<div class="composer" id="composer">
-  <div class="comp-handle"></div>
-  <div class="comp-title">Share with your neighborhood</div>
-  <div class="comp-types">
-    <button class="comp-type on" onclick="setCompType(this, 'post')">💬 Post</button>
-    <button class="comp-type" onclick="setCompType(this, 'job')">💼 Job</button>
-    <button class="comp-type" onclick="setCompType(this, 'event')">🎉 Event</button>
-    <button class="comp-type" onclick="setCompType(this, 'alert')">🔔 Alert</button>
-  </div>
-  <textarea class="comp-input" id="comp-text" rows="4" placeholder="What's happening in your neighborhood?"></textarea>
-  <div class="comp-footer">
-    <button class="comp-cancel" onclick="closeComposer()">Cancel</button>
-    <button class="comp-post" id="comp-post-btn" onclick="submitPost()">Post Nearby</button>
-  </div>
+<div id="arr-sec" style="display:none"><div class="sec-lbl">🆕 New in your neighborhood</div><div class="arr-strip" id="arrivals"></div></div>
+<div id="posts"></div>
+<div class="empty" id="empty"><div class="emoji">🏘️</div><h3>Your neighborhood is quiet...</h3><p>Be the first to post! Share a hello, a tip, or something you need.</p><button onclick="openComp()">Start the Conversation</button></div>
 </div>
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="bnav-item active">
-    <div class="bnav-icon">🏡</div>
-    <div class="bnav-label">Home</div>
-  </button>
-  <a href="nearby-arrivals.html" class="bnav-item">
-    <div class="bnav-icon">🆕</div>
-    <div class="bnav-label">Arrivals</div>
-  </a>
-  <a href="nearby-jobs.html" class="bnav-item">
-    <div class="bnav-icon">💼</div>
-    <div class="bnav-label">Jobs</div>
-  </a>
-  <a href="nearby-profile.html" class="bnav-item">
-    <div class="bnav-icon">👤</div>
-    <div class="bnav-label">Profile</div>
-  </a>
+<button class="fab" onclick="openComp()">✏️</button>
+<div class="ov" id="ov" onclick="closeComp()"></div>
+<div class="cmp" id="cmp">
+<div class="chandl"></div>
+<div class="cmpw"><div class="cmpav" id="cmpav">😊</div><div class="cmpwho">Posting as <b id="cmpname">You</b> in <b id="cmpnb">your neighborhood</b></div></div>
+<div class="cmpts">
+<button class="cmptype on" onclick="setPT(this,'post')">💬 Post</button>
+<button class="cmptype" onclick="setPT(this,'job')">💼 Job</button>
+<button class="cmptype" onclick="setPT(this,'event')">🎉 Event</button>
+<button class="cmptype" onclick="setPT(this,'alert')">🔔 Alert</button>
+<button class="cmptype" onclick="setPT(this,'welcome')">👋 Welcome</button>
 </div>
-
+<textarea class="cmpinput" id="cmptxt" rows="4" placeholder="What's happening in your neighborhood?"></textarea>
+<div class="cmpft"><button class="cmpcancel" onclick="closeComp()">Cancel</button><button class="cmppost" id="cmpbtn" onclick="doPost()">Post Nearby</button></div>
+</div>
+<div class="dov" id="dov" onclick="closeCmts()"></div>
+<div class="cdr" id="cdr">
+<div class="dh"><div class="dhandle"></div><div class="dtitle">💬 Comments (<span id="dcount">0</span>)</div></div>
+<div class="clist" id="clist"><div class="noc">No comments yet — be first! 👇</div></div>
+<div class="cinbar">
+<div class="cav2" id="drav" style="background:var(--tc)">😊</div>
+<textarea class="cinput" id="cinput" rows="1" placeholder="Write a comment..." oninput="autoR(this)"></textarea>
+<button class="sbtn" id="sbtn" onclick="sendCmt()">➤</button>
+</div>
+</div>
+<div class="bnav">
+<button class="bni on"><div class="bni-i">🏡</div><div class="bni-l">Home</div></button>
+<a href="nearby-arrivals.html" class="bni"><div class="bni-i">🆕</div><div class="bni-l">Arrivals</div></a>
+<a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+<a href="nearby-profile.html" class="bni"><div class="bni-i">👤</div><div class="bni-l">Profile</div></a>
+</div>
 <script>
-  // ── STATE ──
-  let currentUser = null
-  let currentFilter = 'all'
-  let selectedPostType = 'post'
-  let allPosts = []
-
-  const AVATAR_COLORS = [
-    '#C4622D','#7A9E7E','#1A2332','#E8A838',
-    '#2980B9','#9B59B6','#E53E3E','#2ECC71'
-  ]
-
-  function getColor(str) {
-    if (!str) return AVATAR_COLORS[0]
-    let hash = 0
-    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash)
-    return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
-  }
-
-  function getTypeLabel(type) {
-    const map = { post: '💬 Post', job: '💼 Job Opening', event: '🎉 Event', alert: '🔔 Alert', welcome: '👋 Welcome' }
-    return map[type] || '💬 Post'
-  }
-
-  function getTypeBadgeClass(type) {
-    const map = { post: 'tbadge-post', job: 'tbadge-job', event: 'tbadge-event', alert: 'tbadge-alert', welcome: 'tbadge-welcome' }
-    return map[type] || 'tbadge-post'
-  }
-
-  function renderBadge(level) {
-    const names = { 1: 'Neighbor', 2: 'Star', 3: 'Ambassador', 4: 'Legend' }
-    return `<span class="badge-pill badge-${level}">${names[level] || 'Neighbor'}</span>`
-  }
-
-  // ── INIT ──
-  async function init() {
-    // Check auth
-    const session = await getSession()
-    if (!session) {
-      window.location.href = 'nearby-auth.html'
-      return
-    }
-
-    currentUser = await getCurrentUser()
-
-    if (!currentUser) {
-      // User exists in auth but not in users table — go to onboarding
-      window.location.href = 'nearby-onboarding.html'
-      return
-    }
-
-    // Update UI with user info
-    const neighborhood = currentUser.neighborhood || 'Your Neighborhood'
-    document.getElementById('user-neighborhood').textContent = neighborhood
-    if (currentUser.badge_level) {
-      document.getElementById('user-badge-display').textContent = getBadgeName(currentUser.badge_level)
-    }
-
-    // Load unread notifications count
-    const unread = await getUnreadCount(currentUser.id)
-    if (unread > 0) document.getElementById('notif-badge').style.display = 'block'
-
-    // Load feed
-    await loadFeedPosts(neighborhood)
-
-    // Load arrivals
-    await loadArrivalsStrip(neighborhood)
-
-    // Subscribe to real-time new posts
-    subscribeToFeed(neighborhood, (payload) => {
-      // New post arrived — prepend it
-      allPosts.unshift(payload.new)
-      renderPosts(allPosts)
-      showToast('🆕 New post in your neighborhood!')
-    })
-  }
-
-  // ── LOAD FEED ──
-  async function loadFeedPosts(neighborhood) {
-    const { data, error } = await loadFeed(neighborhood, 30)
-
-    document.getElementById('feed-loading').style.display = 'none'
-
-    if (error) {
-      showToast('⚠️ Could not load posts. Check your connection.')
-      return
-    }
-
-    allPosts = data || []
-    renderPosts(allPosts)
-  }
-
-  // ── RENDER POSTS ──
-  function renderPosts(posts) {
-    const container = document.getElementById('posts-container')
-    const emptyState = document.getElementById('empty-state')
-
-    const filtered = currentFilter === 'all'
-      ? posts
-      : posts.filter(p => p.post_type === currentFilter)
-
-    if (filtered.length === 0) {
-      container.innerHTML = ''
-      emptyState.style.display = 'block'
-      return
-    }
-
-    emptyState.style.display = 'none'
-    container.innerHTML = filtered.map(post => renderPostCard(post)).join('')
-  }
-
-  function renderPostCard(post) {
-    const user = post.users || {}
-    const name = user.full_name || 'Community Member'
-    const initials = getInitials(name)
-    const color = getColor(user.id || name)
-    const badgeHtml = user.badge_level ? renderBadge(user.badge_level) : ''
-    const time = timeAgo(post.created_at)
-    const isOwn = currentUser && post.user_id === currentUser.id
-
-    const typeLabel = getTypeLabel(post.post_type)
-    const typeBadgeClass = getTypeBadgeClass(post.post_type)
-
-    // Actions
-    const likeText = `${post.likes_count || 0}`
-    const commentsText = `${post.comments_count || 0}`
-
-    // WhatsApp share button
-    const waShare = post.post_type === 'job'
-      ? `<button class="wa-btn" onclick="shareJobWA('${escHtml(post.content.slice(0,60))}','${escHtml(post.neighborhood || '')}')">📲 Share</button>`
-      : `<button class="wa-btn" onclick="sharePostWA('${escHtml(post.content.slice(0,120))}','${escHtml(post.neighborhood || '')}')">📲 Share</button>`
-
-    const flagBtn = isOwn ? '' : `<button class="action-btn" onclick="flagPostUI('${post.id}')">🚩</button>`
-
-    return `
-    <div class="card" id="post-${post.id}">
-      <div class="card-header">
-        <div class="avatar" style="background:${color}">${initials}</div>
-        <div class="card-meta">
-          <div class="card-name">${escHtml(name)}${badgeHtml}</div>
-          <div class="card-detail">📍 ${escHtml(post.neighborhood || 'Neighborhood')} · ${time}</div>
-        </div>
-        ${isOwn ? `<button class="card-more" onclick="deletePostUI('${post.id}')">🗑️</button>` : '<button class="card-more">···</button>'}
-      </div>
-      <span class="type-badge ${typeBadgeClass}">${typeLabel}</span>
-      <div class="card-text">${escHtml(post.content)}</div>
-      <div class="card-actions">
-        <button class="action-btn" id="like-${post.id}" onclick="handleLike('${post.id}', this)">🤍 ${likeText}</button>
-        <button class="action-btn">💬 ${commentsText}</button>
-        ${waShare}
-        ${flagBtn}
-      </div>
-    </div>`
-  }
-
-  function escHtml(str) {
-    if (!str) return ''
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')
-  }
-
-  // ── LOAD ARRIVALS ──
-  async function loadArrivalsStrip(neighborhood) {
-    const arrivals = await getNewArrivals(neighborhood, 30)
-    if (!arrivals || arrivals.length === 0) return
-
-    const strip = document.getElementById('arrivals-strip')
-    strip.innerHTML = arrivals.slice(0, 10).map(u => {
-      const initials = getInitials(u.full_name)
-      const color = getColor(u.id)
-      return `
-      <div class="arrival-card" onclick="welcomeArrival('${u.id}')">
-        <div class="arrival-avatar" style="background:${color}">
-          ${initials}
-          <div class="new-ring"></div>
-        </div>
-        <div class="arrival-name">${escHtml(u.full_name.split(' ')[0])}</div>
-        <div class="arrival-sub">${timeAgo(u.created_at)}</div>
-      </div>`
-    }).join('')
-
-    document.getElementById('arrivals-section').style.display = 'block'
-  }
-
-  // ── FILTER TABS ──
-  function setTab(el, filter) {
-    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'))
-    el.classList.add('active')
-    currentFilter = filter
-    renderPosts(allPosts)
-  }
-
-  // ── LIKE ──
-  const likedPosts = new Set()
-
-  async function handleLike(postId, btn) {
-    if (!currentUser) return
-
-    if (likedPosts.has(postId)) {
-      likedPosts.delete(postId)
-      btn.classList.remove('liked')
-      const num = parseInt(btn.textContent.replace(/\D/g,'')) || 0
-      btn.textContent = '🤍 ' + Math.max(0, num - 1)
-    } else {
-      likedPosts.add(postId)
-      btn.classList.add('liked')
-      const num = parseInt(btn.textContent.replace(/\D/g,'')) || 0
-      btn.textContent = '❤️ ' + (num + 1)
-      await likePost(postId, currentUser.id)
-    }
-  }
-
-  // ── WHATSAPP SHARE ──
-  function sharePostWA(content, neighborhood) {
-    sharePostWhatsApp(content, neighborhood)
-  }
-
-  function shareJobWA(content, neighborhood) {
-    shareJobWhatsApp(content, 'this role', neighborhood)
-  }
-
-  // ── WELCOME NEWCOMER ──
-  async function welcomeArrival(userId) {
-    if (!currentUser || userId === currentUser.id) return
-    await welcomeNewcomer(currentUser.id, userId)
-    showToast('👋 Welcome sent! +10 rep points earned')
-  }
-
-  // ── FLAG POST ──
-  async function flagPostUI(postId) {
-    if (!currentUser) return
-    if (confirm('Flag this post for moderation?')) {
-      await flagPost(postId, currentUser.id, 'Inappropriate content')
-      document.getElementById('post-' + postId).style.opacity = '0.5'
-      showToast('🚩 Post reported. Thank you.')
-    }
-  }
-
-  // ── DELETE POST ──
-  async function deletePostUI(postId) {
-    if (!currentUser) return
-    if (confirm('Delete this post?')) {
-      await removePost(postId)
-      const el = document.getElementById('post-' + postId)
-      if (el) el.remove()
-      showToast('🗑️ Post deleted.')
-    }
-  }
-
-  // ── COMPOSER ──
-  function openComposer() {
-    document.getElementById('composer').classList.add('open')
-    document.getElementById('overlay').classList.add('open')
-    document.getElementById('comp-text').focus()
-  }
-
-  function closeComposer() {
-    document.getElementById('composer').classList.remove('open')
-    document.getElementById('overlay').classList.remove('open')
-  }
-
-  function setCompType(el, type) {
-    document.querySelectorAll('.comp-type').forEach(c => c.classList.remove('on'))
-    el.classList.add('on')
-    selectedPostType = type
-    const placeholders = {
-      post: "What's happening in your neighborhood?",
-      job: "Job title, pay, and what you're looking for...",
-      event: "Event name, date, time, and where...",
-      alert: "Important neighborhood alert or safety notice..."
-    }
-    document.getElementById('comp-text').placeholder = placeholders[type] || ''
-  }
-
-  async function submitPost() {
-    const content = document.getElementById('comp-text').value.trim()
-    if (!content) { showToast('✍️ Write something first!'); return }
-    if (!currentUser) return
-
-    const btn = document.getElementById('comp-post-btn')
-    btn.disabled = true
-    btn.textContent = 'Posting...'
-
-    const neighborhood = currentUser.neighborhood || 'General'
-    const { data, error } = await createPost(currentUser.id, content, selectedPostType, neighborhood)
-
-    if (error) {
-      showToast('❌ Could not post. Try again.')
-    } else {
-      closeComposer()
-      document.getElementById('comp-text').value = ''
-      showToast('🎉 Posted to ' + neighborhood + '! +5 rep points')
-      // Add to top of feed locally (real-time will also fire)
-      if (data && data[0]) {
-        data[0].users = currentUser
-        allPosts.unshift(data[0])
-        renderPosts(allPosts)
-      }
-    }
-
-    btn.disabled = false
-    btn.textContent = 'Post Nearby'
-  }
-
-  // ── TOAST ──
-  function showToast(message) {
-    const old = document.querySelector('.toast')
-    if (old) old.remove()
-    const toast = document.createElement('div')
-    toast.className = 'toast'
-    toast.textContent = message
-    document.body.appendChild(toast)
-    setTimeout(() => toast.remove(), 3000)
-  }
-
-  // ── START ──
-  init()
+let me=null,posts=[],filt='all',ptype='post',activePid=null
+const liked=new Set()
+const COLS=['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6','#E53E3E','#27AE60']
+const TL={post:'💬 Post',job:'💼 Job',event:'🎉 Event',alert:'🔔 Alert',welcome:'👋 Welcome'}
+const TC={post:'tbp',job:'tbj',event:'tbe',alert:'tba',welcome:'tbw'}
+const BN={1:'Neighbor',2:'Star',3:'Ambassador',4:'Legend'}
+const BC={1:'bp1',2:'bp2',3:'bp3',4:'bp4'}
+function gc(s){if(!s)return COLS[0];let h=0;for(let c of s)h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length]}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+async function init(){
+  const sess=await getSession()
+  if(!sess){window.location.href='nearby-auth.html';return}
+  me=await getCurrentUser()
+  if(!me||!me.neighborhood){window.location.href='nearby-onboarding.html';return}
+  const nb=me.neighborhood
+  document.getElementById('nbn').textContent=nb
+  document.getElementById('cmpname').textContent=(me.full_name||'You').split(' ')[0]
+  document.getElementById('cmpnb').textContent=nb
+  const col=gc(me.id),ini=getInitials(me.full_name)
+  document.getElementById('cmpav').textContent=ini;document.getElementById('cmpav').style.background=col
+  document.getElementById('drav').textContent=ini;document.getElementById('drav').style.background=col
+  const uc=await getUnreadCount(me.id);if(uc>0)document.getElementById('ndot').style.display='block'
+  const sc=await getNeighborhoodScore(nb);document.getElementById('nbs').textContent='🏆 '+(sc.score||0)
+  await loadPosts(nb)
+  await loadArr(nb)
+  subscribeToFeed(nb,p=>{if(p.new&&p.new.user_id!==me.id){posts.unshift(p.new);render();toast('🆕 New post in '+nb+'!')}})
+}
+async function loadPosts(nb){
+  const{data,error}=await loadFeed(nb,40)
+  document.getElementById('loading').style.display='none'
+  if(error){toast('⚠️ Could not load posts');return}
+  posts=data||[];render()
+}
+function render(){
+  const c=document.getElementById('posts'),e=document.getElementById('empty')
+  let p=filt==='all'?posts:posts.filter(x=>x.post_type===filt)
+  if(!p.length){c.innerHTML='';e.style.display='block';return}
+  e.style.display='none'
+  c.innerHTML=p.map(buildCard).join('')
+}
+function buildCard(p){
+  const u=p.users||{},name=u.full_name||'Community Member'
+  const col=gc(u.id||p.user_id),ini=getInitials(name),time=timeAgo(p.created_at)
+  const bl=u.badge_level||1,isOwn=me&&p.user_id===me.id,lk=liked.has(p.id)
+  const avHTML=u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt=""/>':ini
+  return '<div class="card" id="p-'+p.id+'"><div class="ch"><div class="av" style="background:'+col+'">'+avHTML+'</div><div class="cm"><div class="cn">'+esc(name)+'<span class="bp '+BC[bl]+'">'+BN[bl]+'</span></div><div class="cd">📍 '+esc(p.neighborhood||'Nearby')+' · '+time+'</div></div>'+(isOwn?'<button class="cmenu" onclick="delPost(''+p.id+'')">🗑️</button>':'<button class="cmenu" onclick="flagP(''+p.id+'')">···</button>')+'</div><span class="tb '+(TC[p.post_type]||'tbp')+'">'+(TL[p.post_type]||'💬 Post')+'</span><div class="ct">'+esc(p.content)+'</div><div class="ca"><button class="ab'+(lk?' liked':'')+'" id="lb-'+p.id+'" onclick="doLike(''+p.id+'',this)">'+(lk?'❤️':'🤍')+' <span id="lc-'+p.id+'">'+(p.likes_count||0)+'</span></button><button class="ab" onclick="openCmts(''+p.id+'','+(p.comments_count||0)+')">💬 <span id="cc-'+p.id+'">'+(p.comments_count||0)+'</span></button><button class="wab" onclick="sharePostWhatsApp(''+esc((p.content||'').slice(0,100))+'',''+esc(p.neighborhood||'')+'')">📲 Share</button></div></div>'
+}
+async function loadArr(nb){
+  const arr=await getNewArrivals(nb,30)
+  if(!arr||!arr.length)return
+  document.getElementById('arrivals').innerHTML=arr.slice(0,10).map(u=>'<div class="arr-card" onclick="doWelcome(''+u.id+'')"><div class="arr-av" style="background:'+gc(u.id)+'">'+getInitials(u.full_name)+'<div class="arr-ring"></div></div><div class="arr-name">'+esc((u.full_name||'?').split(' ')[0])+'</div><div class="arr-sub">'+timeAgo(u.created_at)+'</div></div>').join('')
+  document.getElementById('arr-sec').style.display='block'
+}
+function setTab(el,f){document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'));el.classList.add('on');filt=f;render()}
+async function doLike(pid,btn){
+  if(!me)return
+  const lc=document.getElementById('lc-'+pid),n=parseInt(lc.textContent)||0
+  if(liked.has(pid)){liked.delete(pid);btn.classList.remove('liked');btn.innerHTML='🤍 <span id="lc-'+pid+'">'+(Math.max(0,n-1))+'</span>'}
+  else{liked.add(pid);btn.classList.add('liked');btn.innerHTML='❤️ <span id="lc-'+pid+'">'+(n+1)+'</span>';await likePost(pid,me.id)}
+}
+async function openCmts(pid,cnt){
+  activePid=pid
+  document.getElementById('dcount').textContent=cnt
+  document.getElementById('clist').innerHTML='<div class="noc" style="color:var(--light);font-size:13px">Loading...</div>'
+  document.getElementById('dov').classList.add('open')
+  document.getElementById('cdr').classList.add('open')
+  document.body.style.overflow='hidden'
+  document.getElementById('cinput').value=''
+  const{data}=await sb.from('post_comments').select('*,users(id,full_name,avatar_url,badge_level)').eq('post_id',pid).order('created_at',{ascending:true})
+  const list=document.getElementById('clist')
+  if(!data||!data.length){list.innerHTML='<div class="noc">No comments yet — be first! 👇</div>';return}
+  document.getElementById('dcount').textContent=data.length
+  list.innerHTML=data.map(c=>{const u=c.users||{},col=gc(u.id);return '<div class="ci"><div class="cav2" style="background:'+col+'">'+getInitials(u.full_name)+'</div><div class="cb"><div class="cbn">'+esc(u.full_name||'Neighbor')+'</div><div class="cbt">'+esc(c.content)+'</div><div class="ctime">'+timeAgo(c.created_at)+'</div></div></div>'}).join('')
+  setTimeout(()=>{list.scrollTop=list.scrollHeight},100)
+}
+function closeCmts(){document.getElementById('dov').classList.remove('open');document.getElementById('cdr').classList.remove('open');document.body.style.overflow='';activePid=null}
+async function sendCmt(){
+  const inp=document.getElementById('cinput'),txt=inp.value.trim()
+  if(!txt||!activePid||!me)return
+  const btn=document.getElementById('sbtn');btn.disabled=true
+  const{error}=await sb.from('post_comments').insert({post_id:activePid,user_id:me.id,content:txt})
+  if(!error){
+    const ccEl=document.getElementById('cc-'+activePid),dc=document.getElementById('dcount')
+    if(ccEl)ccEl.textContent=parseInt(ccEl.textContent||0)+1
+    dc.textContent=parseInt(dc.textContent||0)+1
+    const col=gc(me.id),nc=document.createElement('div')
+    nc.className='ci'
+    nc.innerHTML='<div class="cav2" style="background:'+col+'">'+getInitials(me.full_name)+'</div><div class="cb"><div class="cbn">'+esc(me.full_name||'You')+'</div><div class="cbt">'+esc(txt)+'</div><div class="ctime">just now</div></div>'
+    const list=document.getElementById('clist')
+    const noc=list.querySelector('.noc');if(noc)noc.remove()
+    list.appendChild(nc);list.scrollTop=list.scrollHeight
+    inp.value='';inp.style.height='auto'
+    await addRepPoints(me.id,2)
+  }else{toast('❌ Could not post comment')}
+  btn.disabled=false
+}
+function autoR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px'}
+async function doWelcome(uid){if(!me||uid===me.id)return;await welcomeNewcomer(me.id,uid);toast('👋 Welcome sent! +10 rep pts')}
+async function flagP(pid){if(!me)return;if(confirm('Report this post?')){await flagPost(pid,me.id,'Inappropriate');const el=document.getElementById('p-'+pid);if(el)el.style.opacity='.4';toast('🚩 Reported. Thank you.')}}
+async function delPost(pid){if(!me)return;if(confirm('Delete this post?')){await removePost(pid);const el=document.getElementById('p-'+pid);if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)};posts=posts.filter(x=>x.id!==pid);toast('🗑️ Deleted.')}}
+function openComp(){document.getElementById('cmp').classList.add('open');document.getElementById('ov').classList.add('open');setTimeout(()=>document.getElementById('cmptxt').focus(),100)}
+function closeComp(){document.getElementById('cmp').classList.remove('open');document.getElementById('ov').classList.remove('open')}
+function setPT(el,t){document.querySelectorAll('.cmptype').forEach(c=>c.classList.remove('on'));el.classList.add('on');ptype=t;const ph={post:"What's happening in your neighborhood?",job:"Job title, pay, requirements...",event:"Event name, date, time, location...",alert:"Important neighborhood alert...",welcome:"Welcome a neighbor or introduce yourself..."};document.getElementById('cmptxt').placeholder=ph[t]||''}
+async function doPost(){
+  const txt=document.getElementById('cmptxt').value.trim()
+  if(!txt){toast('Write something first!');return}
+  if(!me)return
+  const btn=document.getElementById('cmpbtn');btn.disabled=true;btn.textContent='Posting...'
+  const nb=me.neighborhood||'General'
+  const{data,error}=await createPost(me.id,txt,ptype,nb)
+  if(error){toast('❌ Could not post. Try again.')}
+  else{closeComp();document.getElementById('cmptxt').value='';toast('🎉 Posted! +5 rep points');if(data&&data[0]){data[0].users=me;posts.unshift(data[0]);render()}}
+  btn.disabled=false;btn.textContent='Post Nearby'
+}
+function toast(msg){const old=document.querySelector('.toast');if(old)old.remove();const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s'},2500);setTimeout(()=>t.remove(),3000)}
+document.getElementById('cinput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendCmt()}})
+init()
 </script>
 </body>
 </html>
