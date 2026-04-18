@@ -5,31 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Nearby — Set Up Your Profile</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --cream: #F5F0E8;
-    --terracotta: #C4622D;
-    --navy: #1A2332;
-    --sage: #7A9E7E;
-    --amber: #E8A838;
-    --mid: #4A5568;
-    --light: #8A96A8;
+    --cream: #F5F0E8; --terracotta: #C4622D; --navy: #1A2332;
+    --sage: #7A9E7E; --amber: #E8A838; --mid: #4A5568; --light: #8A96A8;
   }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: #FDFAF4;
-    color: var(--navy);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  body { font-family: 'DM Sans', sans-serif; background: #FDFAF4; color: var(--navy); min-height: 100vh; display: flex; flex-direction: column; }
   .topbar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid rgba(0,0,0,0.07);
-    background: #FDFAF4;
-    position: sticky; top: 0; z-index: 10;
+    padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.07);
+    background: #FDFAF4; position: sticky; top: 0; z-index: 10;
   }
   .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
   .logo span { color: var(--terracotta); }
@@ -43,86 +31,56 @@
   .step { display: none; }
   .step.active { display: block; }
   .badge {
-    display: inline-block; background: rgba(196,98,45,0.1);
-    color: var(--terracotta); padding: 5px 12px; border-radius: 100px;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-    text-transform: uppercase; margin-bottom: 14px;
+    display: inline-block; background: rgba(196,98,45,0.1); color: var(--terracotta);
+    padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 14px;
   }
-  h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px; font-weight: 900; line-height: 1.15;
-    letter-spacing: -1px; margin-bottom: 10px;
-  }
+  h1 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; line-height: 1.15; letter-spacing: -1px; margin-bottom: 10px; }
   h1 em { color: var(--terracotta); font-style: italic; }
   .sub { font-size: 15px; color: var(--mid); line-height: 1.6; margin-bottom: 24px; }
   .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
   .tcard {
     background: var(--cream); border-radius: 14px; padding: 18px 14px;
-    border: 2px solid transparent; cursor: pointer; text-align: left;
+    border: 2px solid transparent; cursor: pointer; text-align: left; transition: all 0.2s;
   }
   .tcard.on { border-color: var(--terracotta); background: rgba(196,98,45,0.06); }
   .tcard .ti { font-size: 26px; margin-bottom: 8px; display: block; }
   .tcard .tn { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
   .tcard .td { font-size: 12px; color: var(--mid); line-height: 1.4; }
-  .photo-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; }
-  .photo-circle {
-    width: 90px; height: 90px; border-radius: 50%;
-    background: var(--cream); border: 3px dashed rgba(196,98,45,0.4);
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; cursor: pointer; margin-bottom: 8px;
-    overflow: hidden; position: relative;
-  }
-  .photo-circle img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; display:none; }
-  .photo-circle .pi { font-size: 26px; }
-  .photo-circle .pt { font-size: 10px; color: var(--light); margin-top: 4px; }
-  .photo-hint { font-size: 12px; color: var(--light); }
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  .field input, .field textarea {
-    width: 100%; padding: 12px 14px;
-    border: 2px solid rgba(0,0,0,0.1); border-radius: 12px;
-    background: white; font-family: 'DM Sans', sans-serif;
-    font-size: 15px; color: var(--navy); outline: none; resize: none;
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 12px 14px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px;
+    background: white; font-family: 'DM Sans', sans-serif; font-size: 15px;
+    color: var(--navy); outline: none; resize: none; appearance: none;
   }
-  .field input:focus, .field textarea:focus { border-color: var(--terracotta); }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--terracotta); }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .clen { font-size: 11px; color: var(--light); text-align: right; margin-top: 4px; }
-  .loc-box {
-    background: var(--cream); border-radius: 14px; padding: 16px;
-    display: flex; align-items: center; gap: 12px;
-    border: 2px solid transparent; cursor: pointer; margin-bottom: 14px;
+
+  /* NEIGHBORHOOD PICKER */
+  .nb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .nb-card {
+    background: var(--cream); border-radius: 12px; padding: 14px 12px;
+    border: 2px solid transparent; cursor: pointer; text-align: center; transition: all 0.2s;
   }
-  .loc-box.found { border-color: var(--sage); }
-  .loc-box .li { font-size: 26px; flex-shrink: 0; }
-  .loc-box .linfo { flex: 1; }
-  .loc-box .lt { font-size: 14px; font-weight: 600; }
-  .loc-box .ls { font-size: 12px; color: var(--light); margin-top: 2px; }
-  .loc-btn {
-    background: var(--terracotta); color: white; border: none;
-    border-radius: 100px; padding: 7px 13px; font-size: 12px;
-    font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif;
-  }
-  .divider { text-align: center; font-size: 12px; color: var(--light); margin: 12px 0; }
-  .priv-head { font-size: 13px; font-weight: 600; margin: 18px 0 10px; }
-  .priv-opt {
-    display: flex; align-items: center; gap: 12px;
-    background: white; border: 2px solid rgba(0,0,0,0.08);
-    border-radius: 12px; padding: 13px 15px; margin-bottom: 8px; cursor: pointer;
-  }
-  .priv-opt.on { border-color: var(--terracotta); background: rgba(196,98,45,0.04); }
-  .priv-opt input { accent-color: var(--terracotta); width: 16px; height: 16px; flex-shrink: 0; }
-  .pn { font-size: 14px; font-weight: 600; }
-  .pd { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .nb-card.on { border-color: var(--terracotta); background: rgba(196,98,45,0.06); }
+  .nb-card .nb-name { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+  .nb-card .nb-city { font-size: 11px; color: var(--light); }
+  .nb-or { text-align: center; font-size: 12px; color: var(--light); margin: 12px 0; }
+
+  /* INTERESTS */
   .cnt { font-size: 13px; color: var(--light); margin-bottom: 12px; }
   .cnt b { color: var(--terracotta); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
   .chip {
-    display: flex; align-items: center; gap: 6px;
-    padding: 8px 14px; border-radius: 100px;
-    border: 2px solid rgba(0,0,0,0.1); background: white;
-    font-size: 13px; font-weight: 500; color: var(--mid); cursor: pointer;
+    display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 100px; border: 2px solid rgba(0,0,0,0.1); background: white;
+    font-size: 13px; font-weight: 500; color: var(--mid); cursor: pointer; transition: all 0.2s;
   }
   .chip.on { background: var(--terracotta); border-color: var(--terracotta); color: white; }
+
+  /* DONE SCREEN */
   .done-wrap { text-align: center; padding: 10px 0; }
   .done-icon {
     width: 88px; height: 88px; border-radius: 50%;
@@ -130,46 +88,51 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 40px; margin: 0 auto 22px;
   }
-  .done-wrap h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 30px; font-weight: 900; letter-spacing: -1px; margin-bottom: 12px;
-  }
+  .done-wrap h2 { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 900; letter-spacing: -1px; margin-bottom: 12px; }
   .done-wrap h2 em { color: var(--terracotta); font-style: italic; }
   .done-wrap p { font-size: 15px; color: var(--mid); line-height: 1.6; margin-bottom: 28px; }
   .done-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-  .dcard {
-    background: var(--cream); border-radius: 12px; padding: 14px 16px;
-    display: flex; align-items: center; gap: 12px; text-align: left;
-  }
+  .dcard { background: var(--cream); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; text-align: left; }
   .dcard .di { font-size: 22px; flex-shrink: 0; }
   .dcard .dt { font-size: 14px; font-weight: 700; }
   .dcard .ds { font-size: 12px; color: var(--mid); margin-top: 2px; }
+
+  /* BOTTOM NAV */
   .bottom {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: #FDFAF4; border-top: 1px solid rgba(0,0,0,0.07);
     padding: 14px 20px; display: flex; gap: 10px;
   }
   .bbk {
-    flex: 1; padding: 13px; border-radius: 12px;
-    border: 2px solid rgba(0,0,0,0.1); background: transparent;
-    font-family: 'DM Sans', sans-serif; font-size: 15px;
-    font-weight: 600; color: var(--mid); cursor: pointer;
+    flex: 1; padding: 13px; border-radius: 12px; border: 2px solid rgba(0,0,0,0.1);
+    background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600; color: var(--mid); cursor: pointer;
   }
   .bnx {
-    flex: 2; padding: 13px; border-radius: 12px;
-    border: none; background: var(--navy); color: white;
-    font-family: 'DM Sans', sans-serif; font-size: 15px;
-    font-weight: 700; cursor: pointer;
+    flex: 2; padding: 13px; border-radius: 12px; border: none;
+    background: var(--navy); color: white; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;
   }
+  .bnx:disabled { opacity: 0.6; cursor: default; }
   .bnx.solo { flex: 1; }
   .bnx.finish { background: var(--terracotta); }
+
+  /* Saving indicator */
+  .saving-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(26,35,50,0.6);
+    z-index: 999; align-items: center; justify-content: center; flex-direction: column;
+  }
+  .saving-overlay.show { display: flex; }
+  .saving-box { background: white; border-radius: 20px; padding: 32px 40px; text-align: center; }
+  .saving-box .si { font-size: 36px; margin-bottom: 12px; }
+  .saving-box p { font-size: 15px; font-weight: 600; color: var(--navy); }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="logo">Near<span>by</span></div>
-  <button class="skip" id="skipBtn" onclick="next()">Skip →</button>
+  <button class="skip" id="skipBtn" onclick="skipStep()">Skip →</button>
 </div>
 
 <div class="progress">
@@ -179,28 +142,28 @@
 
 <div class="content">
 
-  <!-- STEP 1 -->
+  <!-- STEP 1: User type -->
   <div class="step active" id="s1">
     <div class="badge">👋 Getting Started</div>
-    <h1>How are you <em>joining</em> us?</h1>
-    <p class="sub">Pick your role so we can personalize your experience from day one.</p>
+    <h1>Who are <em>you?</em></h1>
+    <p class="sub">Tell us how you're joining so we can connect you with the right people.</p>
     <div class="type-grid">
-      <div class="tcard on" onclick="pick(this)">
+      <div class="tcard on" onclick="pick(this,'resident')">
         <span class="ti">🏠</span>
         <div class="tn">Resident</div>
-        <div class="td">I live here and want to connect.</div>
+        <div class="td">I live in this neighborhood.</div>
       </div>
-      <div class="tcard" onclick="pick(this)">
+      <div class="tcard" onclick="pick(this,'newcomer')">
         <span class="ti">🆕</span>
         <div class="tn">Newcomer</div>
-        <div class="td">I just moved to the area.</div>
+        <div class="td">I just moved here recently.</div>
       </div>
-      <div class="tcard" onclick="pick(this)">
+      <div class="tcard" onclick="pick(this,'business')">
         <span class="ti">🏪</span>
         <div class="tn">Business</div>
         <div class="td">I own or run a local shop.</div>
       </div>
-      <div class="tcard" onclick="pick(this)">
+      <div class="tcard" onclick="pick(this,'visitor')">
         <span class="ti">✈️</span>
         <div class="tn">Visitor</div>
         <div class="td">I'm passing through.</div>
@@ -208,26 +171,17 @@
     </div>
   </div>
 
-  <!-- STEP 2 -->
+  <!-- STEP 2: Profile -->
   <div class="step" id="s2">
     <div class="badge">📸 Your Profile</div>
     <h1>Make it <em>yours</em></h1>
-    <p class="sub">Add a photo and tell your neighbors about yourself.</p>
-    <div class="photo-wrap">
-      <div class="photo-circle" onclick="document.getElementById('pIn').click()">
-        <img id="pImg" alt="" />
-        <div class="pi">📷</div>
-        <div class="pt">Add Photo</div>
-        <input type="file" id="pIn" accept="image/*" style="display:none" onchange="loadPic(this)" />
-      </div>
-      <div class="photo-hint">Optional but recommended</div>
-    </div>
+    <p class="sub">Help your neighbors know who you are.</p>
     <div class="row2">
-      <div class="field"><label>First Name</label><input type="text" placeholder="Maria" /></div>
-      <div class="field"><label>Last Name</label><input type="text" placeholder="Santos" /></div>
+      <div class="field"><label>First Name</label><input type="text" id="firstName" placeholder="e.g. Amaka" /></div>
+      <div class="field"><label>Last Name</label><input type="text" id="lastName" placeholder="e.g. Obi" /></div>
     </div>
     <div class="field">
-      <label>Bio</label>
+      <label>Bio <span style="color:var(--light);font-weight:400">(optional)</span></label>
       <textarea id="bio" rows="4" maxlength="160"
         placeholder="Tell your neighbors a little about yourself..."
         oninput="document.getElementById('bl').textContent=this.value.length+' / 160'"></textarea>
@@ -235,58 +189,56 @@
     </div>
     <div class="field">
       <label>Occupation <span style="color:var(--light);font-weight:400">(optional)</span></label>
-      <input type="text" placeholder="e.g. Teacher, Chef, Designer..." />
+      <input type="text" id="occupation" placeholder="e.g. Teacher, Chef, Designer..." />
     </div>
   </div>
 
-  <!-- STEP 3 -->
+  <!-- STEP 3: Neighborhood -->
   <div class="step" id="s3">
-    <div class="badge">📍 Location</div>
-    <h1>Where are <em>you</em>?</h1>
-    <p class="sub">Connect with the right community. You control your privacy.</p>
-    <div class="loc-box" id="lb" onclick="detectLoc()">
-      <div class="li">🌍</div>
-      <div class="linfo">
-        <div class="lt" id="lt">Detect My Location</div>
-        <div class="ls" id="ls">Use GPS for best results</div>
-      </div>
-      <button class="loc-btn" id="lbtn">Detect</button>
+    <div class="badge">📍 Your Location</div>
+    <h1>Where are <em>you?</em></h1>
+    <p class="sub">Pick your neighborhood so posts and jobs near you show up in your feed.</p>
+
+    <div class="field">
+      <label>City</label>
+      <select id="citySelect" onchange="updateNeighborhoods()">
+        <option value="">— Select your city —</option>
+        <option value="Lagos">Lagos</option>
+        <option value="Abuja">Abuja</option>
+        <option value="Port Harcourt">Port Harcourt</option>
+        <option value="Ibadan">Ibadan</option>
+        <option value="Kano">Kano</option>
+        <option value="Other">Other Nigerian City</option>
+      </select>
     </div>
-    <div class="divider">— or enter manually —</div>
-    <div class="row2">
-      <div class="field"><label>City</label><input type="text" id="city" placeholder="Cape Town" /></div>
-      <div class="field"><label>Neighborhood</label><input type="text" placeholder="Green Point" /></div>
+
+    <div id="nb-picker" style="display:none">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:10px;">Neighborhood</label>
+      <div class="nb-grid" id="nb-grid"></div>
+      <div class="nb-or">— or type yours —</div>
     </div>
-    <div class="priv-head">🔒 Location privacy</div>
-    <div class="priv-opt on" onclick="pickP(this)">
-      <input type="radio" name="p" checked />
-      <div><div class="pn">Neighborhood level</div><div class="pd">Shows your area — recommended</div></div>
-    </div>
-    <div class="priv-opt" onclick="pickP(this)">
-      <input type="radio" name="p" />
-      <div><div class="pn">City level only</div><div class="pd">Only shows your city</div></div>
-    </div>
-    <div class="priv-opt" onclick="pickP(this)">
-      <input type="radio" name="p" />
-      <div><div class="pn">Keep private</div><div class="pd">Browse only, won't appear in searches</div></div>
+
+    <div class="field">
+      <label id="nb-manual-label">Neighborhood</label>
+      <input type="text" id="neighborhood" placeholder="e.g. Lekki Phase 1, Wuse 2..." />
     </div>
   </div>
 
-  <!-- STEP 4 -->
+  <!-- STEP 4: Interests -->
   <div class="step" id="s4">
     <div class="badge">✨ Interests</div>
-    <h1>What are you <em>into</em>?</h1>
-    <p class="sub">Pick at least 3 so we can show you relevant people and events.</p>
+    <h1>What are you <em>into?</em></h1>
+    <p class="sub">Pick at least 3 so we can show you relevant posts and events.</p>
     <div class="cnt">Selected: <b id="cc">0</b></div>
     <div class="chips" id="cw"></div>
   </div>
 
-  <!-- STEP 5 -->
+  <!-- STEP 5: Done -->
   <div class="step" id="s5">
     <div class="done-wrap">
       <div class="done-icon">🎉</div>
       <h2>You're in the <em>community!</em></h2>
-      <p>Your profile is live. Let's explore what's happening around you.</p>
+      <p>Your profile is live on Nearby. Let's see what's happening around you.</p>
       <div class="done-cards">
         <div class="dcard"><div class="di">👥</div><div><div class="dt">Discover Neighbors</div><div class="ds">See who lives near you</div></div></div>
         <div class="dcard"><div class="di">💼</div><div><div class="dt">Find Opportunities</div><div class="ds">Local jobs posted nearby</div></div></div>
@@ -297,14 +249,37 @@
 
 </div>
 
+<!-- SAVING OVERLAY -->
+<div class="saving-overlay" id="saving-overlay">
+  <div class="saving-box">
+    <div class="si">⏳</div>
+    <p>Saving your profile...</p>
+  </div>
+</div>
+
 <div class="bottom" id="nav">
   <button class="bbk" id="bk" onclick="back()" style="display:none">← Back</button>
   <button class="bnx solo" id="nx" onclick="next()">Continue →</button>
 </div>
 
 <script>
-  var cur = 1;
-  var names = ['Who are you?','Your profile','Your location','Your interests','All done!'];
+  var cur = 1
+  var selectedType = 'resident'
+  var selectedNeighborhood = ''
+  var selectedCity = ''
+  var currentUserId = null
+
+  var stepNames = ['Who are you?','Your profile','Your location','Your interests','All done!']
+
+  var neighborhoods = {
+    'Lagos': ['Lekki Phase 1','Victoria Island','Yaba','Ikeja','Surulere','Ikoyi','Ajah','Gbagada','Maryland','Ojodu','Magodo','Isale Eko'],
+    'Abuja': ['Garki','Wuse 2','Maitama','Gwarinpa','Asokoro','Jabi','Lugbe','Kado','Utako','Kubwa'],
+    'Port Harcourt': ['GRA','Trans Amadi','Rumuola','D-Line','Mile 1','Rumuokwurusi'],
+    'Ibadan': ['Bodija','Jericho','Iyaganku','Oluyole','Sango','Ring Road'],
+    'Kano': ['Nassarawa','GRA','Fagge','Gwale','Tarauni'],
+    'Other': []
+  }
+
   var ints = [
     ['🎨','Art'],['🍕','Food'],['🎵','Music'],['⚽','Sports'],
     ['📚','Books'],['🌿','Gardening'],['🐾','Pets'],['💪','Fitness'],
@@ -312,71 +287,172 @@
     ['📸','Photography'],['🎮','Gaming'],['🧘','Mindfulness'],['🏠','Home & DIY'],
     ['👶','Parenting'],['💼','Business'],['🎓','Education'],['🌱','Eco'],
     ['🎪','Entertainment'],['🎭','Theatre'],['🧵','Fashion'],['🏡','Events']
-  ];
+  ]
 
-  var cw = document.getElementById('cw');
+  // Build interests chips
+  var cw = document.getElementById('cw')
   ints.forEach(function(it) {
-    var c = document.createElement('div');
-    c.className = 'chip';
-    c.innerHTML = it[0] + ' ' + it[1];
+    var c = document.createElement('div')
+    c.className = 'chip'
+    c.innerHTML = it[0] + ' ' + it[1]
     c.onclick = function() {
-      c.classList.toggle('on');
-      document.getElementById('cc').textContent = document.querySelectorAll('.chip.on').length;
-    };
-    cw.appendChild(c);
-  });
+      c.classList.toggle('on')
+      document.getElementById('cc').textContent = document.querySelectorAll('.chip.on').length
+    }
+    cw.appendChild(c)
+  })
+
+  // Load current user on init
+  async function init() {
+    const session = await getSession()
+    if (!session) { window.location.href = 'nearby-auth.html'; return }
+    currentUserId = session.user.id
+
+    // Pre-fill name from auth
+    const user = await getCurrentUser()
+    if (user && user.full_name) {
+      var parts = user.full_name.split(' ')
+      document.getElementById('firstName').value = parts[0] || ''
+      document.getElementById('lastName').value = parts.slice(1).join(' ') || ''
+    }
+    if (user && user.neighborhood) {
+      // Already onboarded — go to feed
+      window.location.href = 'nearby-feed.html'
+    }
+  }
 
   function render() {
-    document.getElementById('fill').style.width = (cur/5*100)+'%';
-    document.getElementById('snum').textContent = cur;
-    document.getElementById('sname').textContent = names[cur-1];
-    document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
-    document.getElementById('s'+cur).classList.add('active');
-    var bk = document.getElementById('bk');
-    var nx = document.getElementById('nx');
-    bk.style.display = cur > 1 ? 'block' : 'none';
-    nx.className = cur > 1 ? 'bnx' : 'bnx solo';
-    document.getElementById('skipBtn').style.display = cur === 5 ? 'none' : 'inline';
-    if (cur === 5) { nx.textContent = 'Enter Nearby →'; nx.classList.add('finish'); }
-    else { nx.textContent = 'Continue →'; nx.classList.remove('finish'); }
-    window.scrollTo(0,0);
+    document.getElementById('fill').style.width = (cur/5*100)+'%'
+    document.getElementById('snum').textContent = cur
+    document.getElementById('sname').textContent = stepNames[cur-1]
+    document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active') })
+    document.getElementById('s'+cur).classList.add('active')
+    var bk = document.getElementById('bk')
+    var nx = document.getElementById('nx')
+    bk.style.display = cur > 1 ? 'block' : 'none'
+    nx.className = cur > 1 ? 'bnx' : 'bnx solo'
+    document.getElementById('skipBtn').style.display = cur === 5 ? 'none' : 'inline'
+    if (cur === 5) { nx.textContent = 'Enter Nearby →'; nx.classList.add('finish') }
+    else { nx.textContent = 'Continue →'; nx.classList.remove('finish') }
+    window.scrollTo(0,0)
   }
 
-  function next() { if (cur===5){ window.location.href='nearby-feed.html'; } else { cur++; render(); } }
-  function back() { if (cur>1){ cur--; render(); } }
+  async function next() {
+    if (cur === 3) {
+      // Validate neighborhood
+      var nb = document.getElementById('neighborhood').value.trim()
+      var city = document.getElementById('citySelect').value
+      if (!city) { alert('Please select your city.'); return }
+      if (!nb && !selectedNeighborhood) { alert('Please enter or pick your neighborhood.'); return }
+      selectedNeighborhood = nb || selectedNeighborhood
+      selectedCity = city
+    }
 
-  function pick(el) {
-    document.querySelectorAll('.tcard').forEach(function(c){ c.classList.remove('on'); });
-    el.classList.add('on');
-  }
-  function pickP(el) {
-    document.querySelectorAll('.priv-opt').forEach(function(o){ o.classList.remove('on'); });
-    el.classList.add('on');
-  }
-  function loadPic(input) {
-    if (!input.files || !input.files[0]) return;
-    var r = new FileReader();
-    r.onload = function(e) {
-      var img = document.getElementById('pImg');
-      img.src = e.target.result;
-      img.style.display = 'block';
-      img.parentElement.querySelector('.pi').style.display = 'none';
-      img.parentElement.querySelector('.pt').style.display = 'none';
-    };
-    r.readAsDataURL(input.files[0]);
-  }
-  function detectLoc() {
-    document.getElementById('lbtn').textContent = '...';
-    setTimeout(function(){
-      document.getElementById('lt').textContent = '📍 Location Found';
-      document.getElementById('ls').textContent = 'Green Point, Cape Town';
-      document.getElementById('lbtn').textContent = 'Change';
-      document.getElementById('lb').classList.add('found');
-      document.getElementById('city').value = 'Cape Town';
-    }, 1500);
+    if (cur === 5) {
+      // Save everything to Supabase
+      await saveProfile()
+      return
+    }
+
+    cur++
+    render()
   }
 
-  render();
+  function back() { if (cur > 1) { cur--; render() } }
+
+  function skipStep() {
+    if (cur === 5) { window.location.href = 'nearby-feed.html'; return }
+    cur++
+    render()
+  }
+
+  async function saveProfile() {
+    document.getElementById('saving-overlay').classList.add('show')
+
+    var firstName = document.getElementById('firstName').value.trim()
+    var lastName = document.getElementById('lastName').value.trim()
+    var bio = document.getElementById('bio').value.trim()
+    var occupation = document.getElementById('occupation').value.trim()
+    var interests = Array.from(document.querySelectorAll('.chip.on')).map(c => c.textContent.trim())
+
+    var fullName = (firstName + ' ' + lastName).trim()
+
+    var updates = {
+      user_type: selectedType,
+      is_newcomer: selectedType === 'newcomer',
+      neighborhood: selectedNeighborhood || 'General',
+      city: selectedCity || 'Lagos',
+      country: 'Nigeria'
+    }
+
+    if (fullName) updates.full_name = fullName
+    if (bio) updates.bio = bio
+    if (occupation) updates.occupation = occupation
+
+    try {
+      const { error } = await updateProfile(currentUserId, updates)
+      if (error) {
+        console.error('Profile save error:', error)
+        alert('Could not save profile. Please try again.')
+        document.getElementById('saving-overlay').classList.remove('show')
+        return
+      }
+
+      // Award newcomer badge if newcomer
+      if (selectedType === 'newcomer') {
+        await addRepPoints(currentUserId, 20)
+      }
+
+      document.getElementById('saving-overlay').classList.remove('show')
+      window.location.href = 'nearby-feed.html'
+    } catch (e) {
+      console.error(e)
+      document.getElementById('saving-overlay').classList.remove('show')
+      alert('Something went wrong. Please try again.')
+    }
+  }
+
+  function pick(el, type) {
+    document.querySelectorAll('.tcard').forEach(function(c){ c.classList.remove('on') })
+    el.classList.add('on')
+    selectedType = type
+  }
+
+  function updateNeighborhoods() {
+    var city = document.getElementById('citySelect').value
+    selectedCity = city
+    selectedNeighborhood = ''
+
+    var list = neighborhoods[city] || []
+    var grid = document.getElementById('nb-grid')
+    var picker = document.getElementById('nb-picker')
+
+    if (list.length > 0) {
+      picker.style.display = 'block'
+      document.getElementById('nb-manual-label').textContent = 'Or type your neighborhood'
+      grid.innerHTML = list.map(function(nb) {
+        return `<div class="nb-card" onclick="pickNeighborhood(this,'${nb}')">
+          <div class="nb-name">${nb}</div>
+          <div class="nb-city">${city}</div>
+        </div>`
+      }).join('')
+    } else {
+      picker.style.display = 'none'
+      document.getElementById('nb-manual-label').textContent = 'Neighborhood'
+    }
+
+    document.getElementById('neighborhood').value = ''
+  }
+
+  function pickNeighborhood(el, name) {
+    document.querySelectorAll('.nb-card').forEach(function(c){ c.classList.remove('on') })
+    el.classList.add('on')
+    selectedNeighborhood = name
+    document.getElementById('neighborhood').value = name
+  }
+
+  render()
+  init()
 </script>
 </body>
 </html>
