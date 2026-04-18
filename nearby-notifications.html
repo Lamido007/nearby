@@ -1,653 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Nearby — Notifications</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --cream: #F5F0E8;
-    --terracotta: #C4622D;
-    --navy: #1A2332;
-    --sage: #7A9E7E;
-    --amber: #E8A838;
-    --mid: #4A5568;
-    --light: #8A96A8;
-    --white: #FDFAF4;
-    --gold: #D4AF37;
-    --green: #38A169;
-    --red: #E53E3E;
-    --blue: #2980B9;
-    --purple: #9B59B6;
-  }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: #EEE9DF;
-    color: var(--navy);
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-  }
-
-  /* TOP NAV */
-  .topnav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px; background: var(--white);
-    position: sticky; top: 0; z-index: 50;
-    border-bottom: 1px solid rgba(0,0,0,0.07);
-  }
-  .nav-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
-  .nav-title span { color: var(--terracotta); font-style: italic; }
-  .nav-right { display: flex; gap: 8px; align-items: center; }
-  .mark-all {
-    font-size: 12px; font-weight: 600; color: var(--terracotta);
-    background: none; border: none; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; padding: 6px 10px;
-    border-radius: 8px;
-  }
-  .mark-all:hover { background: rgba(196,98,45,0.08); }
-  .settings-btn {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: var(--cream); border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; font-size: 16px;
-  }
-
-  /* UNREAD BADGE */
-  .unread-banner {
-    background: var(--terracotta); padding: 10px 16px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .unread-text { font-size: 13px; font-weight: 600; color: white; }
-  .unread-count {
-    background: rgba(255,255,255,0.25); color: white;
-    font-size: 11px; font-weight: 700; padding: 3px 10px;
-    border-radius: 100px;
-  }
-
-  /* FILTER TABS */
-  .filter-row {
-    display: flex; gap: 8px; overflow-x: auto;
-    padding: 12px 16px; background: var(--white);
-    margin-bottom: 10px; scrollbar-width: none;
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-  }
-  .filter-row::-webkit-scrollbar { display: none; }
-  .ftab {
-    flex-shrink: 0; padding: 6px 14px; border-radius: 100px;
-    border: 2px solid rgba(0,0,0,0.1); background: transparent;
-    font-size: 12px; font-weight: 600; color: var(--mid);
-    cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap;
-  }
-  .ftab.on { background: var(--navy); border-color: var(--navy); color: white; }
-
-  /* SECTION LABEL */
-  .section-label {
-    font-size: 11px; font-weight: 700; color: var(--light);
-    letter-spacing: 1px; text-transform: uppercase;
-    padding: 14px 16px 6px;
-  }
-
-  /* NOTIFICATION CARD */
-  .notif-card {
-    background: var(--white); margin: 0 0 2px;
-    padding: 14px 16px; display: flex; gap: 12px;
-    align-items: flex-start; cursor: pointer;
-    transition: background 0.15s; position: relative;
-  }
-  .notif-card:hover { background: rgba(0,0,0,0.02); }
-  .notif-card.unread { background: rgba(196,98,45,0.04); }
-  .notif-card.unread::before {
-    content: '';
-    position: absolute; left: 0; top: 0; bottom: 0;
-    width: 3px; border-radius: 0 4px 4px 0;
-    background: var(--terracotta);
-  }
-
-  /* ICON */
-  .notif-icon {
-    width: 46px; height: 46px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; flex-shrink: 0; position: relative;
-  }
-  .notif-type-dot {
-    position: absolute; bottom: 0; right: 0;
-    width: 16px; height: 16px; border-radius: 50%;
-    border: 2px solid var(--white);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 8px;
-  }
-
-  /* CONTENT */
-  .notif-body { flex: 1; }
-  .notif-title { font-size: 14px; font-weight: 600; color: var(--navy); line-height: 1.4; margin-bottom: 3px; }
-  .notif-title b { font-weight: 700; }
-  .notif-sub { font-size: 12px; color: var(--mid); line-height: 1.5; margin-bottom: 5px; }
-  .notif-time { font-size: 11px; color: var(--light); }
-  .notif-unread-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--terracotta); flex-shrink: 0; margin-top: 5px;
-  }
-
-  /* NOTIF ACTIONS */
-  .notif-actions { display: flex; gap: 8px; margin-top: 8px; }
-  .nact-btn {
-    padding: 6px 14px; border-radius: 100px; font-size: 12px;
-    font-weight: 700; border: none; cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .nact-primary { background: var(--navy); color: white; }
-  .nact-secondary { background: rgba(0,0,0,0.06); color: var(--mid); }
-  .nact-primary:active { background: var(--terracotta); }
-
-  /* SECURITY ALERT CARD */
-  .security-alert {
-    background: rgba(229,62,62,0.05);
-    border-left: 3px solid var(--red);
-  }
-  .security-alert.unread { background: rgba(229,62,62,0.08); }
-
-  /* SECURITY NOTIF SPECIAL */
-  .security-notif-card {
-    margin: 0 10px 10px;
-    background: linear-gradient(135deg, var(--navy), #2C3E6B);
-    border-radius: 16px; padding: 16px; overflow: hidden;
-    position: relative;
-  }
-  .security-notif-card::after {
-    content: '🔐';
-    position: absolute; right: -10px; top: -10px;
-    font-size: 70px; opacity: 0.06;
-  }
-  .snc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .snc-icon { font-size: 22px; }
-  .snc-title { font-size: 14px; font-weight: 700; color: white; }
-  .snc-sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 2px; }
-  .snc-body { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 12px; }
-  .snc-actions { display: flex; gap: 8px; }
-  .snc-btn {
-    flex: 1; padding: 9px; border-radius: 100px; text-align: center;
-    font-size: 12px; font-weight: 700; border: none; cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .snc-primary { background: var(--red); color: white; }
-  .snc-secondary { background: rgba(255,255,255,0.12); color: white; }
-
-  /* EMPTY STATE */
-  .empty {
-    text-align: center; padding: 60px 20px;
-    display: none;
-  }
-  .empty-icon { font-size: 48px; margin-bottom: 14px; }
-  .empty-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); margin-bottom: 8px; }
-  .empty-sub { font-size: 14px; color: var(--light); line-height: 1.6; }
-
-  /* NOTIF SETTINGS SHEET */
-  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; }
-  .sheet-overlay.open { display: block; }
-  .sheet {
-    display: none; position: fixed; bottom: 0; left: 50%;
-    transform: translateX(-50%); width: 100%; max-width: 480px;
-    background: var(--white); border-radius: 24px 24px 0 0;
-    padding: 20px 20px 40px; z-index: 101;
-  }
-  .sheet.open { display: block; }
-  .sheet-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 18px; }
-  .sheet-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); margin-bottom: 16px; }
-  .setting-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
-  }
-  .setting-row:last-child { border-bottom: none; }
-  .setting-left { flex: 1; }
-  .setting-name { font-size: 14px; font-weight: 600; color: var(--navy); }
-  .setting-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
-  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .tog-slider { position: absolute; inset: 0; background: rgba(0,0,0,0.15); border-radius: 100px; cursor: pointer; transition: 0.2s; }
-  .tog-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s; }
-  input:checked + .tog-slider { background: var(--terracotta); }
-  input:checked + .tog-slider::before { transform: translateX(20px); }
-
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 100%; max-width: 480px;
-    background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
-    display: flex; padding: 10px 0 16px;
-  }
-  .bnav-item {
-    flex: 1; display: flex; flex-direction: column; align-items: center;
-    gap: 4px; cursor: pointer; border: none; background: none;
-    font-family: 'DM Sans', sans-serif; position: relative;
-  }
-  .bnav-icon { font-size: 22px; }
-  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
-  .bnav-item.active .bnav-label { color: var(--terracotta); }
-  .bnav-badge {
-    position: absolute; top: -2px; right: 20%;
-    background: var(--terracotta); color: white;
-    font-size: 9px; font-weight: 700; padding: 1px 5px;
-    border-radius: 100px; min-width: 16px; text-align: center;
-  }
-
-  .page-pad { padding-bottom: 100px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--cream:#F5F0E8;--tc:#C4622D;--navy:#1A2332;--sage:#7A9E7E;--amber:#E8A838;--mid:#4A5568;--light:#8A96A8;--white:#FDFAF4;--green:#38A169;--red:#E53E3E}
+body{font-family:'DM Sans',sans-serif;background:#EEE9DF;color:var(--navy);max-width:480px;margin:0 auto;min-height:100vh}
+.topnav{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--white);position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(0,0,0,.07)}
+.nav-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--navy)}
+.nav-title span{color:var(--tc);font-style:italic}
+.mark-all{font-size:12px;font-weight:600;color:var(--tc);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:6px 10px;border-radius:8px}
+.notifs{padding:8px 0 80px}
+/* NOTIF ITEM */
+.notif-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--white);border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;transition:background .15s;position:relative}
+.notif-item.unread{background:rgba(196,98,45,.04)}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc);border-radius:0 2px 2px 0}
+.notif-item:hover{background:var(--cream)}
+.notif-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.notif-body{flex:1;min-width:0}
+.notif-msg{font-size:14px;color:var(--navy);line-height:1.5;margin-bottom:4px}
+.notif-msg.unread-txt{font-weight:600}
+.notif-time{font-size:12px;color:var(--light)}
+/* TYPE COLORS */
+.icon-welcome{background:rgba(122,158,126,.15)}
+.icon-badge{background:rgba(212,175,55,.15)}
+.icon-message{background:rgba(26,35,50,.08)}
+.icon-alert{background:rgba(229,62,62,.1)}
+.icon-announcement{background:rgba(196,98,45,.1)}
+.icon-like{background:rgba(196,98,45,.1)}
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px}
+.empty .emoji{font-size:48px;margin-bottom:16px}
+.empty h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.empty p{font-size:14px;color:var(--mid);line-height:1.6}
+/* SKELETON */
+.sk-notif{display:flex;gap:12px;padding:14px 16px;background:var(--white);border-bottom:1px solid rgba(0,0,0,.05);animation:shimmer 1.5s ease infinite}
+.sk-icon{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.07);flex-shrink:0}
+.sk-body{flex:1}
+.sk-line{height:12px;border-radius:100px;background:rgba(0,0,0,.07);margin-bottom:6px}
+.sk-line.w80{width:80%}.sk-line.w50{width:50%}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--white);border-top:1px solid rgba(0,0,0,.08);display:flex;padding:10px 0 16px;z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:'DM Sans',sans-serif;text-decoration:none}
+.bni-i{font-size:22px}.bni-l{font-size:10px;font-weight:600;color:var(--light)}
+.bni.on .bni-l{color:var(--tc)}
 </style>
 </head>
 <body>
-
-<!-- TOP NAV -->
 <div class="topnav">
-  <div class="nav-title">Notifica<span>tions</span></div>
-  <div class="nav-right">
-    <button class="mark-all" onclick="markAllRead()">Mark all read</button>
-    <button class="settings-btn" onclick="openSettings()">⚙️</button>
-  </div>
+  <div class="nav-title">Notifi<span>cations</span></div>
+  <button class="mark-all" onclick="markAllRead()">Mark all read</button>
 </div>
 
-<!-- UNREAD BANNER -->
-<div class="unread-banner" id="unreadBanner">
-  <div class="unread-text">🔔 You have unread notifications</div>
-  <div class="unread-count" id="unreadCount">8 unread</div>
+<div class="notifs" id="notifs">
+  <div class="sk-notif"><div class="sk-icon"></div><div class="sk-body"><div class="sk-line w80"></div><div class="sk-line w50"></div></div></div>
+  <div class="sk-notif"><div class="sk-icon"></div><div class="sk-body"><div class="sk-line w80"></div><div class="sk-line w50"></div></div></div>
+  <div class="sk-notif"><div class="sk-icon"></div><div class="sk-body"><div class="sk-line w80"></div><div class="sk-line w50"></div></div></div>
 </div>
 
-<!-- FILTER TABS -->
-<div class="filter-row">
-  <button class="ftab on" onclick="setTab(this)">🔔 All</button>
-  <button class="ftab" onclick="setTab(this)">👥 Community</button>
-  <button class="ftab" onclick="setTab(this)">💼 Jobs</button>
-  <button class="ftab" onclick="setTab(this)">🆕 Arrivals</button>
-  <button class="ftab" onclick="setTab(this)">🛡️ Security</button>
-  <button class="ftab" onclick="setTab(this)">🏆 Badges</button>
-</div>
-
-<div class="page-pad">
-
-  <!-- SECURITY PRIORITY ALERT -->
-  <div class="security-notif-card">
-    <div class="snc-top">
-      <div class="snc-icon">🔐</div>
-      <div>
-        <div class="snc-title">Security Alert · Action Required</div>
-        <div class="snc-sub">New login detected · 5 minutes ago</div>
-      </div>
-    </div>
-    <div class="snc-body">A new login was detected on your Nearby account from a new device in Johannesburg. If this was you, you're all good. If not, secure your account immediately.</div>
-    <div class="snc-actions">
-      <button class="snc-btn snc-primary" onclick="secureAccount()">🔒 Secure Account</button>
-      <button class="snc-btn snc-secondary" onclick="this.parentElement.parentElement.style.opacity='0.5';showToast('Marked as safe ✓')">That was me</button>
-    </div>
-  </div>
-
-  <!-- TODAY -->
-  <div class="section-label">Today</div>
-
-  <!-- WELCOME REACTION -->
-  <div class="notif-card unread" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(196,98,45,0.1);">
-      👋
-      <div class="notif-type-dot" style="background:var(--terracotta);">❤️</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title"><b>Marcus Johnson</b> loved your welcome message!</div>
-      <div class="notif-sub">"Thanks so much Lerato, you've made me feel right at home already 😊"</div>
-      <div class="notif-time">2 minutes ago · +10 rep pts earned</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="showToast('Opening chat...')">Reply</button>
-        <button class="nact-btn nact-secondary" onclick="showToast('Dismissed')">Dismiss</button>
-      </div>
-    </div>
-    <div class="notif-unread-dot"></div>
-  </div>
-
-  <!-- JOB APPLICATION -->
-  <div class="notif-card unread" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(122,158,126,0.1);">
-      💼
-      <div class="notif-type-dot" style="background:var(--sage);">✓</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title"><b>Blue Moon Bakery</b> viewed your application</div>
-      <div class="notif-sub">Sales Assistant position · They're reviewing 12 applications from your area</div>
-      <div class="notif-time">35 minutes ago</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="window.location.href='nearby-jobs.html'">View Job</button>
-        <button class="nact-btn nact-secondary" onclick="showToast('Dismissed')">Dismiss</button>
-      </div>
-    </div>
-    <div class="notif-unread-dot"></div>
-  </div>
-
-  <!-- BADGE UPGRADE -->
-  <div class="notif-card unread" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(212,175,55,0.15);">
-      🏆
-      <div class="notif-type-dot" style="background:var(--gold);">⭐</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title">You're <b>85% to Community Legend!</b> 👑</div>
-      <div class="notif-sub">847 / 1,000 reputation points. Keep welcoming neighbors and posting great content!</div>
-      <div class="notif-time">1 hour ago</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="window.location.href='nearby-profile.html'">View Progress</button>
-      </div>
-    </div>
-    <div class="notif-unread-dot"></div>
-  </div>
-
-  <!-- NEW ARRIVAL -->
-  <div class="notif-card unread" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(41,128,185,0.1);">
-      🆕
-      <div class="notif-type-dot" style="background:var(--blue);">📍</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title"><b>Sara Bekele</b> just arrived in your area!</div>
-      <div class="notif-sub">Visitor from Addis Ababa · Looking for food and music spots in City Bowl</div>
-      <div class="notif-time">2 hours ago</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="window.location.href='nearby-arrivals.html'">Say Hello · +10 pts</button>
-        <button class="nact-btn nact-secondary" onclick="showToast('Dismissed')">Skip</button>
-      </div>
-    </div>
-    <div class="notif-unread-dot"></div>
-  </div>
-
-  <!-- SAFETY ALERT -->
-  <div class="notif-card security-alert unread" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(229,62,62,0.1);">
-      🔔
-      <div class="notif-type-dot" style="background:var(--red);">!</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title" style="color:var(--red);">⚠️ <b>Safety Alert</b> in your neighborhood</div>
-      <div class="notif-sub">Car break-ins reported on Regent Rd last night. Neighborhood Watch posted an update.</div>
-      <div class="notif-time">3 hours ago · Green Point</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="window.location.href='nearby-feed.html'">View Alert</button>
-        <button class="nact-btn nact-secondary" onclick="showToast('Dismissed')">Dismiss</button>
-      </div>
-    </div>
-    <div class="notif-unread-dot"></div>
-  </div>
-
-  <!-- EVENT RSVP -->
-  <div class="notif-card unread" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(155,89,182,0.1);">
-      🎉
-      <div class="notif-type-dot" style="background:var(--purple);">📅</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title"><b>Lerato's Neighborhood Braai</b> is tomorrow!</div>
-      <div class="notif-sub">You RSVP'd · Saturday 1:00 PM · Block B Garden · 28 neighbors going</div>
-      <div class="notif-time">4 hours ago</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="showToast('Event details opened!')">View Event</button>
-        <button class="nact-btn nact-secondary" onclick="showToast('RSVP cancelled')">Cancel RSVP</button>
-      </div>
-    </div>
-    <div class="notif-unread-dot"></div>
-  </div>
-
-  <!-- REVIEW REPLY -->
-  <div class="notif-card unread" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(122,158,126,0.1);">
-      ⭐
-      <div class="notif-type-dot" style="background:var(--sage);">💬</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title"><b>Blue Moon Bakery</b> replied to your review</div>
-      <div class="notif-sub">"Thank you so much Lerato! You're always a pleasure to serve ☕❤️"</div>
-      <div class="notif-time">5 hours ago</div>
-    </div>
-    <div class="notif-unread-dot"></div>
-  </div>
-
-  <!-- YESTERDAY -->
-  <div class="section-label">Yesterday</div>
-
-  <!-- POST LIKED -->
-  <div class="notif-card" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(196,98,45,0.08);">
-      ❤️
-      <div class="notif-type-dot" style="background:var(--terracotta);">+</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title"><b>34 neighbors</b> liked your community post</div>
-      <div class="notif-sub">"Hosting a neighborhood braai this Saturday..." · +8 rep pts earned</div>
-      <div class="notif-time">Yesterday at 3:20 PM</div>
-    </div>
-  </div>
-
-  <!-- NEW FOLLOWER -->
-  <div class="notif-card" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(41,128,185,0.1);">
-      👤
-      <div class="notif-type-dot" style="background:var(--blue);">+</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title"><b>Kofi Asante</b> started following you</div>
-      <div class="notif-sub">Newcomer from Accra · Now in Sea Point</div>
-      <div class="notif-time">Yesterday at 11:45 AM</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="showToast('Following Kofi back!')">Follow Back</button>
-        <button class="nact-btn nact-secondary" onclick="showToast('Dismissed')">Dismiss</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SECURITY: OTP VERIFIED -->
-  <div class="notif-card security-alert" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(56,161,105,0.1);">
-      🔒
-      <div class="notif-type-dot" style="background:var(--green);">✓</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title" style="color:var(--green);"><b>Account Secured</b> — Phone verified ✓</div>
-      <div class="notif-sub">Your phone number was successfully verified via OTP. Your account now has enhanced security.</div>
-      <div class="notif-time">Yesterday at 9:00 AM</div>
-    </div>
-  </div>
-
-  <!-- JOB MATCH -->
-  <div class="notif-card" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(232,168,56,0.1);">
-      🎯
-      <div class="notif-type-dot" style="background:var(--amber);">💼</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title">New job match: <b>Social Media Manager</b></div>
-      <div class="notif-sub">Digital Den Agency · Matches your interests · Remote · R6,000/mo</div>
-      <div class="notif-time">Yesterday at 8:15 AM</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="window.location.href='nearby-jobs.html'">View Job</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- EARLIER -->
-  <div class="section-label">Earlier This Week</div>
-
-  <!-- AMBASSADOR APPROVED -->
-  <div class="notif-card" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(212,175,55,0.12);">
-      🏆
-      <div class="notif-type-dot" style="background:var(--gold);">✓</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title">🎉 Congratulations! You're now a <b>Community Ambassador!</b></div>
-      <div class="notif-sub">Admin approved your Ambassador status. You've unlocked priority feed placement, gold profile ring and newcomer welcome features!</div>
-      <div class="notif-time">3 days ago</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="window.location.href='nearby-profile.html'">View Badge</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SECURITY: DATA POLICY -->
-  <div class="notif-card security-alert" onclick="dismissUnread(this)">
-    <div class="notif-icon" style="background:rgba(26,35,50,0.07);">
-      📋
-      <div class="notif-type-dot" style="background:var(--navy);">!</div>
-    </div>
-    <div class="notif-body">
-      <div class="notif-title"><b>Privacy Policy Updated</b> — Please review</div>
-      <div class="notif-sub">We updated our privacy policy. Key change: your location data is now stored with AES-256 encryption. No new permissions required.</div>
-      <div class="notif-time">5 days ago</div>
-      <div class="notif-actions">
-        <button class="nact-btn nact-primary" onclick="showToast('Opening privacy policy...')">Read Update</button>
-        <button class="nact-btn nact-secondary" onclick="showToast('Acknowledged ✓')">OK, got it</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- SETTINGS SHEET OVERLAY -->
-<div class="sheet-overlay" id="overlay" onclick="closeSettings()"></div>
-
-<!-- NOTIFICATION SETTINGS SHEET -->
-<div class="sheet" id="settingsSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-title">🔔 Notification Settings</div>
-
-  <div class="setting-row">
-    <div class="setting-left">
-      <div class="setting-name">New Arrivals</div>
-      <div class="setting-desc">When someone new moves to your area</div>
-    </div>
-    <label class="toggle"><input type="checkbox" checked /><span class="tog-slider"></span></label>
-  </div>
-  <div class="setting-row">
-    <div class="setting-left">
-      <div class="setting-name">Job Matches</div>
-      <div class="setting-desc">New jobs that match your interests</div>
-    </div>
-    <label class="toggle"><input type="checkbox" checked /><span class="tog-slider"></span></label>
-  </div>
-  <div class="setting-row">
-    <div class="setting-left">
-      <div class="setting-name">Community Events</div>
-      <div class="setting-desc">Events and RSVPs in your area</div>
-    </div>
-    <label class="toggle"><input type="checkbox" checked /><span class="tog-slider"></span></label>
-  </div>
-  <div class="setting-row">
-    <div class="setting-left">
-      <div class="setting-name">Safety Alerts</div>
-      <div class="setting-desc">Neighborhood watch and safety posts</div>
-    </div>
-    <label class="toggle"><input type="checkbox" checked /><span class="tog-slider"></span></label>
-  </div>
-  <div class="setting-row">
-    <div class="setting-left">
-      <div class="setting-name">Reputation & Badges</div>
-      <div class="setting-desc">Points earned and badge updates</div>
-    </div>
-    <label class="toggle"><input type="checkbox" checked /><span class="tog-slider"></span></label>
-  </div>
-  <div class="setting-row">
-    <div class="setting-left">
-      <div class="setting-name">Likes & Comments</div>
-      <div class="setting-desc">When neighbors interact with your posts</div>
-    </div>
-    <label class="toggle"><input type="checkbox" checked /><span class="tog-slider"></span></label>
-  </div>
-  <div class="setting-row">
-    <div class="setting-left">
-      <div class="setting-name" style="color:var(--red);">🔐 Security Alerts</div>
-      <div class="setting-desc">Login attempts, account changes · Always on</div>
-    </div>
-    <label class="toggle"><input type="checkbox" checked disabled /><span class="tog-slider" style="background:var(--red);opacity:0.6;"></span></label>
-  </div>
-</div>
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="bnav-item" onclick="window.location.href='nearby-feed.html'">
-    <div class="bnav-icon">🏡</div><div class="bnav-label">Home</div>
-  </button>
-  <button class="bnav-item" onclick="window.location.href='nearby-arrivals.html'">
-    <div class="bnav-icon">🆕</div><div class="bnav-label">Arrivals</div>
-  </button>
-  <button class="bnav-item active">
-    <div class="bnav-icon">🔔</div>
-    <div class="bnav-badge" id="navBadge">8</div>
-    <div class="bnav-label">Alerts</div>
-  </button>
-  <button class="bnav-item" onclick="window.location.href='nearby-profile.html'">
-    <div class="bnav-icon">👤</div><div class="bnav-label">Profile</div>
-  </button>
+<div class="bnav">
+  <a href="nearby-feed.html" class="bni"><div class="bni-i">🏡</div><div class="bni-l">Home</div></a>
+  <a href="nearby-arrivals.html" class="bni"><div class="bni-i">🆕</div><div class="bni-l">Arrivals</div></a>
+  <a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+  <a href="nearby-profile.html" class="bni"><div class="bni-i">👤</div><div class="bni-l">Profile</div></a>
 </div>
 
 <script>
-  var unreadCount = 8;
+let me = null
 
-  function setTab(el) {
-    document.querySelectorAll('.ftab').forEach(function(t){ t.classList.remove('on'); });
-    el.classList.add('on');
+const TYPE_ICONS = {
+  welcome: ['👋','icon-welcome'], badge: ['🏆','icon-badge'],
+  message: ['💬','icon-message'], alert: ['🔔','icon-alert'],
+  announcement: ['📢','icon-announcement'], like: ['❤️','icon-like'],
+  default: ['📱','icon-announcement']
+}
+
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+async function init() {
+  const sess = await getSession()
+  if (!sess) { window.location.href = 'nearby-auth.html'; return }
+  me = await getCurrentUser()
+  if (!me) { window.location.href = 'nearby-onboarding.html'; return }
+  await loadNotifications()
+
+  // Real-time
+  subscribeToNotifications(me.id, payload => {
+    if (payload.new) prependNotif(payload.new)
+  })
+}
+
+async function loadNotifications() {
+  const notifs = await loadNotifications_db(me.id)
+  const container = document.getElementById('notifs')
+
+  if (!notifs || !notifs.length) {
+    container.innerHTML = `<div class="empty"><div class="emoji">🔔</div><h3>No notifications yet</h3><p>When neighbors interact with your posts or welcome you, it'll show up here.</p></div>`
+    return
   }
 
-  function dismissUnread(card) {
-    if (card.classList.contains('unread')) {
-      card.classList.remove('unread');
-      var dot = card.querySelector('.notif-unread-dot');
-      if (dot) dot.style.display = 'none';
-      unreadCount = Math.max(0, unreadCount - 1);
-      updateBadge();
-    }
-  }
+  container.innerHTML = notifs.map(n => buildNotifItem(n)).join('')
 
-  function markAllRead() {
-    document.querySelectorAll('.notif-card.unread').forEach(function(c) {
-      c.classList.remove('unread');
-      var dot = c.querySelector('.notif-unread-dot');
-      if (dot) dot.style.display = 'none';
-    });
-    unreadCount = 0;
-    updateBadge();
-    showToast('All notifications marked as read ✓');
-  }
+  // Mark all as read after viewing
+  setTimeout(() => markAllRead(), 2000)
+}
 
-  function updateBadge() {
-    var badge = document.getElementById('navBadge');
-    var banner = document.getElementById('unreadBanner');
-    var countEl = document.getElementById('unreadCount');
-    if (unreadCount === 0) {
-      badge.style.display = 'none';
-      banner.style.display = 'none';
-    } else {
-      badge.textContent = unreadCount;
-      countEl.textContent = unreadCount + ' unread';
-    }
-  }
+async function loadNotifications_db(userId) {
+  const { data } = await sb.from('notifications')
+    .select('*, from_user:users!from_user_id(id, full_name, avatar_url, badge_level)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+  return data || []
+}
 
-  function openSettings() {
-    document.getElementById('settingsSheet').classList.add('open');
-    document.getElementById('overlay').classList.add('open');
-  }
+function buildNotifItem(n) {
+  const [icon, cls] = TYPE_ICONS[n.type] || TYPE_ICONS.default
+  const isUnread = !n.is_read
+  const fromName = n.from_user?.full_name || 'Nearby'
+  const msg = n.message || ''
+  return `<div class="notif-item${isUnread?' unread':''}" id="n-${n.id}" onclick="handleNotifClick('${n.id}','${n.type}','${n.from_user?.id||''}')">
+    <div class="notif-icon ${cls}">${icon}</div>
+    <div class="notif-body">
+      <div class="notif-msg${isUnread?' unread-txt':''}">${esc(msg)}</div>
+      <div class="notif-time">${timeAgo(n.created_at)}</div>
+    </div>
+  </div>`
+}
 
-  function closeSettings() {
-    document.getElementById('settingsSheet').classList.remove('open');
-    document.getElementById('overlay').classList.remove('open');
-  }
+function prependNotif(n) {
+  const container = document.getElementById('notifs')
+  const empty = container.querySelector('.empty')
+  if (empty) container.innerHTML = ''
+  const div = document.createElement('div')
+  div.innerHTML = buildNotifItem(n)
+  container.insertBefore(div.firstChild, container.firstChild)
+}
 
-  function secureAccount() {
-    showToast('Logging out all other devices... 🔒');
-    setTimeout(function(){
-      showToast('Account secured! ✓ All sessions ended.');
-    }, 2000);
+async function handleNotifClick(notifId, type, fromUserId) {
+  await markNotifRead(notifId)
+  const el = document.getElementById('n-' + notifId)
+  if (el) { el.classList.remove('unread'); el.style.background = '' }
+  if (type === 'message' && fromUserId) {
+    window.location.href = 'nearby-messages.html?user=' + fromUserId
+  } else if (type === 'badge') {
+    window.location.href = 'nearby-profile.html'
   }
+}
 
-  function showToast(msg) {
-    var t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
-    document.body.appendChild(t);
-    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 1800);
-    setTimeout(function(){ t.remove(); }, 2200);
-  }
+async function markAllRead() {
+  if (!me) return
+  await sb.from('notifications')
+    .update({ is_read: true })
+    .eq('user_id', me.id)
+    .eq('is_read', false)
+  document.querySelectorAll('.notif-item.unread').forEach(el => {
+    el.classList.remove('unread')
+    el.style.background = ''
+    const txt = el.querySelector('.notif-msg')
+    if (txt) txt.classList.remove('unread-txt')
+  })
+}
+
+init()
 </script>
 </body>
 </html>
