@@ -1,668 +1,554 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Nearby"/>
+<link rel="manifest" href="manifest.json"/>
 <title>Nearby — Join Your Community</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<!-- Supabase SDK -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F5F0E8;--warm:#FDFAF4;--tc:#C4622D;--tcl:#E07A4A;
+  --navy:#1A2332;--sage:#7A9E7E;--amber:#E8A838;
+  --mid:#4A5568;--light:#8A96A8;--err:#E53E3E;--ok:#38A169
+}
+html,body{width:100%;min-height:100%;min-height:100dvh;overflow-x:hidden}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--warm);color:var(--navy);
+  display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
 
-  :root {
-    --cream: #F5F0E8;
-    --warm-white: #FDFAF4;
-    --terracotta: #C4622D;
-    --terracotta-light: #E07A4A;
-    --navy: #1A2332;
-    --navy-mid: #243044;
-    --sage: #7A9E7E;
-    --amber: #E8A838;
-    --text-dark: #1A2332;
-    --text-mid: #4A5568;
-    --text-light: #8A96A8;
-    --error: #E53E3E;
-    --success: #38A169;
-  }
+/* INSTALL BANNER */
+.install-banner{
+  background:var(--navy);color:white;padding:10px 16px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:600;cursor:pointer;
+  position:relative;z-index:100;
+}
+.install-banner .ib-icon{font-size:22px;flex-shrink:0}
+.install-banner .ib-text{flex:1;line-height:1.3}
+.install-banner .ib-text small{font-weight:400;opacity:.7;display:block;font-size:11px}
+.install-banner .ib-btn{background:var(--tc);color:white;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0}
+.install-banner .ib-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;flex-shrink:0;padding:4px}
 
-  html { scroll-behavior: smooth; }
+/* TWO-COLUMN ON WIDE, SINGLE ON MOBILE */
+.auth-wrapper{
+  display:flex;flex:1;min-height:calc(100dvh - 50px);
+}
+/* LEFT PANEL — hide on small screens */
+.left-panel{
+  width:44%;background:var(--navy);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:48px;position:fixed;top:0;left:0;bottom:0;
+  overflow:hidden;
+}
+.left-panel::before{
+  content:'';position:absolute;top:-150px;right:-150px;
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(196,98,45,.2) 0%,transparent 70%);
+  border-radius:50%;animation:gp 6s ease-in-out infinite;
+}
+.left-panel::after{
+  content:'';position:absolute;bottom:-100px;left:-100px;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(122,158,126,.15) 0%,transparent 70%);
+  border-radius:50%;animation:gp 8s ease-in-out infinite reverse;
+}
+@keyframes gp{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.panel-logo{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:white;text-decoration:none;position:relative;z-index:2}
+.panel-logo span{color:var(--tc)}
+.panel-content{position:relative;z-index:2}
+.panel-content h2{font-family:'Playfair Display',serif;font-size:42px;font-weight:900;line-height:1.1;letter-spacing:-2px;color:white;margin-bottom:16px}
+.panel-content h2 em{color:var(--amber);font-style:italic}
+.panel-content p{font-size:16px;color:rgba(255,255,255,.6);line-height:1.7;max-width:320px}
+.comm-cards{position:relative;z-index:2;display:flex;flex-direction:column;gap:10px}
+.cc{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px}
+.cc-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:white;flex-shrink:0}
+.cc-name{font-size:13px;font-weight:600;color:white}
+.cc-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+.cc-badge{margin-left:auto;font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;flex-shrink:0}
+.cb-new{background:rgba(196,98,45,.3);color:var(--tcl)}
+.cb-job{background:rgba(122,158,126,.3);color:#9EC4A2}
+.cb-amb{background:rgba(232,168,56,.3);color:var(--amber)}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--warm-white);
-    color: var(--text-dark);
-    min-height: 100vh;
-    display: flex;
-    overflow-x: hidden;
-  }
+/* RIGHT PANEL */
+.right-panel{
+  margin-left:44%;width:56%;
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 32px;min-height:100dvh;
+}
+.auth-box{width:100%;max-width:440px}
 
-  /* ── LEFT PANEL ── */
-  .left-panel {
-    width: 45%;
-    background: var(--navy);
-    position: fixed; top: 0; left: 0; bottom: 0;
-    display: flex; flex-direction: column;
-    justify-content: space-between;
-    padding: 48px;
-    overflow: hidden;
-  }
-  .left-panel::before {
-    content: '';
-    position: absolute; top: -150px; right: -150px;
-    width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(196,98,45,0.2) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: pulse 6s ease-in-out infinite;
-  }
-  .left-panel::after {
-    content: '';
-    position: absolute; bottom: -100px; left: -100px;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(122,158,126,0.15) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: pulse 8s ease-in-out infinite reverse;
-  }
-  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--cream);border-radius:14px;padding:5px;margin-bottom:28px}
+.tab{flex:1;padding:11px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .25s;background:transparent;color:var(--light)}
+.tab.on{background:white;color:var(--navy);box-shadow:0 2px 10px rgba(0,0,0,.08)}
 
-  .panel-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 32px; font-weight: 900; color: white;
-    position: relative; z-index: 2;
-    text-decoration: none; display: inline-block;
-  }
-  .panel-logo span { color: var(--terracotta); }
+/* FORM */
+.form-wrap{display:none}.form-wrap.on{display:block}
+.form-head{margin-bottom:24px}
+.form-head h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;letter-spacing:-1px;color:var(--navy);margin-bottom:6px}
+.form-head p{font-size:14px;color:var(--mid)}
 
-  .panel-content { position: relative; z-index: 2; }
-  .panel-content h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 48px; font-weight: 900; line-height: 1.1;
-    letter-spacing: -2px; color: white; margin-bottom: 20px;
-  }
-  .panel-content h2 em { color: var(--amber); font-style: italic; }
-  .panel-content p { font-size: 17px; color: rgba(255,255,255,0.6); line-height: 1.7; max-width: 360px; }
+/* ACCOUNT TYPES */
+.atypes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.atype{border:2px solid rgba(26,35,50,.1);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;background:transparent;font-family:'DM Sans',sans-serif;text-align:left}
+.atype:hover{border-color:var(--tc)}
+.atype.on{border-color:var(--tc);background:rgba(196,98,45,.06)}
+.atype-icon{font-size:20px}
+.atype-label{font-size:12px;font-weight:700;color:var(--navy)}
+.atype-sub{font-size:10px;color:var(--light)}
 
-  .community-cards { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 12px; }
-  .comm-card {
-    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px; padding: 16px 20px;
-    display: flex; align-items: center; gap: 14px;
-    animation: slideIn 0.6s ease both;
-  }
-  .comm-card:nth-child(1) { animation-delay: 0.1s; }
-  .comm-card:nth-child(2) { animation-delay: 0.25s; }
-  .comm-card:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-  .comm-avatar {
-    width: 42px; height: 42px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 16px; color: white; flex-shrink: 0;
-  }
-  .comm-name { font-size: 14px; font-weight: 600; color: white; }
-  .comm-detail { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
-  .comm-badge {
-    margin-left: auto; flex-shrink: 0;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
-    padding: 4px 10px; border-radius: 100px; text-transform: uppercase;
-  }
-  .badge-new { background: rgba(196,98,45,0.3); color: var(--terracotta-light); }
-  .badge-job { background: rgba(122,158,126,0.3); color: #9EC4A2; }
-  .badge-local { background: rgba(232,168,56,0.3); color: var(--amber); }
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(26,35,50,.08)}
+.divider span{font-size:11px;color:var(--light);font-weight:500}
 
-  /* ── RIGHT PANEL ── */
-  .right-panel {
-    margin-left: 45%; width: 55%;
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 48px;
-  }
-  .auth-box { width: 100%; max-width: 480px; }
+/* GOOGLE BTN */
+.btn-google{width:100%;padding:13px;border:2px solid rgba(26,35,50,.1);border-radius:12px;background:white;display:flex;align-items:center;justify-content:center;gap:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;transition:all .2s;margin-bottom:16px}
+.btn-google:hover{border-color:var(--navy);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.gicon{width:18px;height:18px}
 
-  /* Tabs */
-  .auth-tabs {
-    display: flex; gap: 4px;
-    background: var(--cream); border-radius: 16px; padding: 6px;
-    margin-bottom: 36px;
-  }
-  .auth-tab {
-    flex: 1; padding: 12px; border-radius: 12px; border: none;
-    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
-    cursor: pointer; transition: all 0.25s; background: transparent; color: var(--text-light);
-  }
-  .auth-tab.active { background: white; color: var(--navy); box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+/* INPUTS */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:.2px}
+.field input{width:100%;padding:13px 15px;border:2px solid rgba(26,35,50,.1);border-radius:12px;background:white;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--navy);transition:all .2s;outline:none;-webkit-appearance:none}
+.field input:focus{border-color:var(--tc);box-shadow:0 0 0 3px rgba(196,98,45,.08)}
+.field input.err{border-color:var(--err)}
+.field input.ok{border-color:var(--ok)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:46px}
+.pw-toggle{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--light);padding:4px}
+.pw-bars{display:flex;gap:4px;margin-top:7px}
+.pw-bar{height:3px;flex:1;border-radius:100px;background:rgba(26,35,50,.1);transition:background .3s}
+.pw-bar.weak{background:var(--err)}.pw-bar.fair{background:var(--amber)}.pw-bar.strong{background:var(--ok)}
+.pw-hint{font-size:11px;color:var(--light);margin-top:4px}
 
-  .form-heading { margin-bottom: 28px; }
-  .form-heading h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 32px; font-weight: 900; letter-spacing: -1px; color: var(--navy); margin-bottom: 8px;
-  }
-  .form-heading p { font-size: 15px; color: var(--text-mid); }
+/* TERMS */
+.terms{display:flex;align-items:flex-start;gap:9px;margin-bottom:20px}
+.terms input[type=checkbox]{width:17px;height:17px;flex-shrink:0;accent-color:var(--tc);margin-top:2px;cursor:pointer}
+.terms label{font-size:12px;color:var(--mid);line-height:1.5;cursor:pointer}
+.terms a{color:var(--tc);text-decoration:none}
 
-  /* Account type selector */
-  .account-types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px; }
-  .account-type {
-    border: 2px solid rgba(26,35,50,0.1); border-radius: 14px; padding: 14px 16px;
-    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px;
-    background: transparent; font-family: 'DM Sans', sans-serif; text-align: left;
-  }
-  .account-type:hover { border-color: var(--terracotta); }
-  .account-type.selected { border-color: var(--terracotta); background: rgba(196,98,45,0.06); }
-  .type-icon { font-size: 22px; }
-  .type-label { font-size: 13px; font-weight: 600; color: var(--navy); }
-  .type-sub { font-size: 11px; color: var(--text-light); }
+/* ALERT */
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:none;line-height:1.5}
+.alert.show{display:block}
+.alert.err{background:rgba(229,62,62,.1);color:var(--err);border:1px solid rgba(229,62,62,.2)}
+.alert.info{background:rgba(56,161,105,.1);color:var(--ok);border:1px solid rgba(56,161,105,.2)}
+.alert.warn{background:rgba(232,168,56,.1);color:#8B6914;border:1px solid rgba(232,168,56,.2)}
 
-  /* Divider */
-  .divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(26,35,50,0.1); }
-  .divider span { font-size: 12px; color: var(--text-light); font-weight: 500; }
+/* SUBMIT */
+.btn-submit{width:100%;padding:15px;background:var(--navy);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.btn-submit:hover{background:var(--tc);transform:translateY(-1px);box-shadow:0 6px 20px rgba(196,98,45,.3)}
+.btn-submit:disabled{opacity:.7;cursor:default;transform:none}
+.btn-submit.loading::after{content:'';position:absolute;right:18px;top:50%;transform:translateY(-50%);width:17px;height:17px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
+.switch{text-align:center;margin-top:16px;font-size:13px;color:var(--mid)}
+.switch a{color:var(--tc);font-weight:600;text-decoration:none;cursor:pointer}
+.forgot{text-align:right;margin:-6px 0 16px}
+.forgot a{font-size:12px;color:var(--tc);text-decoration:none;font-weight:500;cursor:pointer}
 
-  /* Google button */
-  .btn-google {
-    width: 100%; padding: 14px; border: 2px solid rgba(26,35,50,0.1);
-    border-radius: 14px; background: white;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-dark);
-    cursor: pointer; transition: all 0.2s; margin-bottom: 20px;
-  }
-  .btn-google:hover { border-color: var(--navy); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-  .google-icon { width: 20px; height: 20px; }
+/* SUCCESS SCREEN */
+.success-screen{display:none;text-align:center;padding:32px 0}
+.success-screen.on{display:block}
+.success-icon{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--tc),var(--amber));display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 20px}
+.success-screen h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--navy);margin-bottom:10px}
+.success-screen p{color:var(--mid);font-size:14px;line-height:1.6;margin-bottom:24px}
+.btn-next{display:inline-block;padding:13px 36px;background:var(--tc);color:white;border-radius:100px;font-weight:700;font-size:14px;text-decoration:none;border:none;cursor:pointer;transition:all .3s;font-family:'DM Sans',sans-serif}
+.btn-next:hover{background:var(--tcl);transform:translateY(-1px)}
 
-  /* Input fields */
-  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .input-group { margin-bottom: 16px; position: relative; }
-  .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; }
-  .input-group input, .input-group select {
-    width: 100%; padding: 14px 16px;
-    border: 2px solid rgba(26,35,50,0.1); border-radius: 14px; background: white;
-    font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-dark);
-    transition: all 0.2s; outline: none; appearance: none;
-  }
-  .input-group input:focus, .input-group select:focus {
-    border-color: var(--terracotta); box-shadow: 0 0 0 4px rgba(196,98,45,0.08);
-  }
-  .input-group input.error-field { border-color: var(--error); }
-  .input-group input.success-field { border-color: var(--success); }
+/* PWA INSTALL PROMPT (iOS) */
+.ios-hint{display:none;background:var(--navy);color:white;border-radius:16px;padding:16px;margin-bottom:20px;font-size:13px;line-height:1.6}
+.ios-hint strong{color:var(--amber)}
 
-  .password-wrap { position: relative; }
-  .password-wrap input { padding-right: 48px; }
-  .toggle-pw {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-light); padding: 4px;
-  }
-
-  .pw-strength { margin-top: 8px; }
-  .pw-bars { display: flex; gap: 4px; margin-bottom: 4px; }
-  .pw-bar { height: 3px; flex: 1; border-radius: 100px; background: rgba(26,35,50,0.1); transition: background 0.3s; }
-  .pw-bar.weak { background: var(--error); }
-  .pw-bar.medium { background: var(--amber); }
-  .pw-bar.strong { background: var(--success); }
-  .pw-label { font-size: 11px; color: var(--text-light); }
-
-  .terms-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 24px; }
-  .terms-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--terracotta); margin-top: 2px; cursor: pointer; }
-  .terms-row label { font-size: 13px; color: var(--text-mid); line-height: 1.5; cursor: pointer; }
-  .terms-row a { color: var(--terracotta); text-decoration: none; }
-
-  /* Error/info alert */
-  .alert {
-    padding: 12px 16px; border-radius: 12px; font-size: 14px; margin-bottom: 16px;
-    display: none; animation: fadeIn 0.3s ease;
-  }
-  .alert.error { background: rgba(229,62,62,0.1); color: var(--error); border: 1px solid rgba(229,62,62,0.2); display: block; }
-  .alert.info { background: rgba(56,161,105,0.1); color: var(--success); border: 1px solid rgba(56,161,105,0.2); display: block; }
-
-  /* Submit button */
-  .btn-submit {
-    width: 100%; padding: 16px; background: var(--navy); color: white;
-    border: none; border-radius: 14px; font-family: 'DM Sans', sans-serif;
-    font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s;
-    position: relative; overflow: hidden;
-  }
-  .btn-submit:hover { background: var(--terracotta); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,98,45,0.3); }
-  .btn-submit:active { transform: translateY(0); }
-  .btn-submit:disabled { pointer-events: none; opacity: 0.7; }
-  .btn-submit.loading::after {
-    content: '';
-    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.3); border-top-color: white;
-    border-radius: 50%; animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
-
-  .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-mid); }
-  .switch-link a { color: var(--terracotta); font-weight: 600; text-decoration: none; }
-
-  .forgot-link { text-align: right; margin-bottom: 20px; margin-top: -8px; }
-  .forgot-link a { font-size: 13px; color: var(--terracotta); text-decoration: none; font-weight: 500; }
-
-  /* Success screen */
-  .success-screen { display: none; text-align: center; padding: 40px 0; animation: fadeIn 0.5s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-  .success-icon {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--terracotta), var(--amber));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 36px; margin: 0 auto 24px;
-  }
-  .success-screen h2 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--navy); margin-bottom: 12px; }
-  .success-screen p { color: var(--text-mid); font-size: 16px; line-height: 1.6; margin-bottom: 32px; }
-  .btn-next {
-    display: inline-block; padding: 14px 40px; background: var(--terracotta); color: white;
-    border-radius: 100px; font-weight: 700; font-size: 15px;
-    text-decoration: none; border: none; cursor: pointer;
-    transition: all 0.3s; font-family: 'DM Sans', sans-serif;
-  }
-  .btn-next:hover { background: var(--terracotta-light); transform: translateY(-2px); }
-
-  .form-signup, .form-login { display: none; }
-  .form-signup.active, .form-login.active { display: block; }
-
-  /* Verify email notice */
-  .verify-notice {
-    background: rgba(232,168,56,0.12); border: 1px solid rgba(232,168,56,0.3);
-    border-radius: 14px; padding: 16px 20px; text-align: center; margin-bottom: 20px;
-  }
-  .verify-notice p { font-size: 14px; color: var(--navy); line-height: 1.6; }
-  .verify-notice strong { color: var(--terracotta); }
-
-  @media (max-width: 900px) {
-    body { flex-direction: column; }
-    .left-panel { position: relative; width: 100%; padding: 36px 24px; min-height: auto; }
-    .panel-content h2 { font-size: 32px; margin: 20px 0 12px; }
-    .community-cards { display: none; }
-    .right-panel { margin-left: 0; width: 100%; padding: 36px 24px; }
-    .input-row { grid-template-columns: 1fr; }
-  }
+/* RESPONSIVE — mobile full width */
+@media(max-width:768px){
+  .left-panel{display:none}
+  .right-panel{margin-left:0;width:100%;padding:24px 20px;min-height:100dvh;align-items:flex-start;padding-top:40px}
+  .auth-box{max-width:100%}
+  .row2{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- LEFT PANEL -->
-<div class="left-panel">
-  <a href="nearby-landing.html" class="panel-logo">Near<span>by</span></a>
-  <div class="panel-content">
-    <h2>Where <em>real</em> community begins.</h2>
-    <p>Join thousands of neighbors already connecting, finding local work, and building communities that actually care about each other.</p>
+<!-- INSTALL BANNER -->
+<div class="install-banner" id="installBanner" style="display:none">
+  <div class="ib-icon">🏡</div>
+  <div class="ib-text">
+    Install Nearby on your phone
+    <small>Works offline · Feels like a real app</small>
   </div>
-  <div class="community-cards">
-    <div class="comm-card">
-      <div class="comm-avatar" style="background:var(--terracotta);">A</div>
-      <div class="comm-info">
-        <div class="comm-name">Amaka O.</div>
-        <div class="comm-detail">📍 Just joined Lekki Phase 1</div>
-      </div>
-      <span class="comm-badge badge-new">New</span>
-    </div>
-    <div class="comm-card">
-      <div class="comm-avatar" style="background:var(--sage);">K</div>
-      <div class="comm-info">
-        <div class="comm-name">Konga Express</div>
-        <div class="comm-detail">💼 Posted a job · 2 hrs ago</div>
-      </div>
-      <span class="comm-badge badge-job">Hiring</span>
-    </div>
-    <div class="comm-card">
-      <div class="comm-avatar" style="background:var(--amber);color:var(--navy);">T</div>
-      <div class="comm-info">
-        <div class="comm-name">Tunde B.</div>
-        <div class="comm-detail">🏆 Just became Ambassador</div>
-      </div>
-      <span class="comm-badge badge-local">Ambassador</span>
-    </div>
-  </div>
+  <button class="ib-btn" id="installBtn">Install</button>
+  <button class="ib-close" onclick="document.getElementById('installBanner').style.display='none'">✕</button>
 </div>
 
-<!-- RIGHT PANEL -->
-<div class="right-panel">
-  <div class="auth-box">
-
-    <!-- TABS -->
-    <div class="auth-tabs" id="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('signup')">Create Account</button>
-      <button class="auth-tab" onclick="switchTab('login')">Sign In</button>
+<div class="auth-wrapper">
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <a href="nearby-landing.html" class="panel-logo">Near<span>by</span></a>
+    <div class="panel-content">
+      <h2>Where <em>real</em> community begins.</h2>
+      <p>Join thousands of neighbors connecting, finding local work, and building communities that actually care.</p>
     </div>
+    <div class="comm-cards">
+      <div class="cc"><div class="cc-av" style="background:var(--tc)">A</div><div><div class="cc-name">Amaka O.</div><div class="cc-sub">📍 Just joined Lekki Phase 1</div></div><span class="cc-badge cb-new">New</span></div>
+      <div class="cc"><div class="cc-av" style="background:var(--sage)">K</div><div><div class="cc-name">Konga Express</div><div class="cc-sub">💼 Posted a job · 2 hrs ago</div></div><span class="cc-badge cb-job">Hiring</span></div>
+      <div class="cc"><div class="cc-av" style="background:var(--amber);color:var(--navy)">T</div><div><div class="cc-name">Tunde B.</div><div class="cc-sub">🏆 Just became Ambassador</div></div><span class="cc-badge cb-amb">Ambassador</span></div>
+    </div>
+  </div>
 
-    <!-- ══ SIGN UP FORM ══ -->
-    <div class="form-signup active" id="form-signup">
-      <div class="form-heading">
-        <h1>Join Nearby 👋</h1>
-        <p>Create your account and find your community.</p>
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="auth-box">
+
+      <!-- iOS PWA HINT -->
+      <div class="ios-hint" id="iosHint">
+        📱 <strong>Install Nearby:</strong> Tap the Share button below then <strong>"Add to Home Screen"</strong> for the full app experience.
       </div>
 
-      <p style="font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:10px;">I am joining as a...</p>
-      <div class="account-types" id="account-types">
-        <button class="account-type selected" onclick="selectType(this, 'resident')">
-          <span class="type-icon">🏠</span>
-          <div><div class="type-label">Resident</div><div class="type-sub">I live here</div></div>
-        </button>
-        <button class="account-type" onclick="selectType(this, 'newcomer')">
-          <span class="type-icon">🆕</span>
-          <div><div class="type-label">Newcomer</div><div class="type-sub">I just moved</div></div>
-        </button>
-        <button class="account-type" onclick="selectType(this, 'business')">
-          <span class="type-icon">🏪</span>
-          <div><div class="type-label">Business</div><div class="type-sub">I own a shop</div></div>
-        </button>
-        <button class="account-type" onclick="selectType(this, 'visitor')">
-          <span class="type-icon">✈️</span>
-          <div><div class="type-label">Visitor</div><div class="type-sub">Passing through</div></div>
-        </button>
+      <!-- TABS -->
+      <div class="tabs" id="authTabs">
+        <button class="tab on" onclick="switchTab('signup')">Create Account</button>
+        <button class="tab" onclick="switchTab('login')">Sign In</button>
       </div>
 
-      <button class="btn-google" onclick="handleGoogle()">
-        <svg class="google-icon" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Continue with Google
-      </button>
-
-      <div class="divider"><span>or sign up with email</span></div>
-
-      <div id="signup-alert" class="alert"></div>
-
-      <div class="input-row">
-        <div class="input-group">
-          <label>First Name</label>
-          <input type="text" id="firstName" placeholder="e.g. Amaka" />
+      <!-- SIGN UP -->
+      <div class="form-wrap on" id="formSignup">
+        <div class="form-head">
+          <h1>Join Nearby 👋</h1>
+          <p>Create your free account and find your community.</p>
         </div>
-        <div class="input-group">
-          <label>Last Name</label>
-          <input type="text" id="lastName" placeholder="e.g. Obi" />
-        </div>
-      </div>
 
-      <div class="input-group">
-        <label>Email Address</label>
-        <input type="email" id="signupEmail" placeholder="you@example.com" />
-      </div>
-
-      <div class="input-group">
-        <label>Password</label>
-        <div class="password-wrap">
-          <input type="password" id="signupPassword" placeholder="Create a strong password" oninput="checkStrength(this)" />
-          <button class="toggle-pw" type="button" onclick="togglePassword('signupPassword', this)">👁️</button>
+        <p style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">I am joining as a...</p>
+        <div class="atypes" id="atypes">
+          <button class="atype on" onclick="pickType(this,'resident')"><span class="atype-icon">🏠</span><div><div class="atype-label">Resident</div><div class="atype-sub">I live here</div></div></button>
+          <button class="atype" onclick="pickType(this,'newcomer')"><span class="atype-icon">🆕</span><div><div class="atype-label">Newcomer</div><div class="atype-sub">Just moved</div></div></button>
+          <button class="atype" onclick="pickType(this,'business')"><span class="atype-icon">🏪</span><div><div class="atype-label">Business</div><div class="atype-sub">I own a shop</div></div></button>
+          <button class="atype" onclick="pickType(this,'visitor')"><span class="atype-icon">✈️</span><div><div class="atype-label">Visitor</div><div class="atype-sub">Passing through</div></div></button>
         </div>
-        <div class="pw-strength">
-          <div class="pw-bars">
-            <div class="pw-bar" id="bar1"></div>
-            <div class="pw-bar" id="bar2"></div>
-            <div class="pw-bar" id="bar3"></div>
-            <div class="pw-bar" id="bar4"></div>
+
+        <button class="btn-google" onclick="doGoogle()">
+          <svg class="gicon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+
+        <div class="divider"><span>or sign up with email</span></div>
+        <div id="signup-alert" class="alert"></div>
+
+        <div class="row2">
+          <div class="field"><label>First Name</label><input type="text" id="firstName" placeholder="Amaka" autocomplete="given-name"/></div>
+          <div class="field"><label>Last Name</label><input type="text" id="lastName" placeholder="Obi" autocomplete="family-name"/></div>
+        </div>
+        <div class="field"><label>Email Address</label><input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email"/></div>
+        <div class="field">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="signupPw" placeholder="At least 6 characters" autocomplete="new-password" oninput="checkPw(this)"/>
+            <button class="pw-toggle" type="button" onclick="togglePw('signupPw',this)">👁️</button>
           </div>
-          <span class="pw-label" id="pw-label">Enter a password</span>
+          <div class="pw-bars"><div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div><div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div></div>
+          <div class="pw-hint" id="pwHint">Enter a password</div>
         </div>
+        <div class="terms"><input type="checkbox" id="terms"/><label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. My location data stays in my control.</label></div>
+        <button class="btn-submit" id="signupBtn" onclick="doSignup()">Create My Account</button>
+        <div class="switch">Already have an account? <a onclick="switchTab('login')">Sign in</a></div>
       </div>
 
-      <div class="terms-row">
-        <input type="checkbox" id="terms" />
-        <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. My location data stays in my control.</label>
-      </div>
-
-      <button class="btn-submit" id="signupBtn" onclick="handleSignup()">Create My Account</button>
-      <div class="switch-link">Already have an account? <a href="#" onclick="switchTab('login')">Sign in</a></div>
-    </div>
-
-    <!-- ══ LOGIN FORM ══ -->
-    <div class="form-login" id="form-login">
-      <div class="form-heading">
-        <h1>Welcome back 🏡</h1>
-        <p>Sign in to reconnect with your community.</p>
-      </div>
-
-      <button class="btn-google" onclick="handleGoogle()">
-        <svg class="google-icon" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Continue with Google
-      </button>
-
-      <div class="divider"><span>or sign in with email</span></div>
-
-      <div id="login-alert" class="alert"></div>
-
-      <div class="input-group">
-        <label>Email Address</label>
-        <input type="email" id="loginEmail" placeholder="you@example.com" />
-      </div>
-
-      <div class="input-group">
-        <label>Password</label>
-        <div class="password-wrap">
-          <input type="password" id="loginPassword" placeholder="Your password" />
-          <button class="toggle-pw" type="button" onclick="togglePassword('loginPassword', this)">👁️</button>
+      <!-- LOGIN -->
+      <div class="form-wrap" id="formLogin">
+        <div class="form-head">
+          <h1>Welcome back 🏡</h1>
+          <p>Sign in to reconnect with your community.</p>
         </div>
+        <button class="btn-google" onclick="doGoogle()">
+          <svg class="gicon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <div class="divider"><span>or sign in with email</span></div>
+        <div id="login-alert" class="alert"></div>
+        <div class="field"><label>Email Address</label><input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"/></div>
+        <div class="field">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="loginPw" placeholder="Your password" autocomplete="current-password"/>
+            <button class="pw-toggle" type="button" onclick="togglePw('loginPw',this)">👁️</button>
+          </div>
+        </div>
+        <div class="forgot"><a onclick="doForgot()">Forgot password?</a></div>
+        <button class="btn-submit" id="loginBtn" onclick="doLogin()">Sign In to Nearby</button>
+        <div class="switch">Don't have an account? <a onclick="switchTab('signup')">Create one free</a></div>
       </div>
 
-      <div class="forgot-link"><a href="#" onclick="handleForgotPassword()">Forgot your password?</a></div>
+      <!-- VERIFY EMAIL -->
+      <div class="success-screen" id="screenVerify">
+        <div class="success-icon">📬</div>
+        <h2>Check your email!</h2>
+        <p>We sent a confirmation link to <strong id="verifyEmail"></strong>.<br/><br/>Click the link in the email, then come back here and sign in. Check your spam folder too!</p>
+        <button class="btn-next" onclick="switchTab('login')">I've Confirmed — Sign In →</button>
+        <div style="margin-top:16px"><button onclick="resendEmail()" style="background:none;border:none;color:var(--tc);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Resend confirmation email</button></div>
+      </div>
 
-      <button class="btn-submit" id="loginBtn" onclick="handleLogin()">Sign In to Nearby</button>
-      <div class="switch-link">Don't have an account? <a href="#" onclick="switchTab('signup')">Create one free</a></div>
+      <!-- SUCCESS -->
+      <div class="success-screen" id="screenSuccess">
+        <div class="success-icon">🎉</div>
+        <h2>You're in!</h2>
+        <p>Your Nearby account is ready. Let's set up your neighborhood profile.</p>
+        <button class="btn-next" onclick="window.location.href='nearby-onboarding.html'">Set Up My Profile →</button>
+      </div>
+
     </div>
-
-    <!-- ══ VERIFY EMAIL SCREEN ══ -->
-    <div class="success-screen" id="verify-screen">
-      <div class="success-icon">📬</div>
-      <h2>Check your email!</h2>
-      <p>We sent a confirmation link to <strong id="confirm-email-display"></strong>. Click it to activate your account, then come back to sign in.</p>
-      <button class="btn-next" onclick="switchTab('login')">I've Confirmed — Sign In</button>
-    </div>
-
-    <!-- ══ SUCCESS SCREEN ══ -->
-    <div class="success-screen" id="success-screen">
-      <div class="success-icon">🎉</div>
-      <h2>You're in the community!</h2>
-      <p>Your Nearby account is ready. Let's set up your profile and find your neighborhood.</p>
-      <button class="btn-next" onclick="goToOnboarding()">Set Up My Profile →</button>
-    </div>
-
   </div>
 </div>
 
 <script>
-  // Track selected account type
-  let selectedUserType = 'resident'
-
-  // ── TAB SWITCHING ──
-  function switchTab(tab) {
-    document.querySelectorAll('.auth-tab').forEach((t, i) => {
-      t.classList.toggle('active', (tab === 'signup' && i === 0) || (tab === 'login' && i === 1))
+// PWA Setup
+let deferredPrompt = null
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {})
+}
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault()
+  deferredPrompt = e
+  document.getElementById('installBanner').style.display = 'flex'
+})
+document.getElementById('installBtn').addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt()
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null
+      document.getElementById('installBanner').style.display = 'none'
     })
-    document.getElementById('form-signup').classList.toggle('active', tab === 'signup')
-    document.getElementById('form-login').classList.toggle('active', tab === 'login')
-    document.getElementById('verify-screen').style.display = 'none'
-    document.getElementById('success-screen').style.display = 'none'
-    document.getElementById('auth-tabs').style.display = 'flex'
   }
+})
+// iOS detection
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone
+if (isIOS) document.getElementById('iosHint').style.display = 'block'
 
-  // ── ACCOUNT TYPE ──
-  function selectType(btn, type) {
-    document.querySelectorAll('.account-type').forEach(b => b.classList.remove('selected'))
-    btn.classList.add('selected')
-    selectedUserType = type
-  }
+// State
+let userType = 'resident'
+let lastEmail = ''
 
-  // ── PASSWORD STRENGTH ──
-  function checkStrength(input) {
-    const val = input.value
-    const bars = ['bar1','bar2','bar3','bar4'].map(id => document.getElementById(id))
-    const label = document.getElementById('pw-label')
-    let score = 0
-    if (val.length >= 8) score++
-    if (/[A-Z]/.test(val)) score++
-    if (/[0-9]/.test(val)) score++
-    if (/[^A-Za-z0-9]/.test(val)) score++
-    bars.forEach((b, i) => {
-      b.className = 'pw-bar'
-      if (i < score) b.classList.add(score <= 1 ? 'weak' : score <= 2 ? 'medium' : 'strong')
-    })
-    const labels = ['', 'Weak — add numbers & symbols', 'Fair — try a symbol', 'Good — almost there!', 'Strong password ✓']
-    label.textContent = val.length === 0 ? 'Enter a password' : labels[score]
-    label.style.color = score <= 1 ? 'var(--error)' : score <= 2 ? 'var(--amber)' : 'var(--success)'
-  }
-
-  // ── PASSWORD TOGGLE ──
-  function togglePassword(id, btn) {
-    const input = document.getElementById(id)
-    input.type = input.type === 'password' ? 'text' : 'password'
-    btn.textContent = input.type === 'password' ? '👁️' : '🙈'
-  }
-
-  // ── SHOW ALERT ──
-  function showAlert(id, message, type = 'error') {
-    const el = document.getElementById(id)
-    el.textContent = message
-    el.className = 'alert ' + type
-  }
-  function clearAlert(id) {
-    const el = document.getElementById(id)
-    el.className = 'alert'
-    el.textContent = ''
-  }
-
-  // ── SIGN UP ──
-  async function handleSignup() {
-    const btn = document.getElementById('signupBtn')
-    const firstName = document.getElementById('firstName').value.trim()
-    const lastName = document.getElementById('lastName').value.trim()
-    const email = document.getElementById('signupEmail').value.trim()
-    const password = document.getElementById('signupPassword').value
-    const terms = document.getElementById('terms').checked
-
-    clearAlert('signup-alert')
-
-    if (!firstName) return showAlert('signup-alert', '❌ Please enter your first name.')
-    if (!email.includes('@')) return showAlert('signup-alert', '❌ Please enter a valid email.')
-    if (password.length < 6) return showAlert('signup-alert', '❌ Password must be at least 6 characters.')
-    if (!terms) return showAlert('signup-alert', '❌ Please agree to the Terms of Service.')
-
-    btn.disabled = true
-    btn.classList.add('loading')
-    btn.textContent = 'Creating your account...'
-
-    const fullName = firstName + ' ' + lastName
-
-    try {
-      const { data, error } = await signUp(email, password, fullName, selectedUserType)
-
-      if (error) {
-        let msg = error.message
-        if (msg.includes('already registered')) msg = '❌ This email is already registered. Try signing in instead.'
-        else if (msg.includes('invalid')) msg = '❌ Please enter a valid email address.'
-        showAlert('signup-alert', msg)
-      } else {
-        // Show verify email screen
-        document.getElementById('form-signup').style.display = 'none'
-        document.getElementById('auth-tabs').style.display = 'none'
-        document.getElementById('confirm-email-display').textContent = email
-        document.getElementById('verify-screen').style.display = 'block'
-      }
-    } catch (e) {
-      showAlert('signup-alert', '❌ Something went wrong. Please try again.')
-      console.error(e)
-    }
-
-    btn.disabled = false
-    btn.classList.remove('loading')
-    btn.textContent = 'Create My Account'
-  }
-
-  // ── LOGIN ──
-  async function handleLogin() {
-    const btn = document.getElementById('loginBtn')
-    const email = document.getElementById('loginEmail').value.trim()
-    const password = document.getElementById('loginPassword').value
-
-    clearAlert('login-alert')
-
-    if (!email.includes('@')) return showAlert('login-alert', '❌ Please enter a valid email.')
-    if (password.length < 4) return showAlert('login-alert', '❌ Please enter your password.')
-
-    btn.disabled = true
-    btn.classList.add('loading')
-    btn.textContent = 'Signing you in...'
-
-    try {
-      const { data, error } = await signIn(email, password)
-
-      if (error) {
-        let msg = error.message
-        if (msg.includes('Invalid login')) msg = '❌ Wrong email or password. Please try again.'
-        else if (msg.includes('Email not confirmed')) msg = '📬 Please check your email and confirm your account first.'
-        showAlert('login-alert', msg)
-      } else {
-        // Check if profile setup is complete
-        const user = await getCurrentUser()
-        if (!user || !user.neighborhood) {
-          // New user — go to onboarding
-          document.getElementById('form-login').style.display = 'none'
-          document.getElementById('auth-tabs').style.display = 'none'
-          document.getElementById('success-screen').style.display = 'block'
-        } else {
-          // Returning user — go straight to feed
-          window.location.href = 'nearby-feed.html'
-        }
-      }
-    } catch (e) {
-      showAlert('login-alert', '❌ Something went wrong. Please try again.')
-      console.error(e)
-    }
-
-    btn.disabled = false
-    btn.classList.remove('loading')
-    btn.textContent = 'Sign In to Nearby'
-  }
-
-  // ── GOOGLE ──
-  async function handleGoogle() {
-    try {
-      const { error } = await signInWithGoogle()
-      if (error) showAlert('signup-alert', '❌ Google sign-in failed: ' + error.message)
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  // ── FORGOT PASSWORD ──
-  async function handleForgotPassword() {
-    const email = document.getElementById('loginEmail').value.trim()
-    if (!email.includes('@')) {
-      showAlert('login-alert', '📧 Enter your email above first, then click Forgot Password.')
-      return
-    }
-    const { error } = await resetPassword(email)
-    if (error) {
-      showAlert('login-alert', '❌ ' + error.message)
-    } else {
-      showAlert('login-alert', '✅ Password reset email sent! Check your inbox.', 'info')
-    }
-  }
-
-  // ── GO TO ONBOARDING ──
-  function goToOnboarding() {
+// Check if already logged in
+async function checkSession() {
+  const sess = await getSession()
+  if (!sess) return
+  const user = await getCurrentUser()
+  if (user && user.neighborhood) {
+    window.location.href = 'nearby-feed.html'
+  } else if (user) {
     window.location.href = 'nearby-onboarding.html'
   }
+}
+checkSession()
 
-  // ── CHECK IF ALREADY LOGGED IN ──
-  async function checkExistingSession() {
-    const session = await getSession()
-    if (session) {
+// Tab switch
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((b,i) => b.classList.toggle('on', (t==='signup'&&i===0)||(t==='login'&&i===1)))
+  document.getElementById('formSignup').classList.toggle('on', t==='signup')
+  document.getElementById('formLogin').classList.toggle('on', t==='login')
+  document.getElementById('screenVerify').classList.remove('on')
+  document.getElementById('screenSuccess').classList.remove('on')
+  document.getElementById('authTabs').style.display = 'flex'
+}
+
+function pickType(el, type) {
+  document.querySelectorAll('.atype').forEach(b => b.classList.remove('on'))
+  el.classList.add('on')
+  userType = type
+}
+
+// Password strength
+function checkPw(input) {
+  const v = input.value
+  const bars = [1,2,3,4].map(i => document.getElementById('pb'+i))
+  const hint = document.getElementById('pwHint')
+  let score = 0
+  if (v.length >= 6) score++
+  if (v.length >= 8) score++
+  if (/[A-Z]/.test(v) || /[0-9]/.test(v)) score++
+  if (/[^A-Za-z0-9]/.test(v)) score++
+  bars.forEach((b,i) => {
+    b.className = 'pw-bar'
+    if (i < score) b.classList.add(score<=1?'weak':score<=2?'fair':'strong')
+  })
+  const hints = ['','Weak — too short','Fair — add numbers','Good — almost there!','Strong ✓']
+  hint.textContent = v.length===0?'Enter a password':hints[score]
+  hint.style.color = score<=1?'var(--err)':score<=2?'var(--amber)':'var(--ok)'
+}
+
+function togglePw(id, btn) {
+  const el = document.getElementById(id)
+  el.type = el.type==='password'?'text':'password'
+  btn.textContent = el.type==='password'?'👁️':'🙈'
+}
+
+function showAlert(id, msg, type='err') {
+  const el = document.getElementById(id)
+  el.textContent = msg
+  el.className = 'alert show ' + type
+}
+function clearAlert(id) {
+  document.getElementById(id).className = 'alert'
+}
+
+function showScreen(id) {
+  document.getElementById('formSignup').classList.remove('on')
+  document.getElementById('formLogin').classList.remove('on')
+  document.getElementById('authTabs').style.display = 'none'
+  document.getElementById(id).classList.add('on')
+}
+
+// SIGN UP
+async function doSignup() {
+  const btn = document.getElementById('signupBtn')
+  const first = document.getElementById('firstName').value.trim()
+  const last = document.getElementById('lastName').value.trim()
+  const email = document.getElementById('signupEmail').value.trim()
+  const pw = document.getElementById('signupPw').value
+  const agreed = document.getElementById('terms').checked
+  clearAlert('signup-alert')
+
+  if (!first) return showAlert('signup-alert','❌ Please enter your first name.')
+  if (!email.includes('@')) return showAlert('signup-alert','❌ Please enter a valid email address.')
+  if (pw.length < 6) return showAlert('signup-alert','❌ Password must be at least 6 characters.')
+  if (!agreed) return showAlert('signup-alert','❌ Please agree to the Terms of Service.')
+
+  btn.disabled = true
+  btn.classList.add('loading')
+  btn.textContent = 'Creating account...'
+  lastEmail = email
+
+  try {
+    const { data, error } = await sb.auth.signUp({
+      email, password: pw,
+      options: {
+        data: { full_name: first + ' ' + last },
+        emailRedirectTo: window.location.origin + '/nearby-auth.html'
+      }
+    })
+
+    if (error) {
+      let msg = error.message
+      if (msg.includes('already registered') || msg.includes('already been registered')) msg = '❌ This email is already registered. Try signing in instead.'
+      else if (msg.includes('invalid')) msg = '❌ Please enter a valid email address.'
+      else if (msg.includes('weak')) msg = '❌ Password is too weak. Use at least 6 characters.'
+      showAlert('signup-alert', msg)
+    } else if (data.session) {
+      // Auto-confirmed (email confirmations disabled) — go to onboarding
+      await setupUserProfile(data.user, first + ' ' + last, userType)
+      showScreen('screenSuccess')
+    } else {
+      // Email confirmation required
+      document.getElementById('verifyEmail').textContent = email
+      showScreen('screenVerify')
+    }
+  } catch(e) {
+    showAlert('signup-alert', '❌ Something went wrong. Please try again.')
+  }
+
+  btn.disabled = false
+  btn.classList.remove('loading')
+  btn.textContent = 'Create My Account'
+}
+
+async function setupUserProfile(user, fullName, type) {
+  await sb.from('users').upsert({
+    id: user.id,
+    full_name: fullName,
+    email: user.email,
+    user_type: type,
+    is_newcomer: type === 'newcomer',
+    rep_points: 0,
+    badge_level: 1,
+    city: 'Lagos',
+    country: 'Nigeria'
+  }, { onConflict: 'id' })
+}
+
+// LOGIN
+async function doLogin() {
+  const btn = document.getElementById('loginBtn')
+  const email = document.getElementById('loginEmail').value.trim()
+  const pw = document.getElementById('loginPw').value
+  clearAlert('login-alert')
+
+  if (!email.includes('@')) return showAlert('login-alert','❌ Please enter a valid email.')
+  if (pw.length < 4) return showAlert('login-alert','❌ Please enter your password.')
+
+  btn.disabled = true
+  btn.classList.add('loading')
+  btn.textContent = 'Signing in...'
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pw })
+    if (error) {
+      let msg = error.message
+      if (msg.includes('Invalid login') || msg.includes('invalid credentials')) msg = '❌ Wrong email or password. Please try again.'
+      else if (msg.includes('Email not confirmed')) {
+        lastEmail = email
+        document.getElementById('verifyEmail').textContent = email
+        showScreen('screenVerify')
+        btn.disabled = false
+        btn.classList.remove('loading')
+        btn.textContent = 'Sign In to Nearby'
+        return
+      }
+      showAlert('login-alert', msg)
+    } else {
       const user = await getCurrentUser()
-      if (user && user.neighborhood) {
+      if (!user || !user.neighborhood) {
+        window.location.href = 'nearby-onboarding.html'
+      } else {
         window.location.href = 'nearby-feed.html'
       }
     }
+  } catch(e) {
+    showAlert('login-alert','❌ Something went wrong. Please try again.')
   }
 
-  // Run on page load
-  checkExistingSession()
+  btn.disabled = false
+  btn.classList.remove('loading')
+  btn.textContent = 'Sign In to Nearby'
+}
+
+// GOOGLE
+async function doGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/nearby-onboarding.html' }
+  })
+  if (error) showAlert('signup-alert','❌ Google sign-in failed. Try email instead.')
+}
+
+// FORGOT PASSWORD
+async function doForgot() {
+  const email = document.getElementById('loginEmail').value.trim()
+  if (!email.includes('@')) return showAlert('login-alert','📧 Enter your email above first, then tap Forgot Password.','warn')
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/nearby-auth.html'
+  })
+  if (error) showAlert('login-alert','❌ ' + error.message)
+  else showAlert('login-alert','✅ Reset link sent! Check your email (and spam folder).','info')
+}
+
+// RESEND VERIFICATION
+async function resendEmail() {
+  if (!lastEmail) return
+  const { error } = await sb.auth.resend({ type: 'signup', email: lastEmail })
+  if (!error) alert('✅ Confirmation email resent to ' + lastEmail)
+  else alert('❌ Could not resend: ' + error.message)
+}
 </script>
 </body>
 </html>
