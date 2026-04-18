@@ -441,3 +441,67 @@ function getInitials(name) {
 console.log('✅ Nearby — Supabase v2 connected')
 console.log('📍 Project: heyxaatplgcgjwqvtjof.supabase.co')
 console.log('🔒 RLS enabled · Messages encrypted · Real-time ready')
+// ============================================
+// NEARBY supabase-config.js — PATCH ADDITIONS
+// Add these functions to the BOTTOM of your
+// existing supabase-config.js file
+// ============================================
+
+// FIXED loadFeed — falls back to city if no posts in neighborhood
+async function loadFeedSmart(user, limit = 40) {
+  const neighborhood = user.neighborhood || 'Lagos Island'
+  const city = user.city || 'Lagos'
+
+  // First try neighborhood
+  let { data, error } = await sb
+    .from('posts')
+    .select('*, users(id, full_name, avatar_url, badge_level, user_type, neighborhood)')
+    .eq('neighborhood', neighborhood)
+    .eq('is_flagged', false)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  // If no posts in neighborhood, load from whole city
+  if (!error && (!data || data.length === 0)) {
+    const result = await sb
+      .from('posts')
+      .select('*, users(id, full_name, avatar_url, badge_level, user_type, neighborhood)')
+      .eq('is_flagged', false)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    data = result.data
+    error = result.error
+  }
+
+  return { data: data || [], error }
+}
+
+// SAFE getCurrentUser — never returns null for valid sessions
+async function safeGetCurrentUser() {
+  const session = await getSession()
+  if (!session) return null
+  const { data, error } = await sb
+    .from('users')
+    .select('*')
+    .eq('id', session.user.id)
+    .single()
+  if (error || !data) {
+    // User exists in auth but not in users table — create minimal profile
+    const { data: authUser } = await sb.auth.getUser()
+    if (authUser?.user) {
+      const newProfile = {
+        id: authUser.user.id,
+        full_name: authUser.user.user_metadata?.full_name || authUser.user.email?.split('@')[0] || 'New User',
+        email: authUser.user.email,
+        neighborhood: 'Lagos Island',
+        city: 'Lagos',
+        country: 'Nigeria',
+        rep_points: 0,
+        badge_level: 1
+      }
+      await sb.from('users').upsert(newProfile, { onConflict: 'id' })
+      return newProfile
+    }
+  }
+  return data
+}
