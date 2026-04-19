@@ -2,424 +2,306 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Nearby — Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Nearby Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--cream:#F5F0E8;--tc:#C4622D;--navy:#1A2332;--sage:#7A9E7E;--amber:#E8A838;--mid:#4A5568;--light:#8A96A8;--white:#FDFAF4;--red:#E53E3E;--green:#38A169}
-body{font-family:'DM Sans',sans-serif;background:#EEE9DF;color:var(--navy);min-height:100vh;max-width:480px;margin:0 auto}
-/* ACCESS DENIED */
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4;--r:#E53E3E;--g:#38A169}
+html{width:100%;background:#EEE9DF}
+body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);width:100%;min-height:100dvh}
+.wrap{width:100%;max-width:480px;margin:0 auto;min-height:100dvh}
 #denied{display:none;text-align:center;padding:80px 20px}
 #denied .icon{font-size:64px;margin-bottom:20px}
-#denied h2{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;margin-bottom:12px}
-#denied p{font-size:15px;color:var(--mid);line-height:1.6;margin-bottom:24px}
-#denied a{display:inline-block;padding:12px 28px;background:var(--navy);color:white;border-radius:100px;text-decoration:none;font-weight:700}
-/* MAIN ADMIN */
+#denied h2{font-family:"Playfair Display",serif;font-size:28px;font-weight:900;margin-bottom:12px}
+#denied p{font-size:15px;color:var(--m);margin-bottom:24px;line-height:1.6}
+#denied a{display:inline-block;padding:12px 28px;background:var(--n);color:white;border-radius:100px;text-decoration:none;font-weight:700}
 #adminMain{display:none}
-.topnav{background:var(--navy);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:white}
-.logo span{color:var(--tc)}
-.admin-tag{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
-.admin-av{width:36px;height:36px;border-radius:50%;background:var(--tc);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;cursor:pointer}
-/* TABS */
-.tabs{display:flex;overflow-x:auto;background:var(--white);border-bottom:2px solid rgba(0,0,0,.07);scrollbar-width:none}
+.topnav{background:var(--n);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-family:"Playfair Display",serif;font-size:20px;font-weight:900;color:white}
+.logo span{color:var(--t)}
+.atag{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.aav{width:36px;height:36px;border-radius:50%;background:var(--t);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;cursor:pointer}
+.tabs{display:flex;overflow-x:auto;background:var(--w);border-bottom:2px solid rgba(0,0,0,.07);scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex-shrink:0;padding:12px 16px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--light);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
-.tab.on{color:var(--navy);border-bottom-color:var(--tc)}
-/* CONTENT */
-.content{padding:16px 16px 80px}
-/* STAT CARDS */
+.tab{flex-shrink:0;padding:12px 14px;border:none;background:none;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;color:var(--l);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab.on{color:var(--n);border-bottom-color:var(--t)}
+.content{padding:14px 14px 80px}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.stat-card{background:var(--white);border-radius:16px;padding:16px;text-align:center}
-.stat-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:var(--navy);margin-bottom:4px}
-.stat-label{font-size:12px;color:var(--light);font-weight:600}
-.stat-card.red .stat-num{color:var(--red)}
-.stat-card.green .stat-num{color:var(--green)}
-.stat-card.amber .stat-num{color:var(--amber)}
-/* SECTION */
-.section-title{font-size:14px;font-weight:700;color:var(--navy);margin:16px 0 10px;display:flex;align-items:center;gap:8px}
-/* USER ROW */
-.user-row{background:var(--white);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
-.u-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0}
-.u-info{flex:1;min-width:0}
-.u-name{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px}
-.u-sub{font-size:12px;color:var(--light)}
-.u-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;margin-left:6px;vertical-align:middle}
-.ub1{background:rgba(122,158,126,.2);color:var(--sage)}.ub2{background:rgba(232,168,56,.2);color:#B07D10}.ub3{background:rgba(212,175,55,.2);color:#8B6914}.ub4{background:rgba(155,89,182,.2);color:#9B59B6}
-.u-actions{display:flex;gap:6px;flex-shrink:0}
-.action-pill{padding:5px 10px;border-radius:100px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
-.btn-ban{background:rgba(229,62,62,.1);color:var(--red)}
-.btn-badge{background:rgba(212,175,55,.1);color:#8B6914}
-.btn-msg{background:rgba(26,35,50,.08);color:var(--navy)}
-/* POST ROW */
-.post-row{background:var(--white);border-radius:14px;padding:14px;margin-bottom:8px}
-.post-meta{font-size:12px;color:var(--light);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
-.post-content{font-size:14px;color:var(--mid);line-height:1.5;margin-bottom:10px}
-.post-actions{display:flex;gap:8px}
-.btn-approve{background:rgba(56,161,105,.1);color:var(--green);padding:6px 12px;border-radius:100px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
-.btn-remove{background:rgba(229,62,62,.1);color:var(--red);padding:6px 12px;border-radius:100px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
-/* ANNOUNCEMENT */
-.announce-box{background:var(--white);border-radius:16px;padding:16px;margin-bottom:16px}
-.announce-box textarea{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:12px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--navy);resize:none;outline:none;margin-bottom:10px}
-.announce-box textarea:focus{border-color:var(--tc)}
-.announce-box select{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:12px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--navy);outline:none;appearance:none;background:white;margin-bottom:10px}
-.send-announce{width:100%;padding:12px;border-radius:12px;background:var(--tc);color:white;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
-/* LOADING */
-.loading-msg{text-align:center;padding:40px;color:var(--light);font-size:14px}
-/* TOAST */
-.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:999;white-space:nowrap;pointer-events:none}
-/* PANEL VIEWS */
-.panel{display:none}
-.panel.on{display:block}
+.stat-card{background:var(--w);border-radius:16px;padding:16px;text-align:center}
+.stat-num{font-family:"Playfair Display",serif;font-size:30px;font-weight:900;color:var(--n);margin-bottom:4px}
+.stat-label{font-size:12px;color:var(--l);font-weight:600}
+.stat-card.red .stat-num{color:var(--r)}
+.stat-card.green .stat-num{color:var(--g)}
+.stat-card.amber .stat-num{color:var(--a)}
+.sec-title{font-size:14px;font-weight:700;color:var(--n);margin:14px 0 10px}
+.user-row{background:var(--w);border-radius:14px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.uav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;flex-shrink:0}
+.uinfo{flex:1;min-width:0}
+.uname{font-size:13px;font-weight:700;color:var(--n);margin-bottom:2px}
+.usub{font-size:11px;color:var(--l)}
+.uacts{display:flex;gap:6px;flex-shrink:0}
+.pill{padding:5px 10px;border-radius:100px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:"DM Sans",sans-serif}
+.pill-ban{background:rgba(229,62,62,.1);color:var(--r)}
+.pill-badge{background:rgba(212,175,55,.1);color:#8B6914}
+.post-row{background:var(--w);border-radius:14px;padding:12px;margin-bottom:8px}
+.pmeta{font-size:11px;color:var(--l);margin-bottom:6px;display:flex;justify-content:space-between}
+.ptext{font-size:13px;color:var(--m);line-height:1.5;margin-bottom:10px}
+.pacts{display:flex;gap:8px}
+.pill-ok{background:rgba(56,161,105,.1);color:var(--g);padding:6px 12px;border-radius:100px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:"DM Sans",sans-serif}
+.pill-rm{background:rgba(229,62,62,.1);color:var(--r);padding:6px 12px;border-radius:100px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:"DM Sans",sans-serif}
+.announce-box{background:var(--w);border-radius:16px;padding:16px;margin-bottom:16px}
+.announce-box textarea{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:12px;padding:12px;font-family:"DM Sans",sans-serif;font-size:14px;color:var(--n);resize:none;outline:none;margin-bottom:10px}
+.announce-box textarea:focus{border-color:var(--t)}
+.announce-box select{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:12px;padding:10px 12px;font-family:"DM Sans",sans-serif;font-size:14px;color:var(--n);outline:none;appearance:none;background:white;margin-bottom:10px}
+.send-btn{width:100%;padding:12px;border-radius:12px;background:var(--t);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.lmsg{text-align:center;padding:30px;color:var(--l);font-size:13px}
+.panel{display:none}.panel.on{display:block}
+.nb-row{display:flex;align-items:center;justify-content:space-between;background:var(--w);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:999;white-space:nowrap;pointer-events:none}
+.usearch{width:100%;padding:11px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;font-family:"DM Sans",sans-serif;font-size:14px;outline:none;margin-bottom:12px;background:var(--w)}
+.usearch:focus{border-color:var(--t)}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<!-- ACCESS DENIED -->
 <div id="denied">
   <div class="icon">🔒</div>
   <h2>Admin Only</h2>
-  <p>This area is restricted to Nearby administrators. If you believe this is an error, contact the platform owner.</p>
+  <p>This area is restricted to Nearby administrators only.</p>
   <a href="nearby-feed.html">← Back to Nearby</a>
 </div>
 
-<!-- ADMIN MAIN -->
 <div id="adminMain">
   <div class="topnav">
-    <div>
-      <div class="logo">Near<span>by</span></div>
-      <div class="admin-tag">Admin Dashboard</div>
+    <div><div class="logo">Near<span>by</span></div><div class="atag">Admin Dashboard</div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="aav" id="aav">A</div>
+      <a href="nearby-feed.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:13px">← App</a>
     </div>
-    <div class="admin-av" id="admin-av">A</div>
   </div>
 
   <div class="tabs">
-    <button class="tab on" onclick="showPanel('overview',this)">📊 Overview</button>
-    <button class="tab" onclick="showPanel('users',this)">👥 Users</button>
-    <button class="tab" onclick="showPanel('posts',this)">💬 Posts</button>
-    <button class="tab" onclick="showPanel('reports',this)">🚩 Reports</button>
-    <button class="tab" onclick="showPanel('announce',this)">📢 Broadcast</button>
+    <button class="tab on" onclick="show('overview',this)">📊 Overview</button>
+    <button class="tab" onclick="show('users',this)">👥 Users</button>
+    <button class="tab" onclick="show('posts',this)">💬 Posts</button>
+    <button class="tab" onclick="show('reports',this)">🚩 Reports</button>
+    <button class="tab" onclick="show('broadcast',this)">📢 Broadcast</button>
   </div>
 
   <div class="content">
 
-    <!-- OVERVIEW PANEL -->
     <div class="panel on" id="panel-overview">
-      <div class="stats-grid" id="stats-grid">
+      <div class="stats-grid">
         <div class="stat-card"><div class="stat-num" id="s-users">—</div><div class="stat-label">Total Users</div></div>
         <div class="stat-card green"><div class="stat-num" id="s-posts">—</div><div class="stat-label">Total Posts</div></div>
         <div class="stat-card amber"><div class="stat-num" id="s-jobs">—</div><div class="stat-label">Active Jobs</div></div>
         <div class="stat-card red"><div class="stat-num" id="s-reports">—</div><div class="stat-label">Pending Reports</div></div>
       </div>
-      <div class="section-title">🕐 Recent Signups</div>
-      <div id="recent-signups"><div class="loading-msg">Loading...</div></div>
-      <div class="section-title">📍 Active Neighborhoods</div>
-      <div id="neighborhoods"><div class="loading-msg">Loading...</div></div>
+      <div class="sec-title">🕐 Recent Signups</div>
+      <div id="recent-signups"><div class="lmsg">Loading...</div></div>
+      <div class="sec-title">📍 Top Neighborhoods</div>
+      <div id="top-nbs"><div class="lmsg">Loading...</div></div>
     </div>
 
-    <!-- USERS PANEL -->
     <div class="panel" id="panel-users">
-      <div class="section-title">👥 All Users</div>
-      <input type="text" id="user-search" placeholder="🔍 Search by name or email..." oninput="filterUsers()" style="width:100%;padding:12px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:12px;background:var(--white)"/>
-      <div id="users-list"><div class="loading-msg">Loading users...</div></div>
+      <div class="sec-title">👥 All Users</div>
+      <input class="usearch" type="text" id="usearch" placeholder="🔍 Search name or email..." oninput="filterUsers()"/>
+      <div id="users-list"><div class="lmsg">Loading...</div></div>
     </div>
 
-    <!-- POSTS PANEL -->
     <div class="panel" id="panel-posts">
-      <div class="section-title">💬 All Posts</div>
-      <div id="posts-list"><div class="loading-msg">Loading posts...</div></div>
+      <div class="sec-title">💬 Recent Posts</div>
+      <div id="posts-list"><div class="lmsg">Loading...</div></div>
     </div>
 
-    <!-- REPORTS PANEL -->
     <div class="panel" id="panel-reports">
-      <div class="section-title">🚩 Flagged Content</div>
-      <div id="reports-list"><div class="loading-msg">Loading reports...</div></div>
+      <div class="sec-title">🚩 Flagged Content</div>
+      <div id="reports-list"><div class="lmsg">Loading...</div></div>
     </div>
 
-    <!-- ANNOUNCE PANEL -->
-    <div class="panel" id="panel-announce">
-      <div class="section-title">📢 Send Platform Announcement</div>
+    <div class="panel" id="panel-broadcast">
+      <div class="sec-title">📢 Send Announcement</div>
       <div class="announce-box">
-        <select id="announce-type">
+        <select id="bc-type">
           <option value="announcement">📢 General Announcement</option>
           <option value="alert">🔔 Safety Alert</option>
           <option value="badge">🏆 Badge Update</option>
-          <option value="welcome">👋 Welcome Message</option>
         </select>
-        <textarea id="announce-text" rows="5" placeholder="Write your message to all users..."></textarea>
-        <select id="announce-nb">
-          <option value="">📍 All neighborhoods</option>
-          <option value="Lekki Phase 1">Lekki Phase 1</option>
-          <option value="Victoria Island">Victoria Island</option>
-          <option value="Yaba">Yaba</option>
-          <option value="Ikeja">Ikeja</option>
-          <option value="Surulere">Surulere</option>
-          <option value="Garki">Garki (Abuja)</option>
-          <option value="Wuse 2">Wuse 2 (Abuja)</option>
-        </select>
-        <button class="send-announce" onclick="sendAnnouncement()">📢 Send to All Users</button>
+        <textarea id="bc-text" rows="5" placeholder="Write your message to all users..."></textarea>
+        <button class="send-btn" onclick="sendBroadcast()">📢 Send to All Users</button>
       </div>
-      <div class="section-title">🏆 Ambassador Management</div>
-      <div id="ambassador-list"><div class="loading-msg">Loading candidates...</div></div>
+      <div class="sec-title">🏆 Ambassador Approvals</div>
+      <div id="amb-list"><div class="lmsg">Loading...</div></div>
     </div>
 
   </div>
 </div>
 
+</div><!-- /wrap -->
+
 <script>
-let me = null
-let allUsers = []
-const COLS = ['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6']
+let me=null,allUsers=[]
+const COLS=['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6']
 function gc(s){if(!s)return COLS[0];let h=0;for(let c of s)h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length]}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function gi(n){if(!n)return'?';return n.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)}
+function ta(ts){if(!ts)return'';const d=Math.floor((Date.now()-new Date(ts))/1000);if(d<60)return'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago'}
 const BN={1:'Neighbor',2:'Star',3:'Ambassador',4:'Legend'}
-const BC={1:'ub1',2:'ub2',3:'ub3',4:'ub4'}
 
-async function init() {
-  const sess = await getSession()
-  if (!sess) { window.location.href = 'nearby-auth.html'; return }
-  me = await getCurrentUser()
-  if (!me || !me.is_admin) {
-    document.getElementById('denied').style.display = 'block'
-    return
-  }
-  document.getElementById('adminMain').style.display = 'block'
-  document.getElementById('admin-av').textContent = getInitials(me.full_name)
+async function init(){
+  const sess=await sb.auth.getSession()
+  if(!sess.data.session){window.location.href='nearby-auth.html';return}
+  const{data:u}=await sb.from('users').select('*').eq('id',sess.data.session.user.id).single()
+  if(!u||!u.is_admin){document.getElementById('denied').style.display='block';return}
+  me=u
+  document.getElementById('adminMain').style.display='block'
+  document.getElementById('aav').textContent=gi(me.full_name)
   await loadOverview()
   await loadUsers()
   await loadPosts()
   await loadReports()
-  await loadAmbassadors()
+  await loadAmb()
 }
 
-async function loadOverview() {
-  const stats = await getPlatformStats()
-  document.getElementById('s-users').textContent = stats.totalUsers
-  document.getElementById('s-posts').textContent = stats.totalPosts
-  document.getElementById('s-jobs').textContent = stats.activeJobs
-  document.getElementById('s-reports').textContent = stats.pendingReports
+async function loadOverview(){
+  const[{count:tu},{count:tp},{count:tj},{count:tr}]=await Promise.all([
+    sb.from('users').select('*',{count:'exact',head:true}),
+    sb.from('posts').select('*',{count:'exact',head:true}),
+    sb.from('jobs').select('*',{count:'exact',head:true}).eq('is_active',true),
+    sb.from('reports').select('*',{count:'exact',head:true}).eq('status','pending')
+  ])
+  document.getElementById('s-users').textContent=tu||0
+  document.getElementById('s-posts').textContent=tp||0
+  document.getElementById('s-jobs').textContent=tj||0
+  document.getElementById('s-reports').textContent=tr||0
 
-  // Recent signups
-  const { data: recent } = await sb.from('users')
-    .select('id, full_name, email, neighborhood, created_at, badge_level')
-    .order('created_at', { ascending: false }).limit(5)
-  document.getElementById('recent-signups').innerHTML = (recent||[]).map(u =>
-    buildUserRow(u, true)
-  ).join('') || '<div class="loading-msg">No users yet</div>'
+  const{data:recent}=await sb.from('users').select('id,full_name,email,neighborhood,badge_level,created_at').order('created_at',{ascending:false}).limit(5)
+  document.getElementById('recent-signups').innerHTML=(recent||[]).map(u=>`
+    <div class="user-row"><div class="uav" style="background:${gc(u.id)}">${gi(u.full_name)}</div>
+    <div class="uinfo"><div class="uname">${esc(u.full_name||'Unknown')}</div>
+    <div class="usub">${esc(u.email||'')} · ${esc(u.neighborhood||'No area')} · ${ta(u.created_at)}</div></div></div>`).join('')||'<div class="lmsg">No users yet</div>'
 
-  // Neighborhoods
-  const { data: nbs } = await sb.from('users')
-    .select('neighborhood')
-    .not('neighborhood', 'is', null)
-  const counts = {}
-  ;(nbs||[]).forEach(u => { if(u.neighborhood) counts[u.neighborhood] = (counts[u.neighborhood]||0) + 1 })
-  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 6)
-  document.getElementById('neighborhoods').innerHTML = sorted.map(([nb, cnt]) =>
-    `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--white);border-radius:12px;padding:12px 14px;margin-bottom:8px"><div style="font-size:14px;font-weight:600;color:var(--navy)">📍 ${esc(nb)}</div><div style="font-size:13px;font-weight:700;color:var(--tc)">${cnt} users</div></div>`
-  ).join('') || '<div class="loading-msg">No data yet</div>'
+  const{data:nbs}=await sb.from('users').select('neighborhood').not('neighborhood','is',null)
+  const counts={}
+  ;(nbs||[]).forEach(u=>{if(u.neighborhood)counts[u.neighborhood]=(counts[u.neighborhood]||0)+1})
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6)
+  document.getElementById('top-nbs').innerHTML=sorted.map(([nb,cnt])=>
+    `<div class="nb-row"><div style="font-size:14px;font-weight:600;color:var(--n)">📍 ${esc(nb)}</div><div style="font-size:13px;font-weight:700;color:var(--t)">${cnt} users</div></div>`
+  ).join('')||'<div class="lmsg">No data yet</div>'
 }
 
-async function loadUsers() {
-  const { data } = await sb.from('users')
-    .select('id, full_name, email, neighborhood, badge_level, rep_points, is_banned, is_admin, created_at')
-    .order('created_at', { ascending: false }).limit(50)
-  allUsers = data || []
+async function loadUsers(){
+  const{data}=await sb.from('users').select('id,full_name,email,neighborhood,badge_level,rep_points,is_banned,is_admin,created_at').order('created_at',{ascending:false}).limit(50)
+  allUsers=data||[]
   renderUsers(allUsers)
 }
 
-function renderUsers(users) {
-  document.getElementById('users-list').innerHTML = users.map(u => buildUserRow(u, false)).join('') || '<div class="loading-msg">No users found</div>'
+function renderUsers(users){
+  document.getElementById('users-list').innerHTML=users.map(u=>`
+    <div class="user-row" id="ur-${u.id}">
+      <div class="uav" style="background:${gc(u.id)}">${gi(u.full_name)}</div>
+      <div class="uinfo">
+        <div class="uname">${esc(u.full_name||'Unknown')} ${u.is_admin?'<span style="font-size:10px;background:rgba(196,98,45,.2);color:var(--t);padding:2px 6px;border-radius:100px;font-weight:700">Admin</span>':''}</div>
+        <div class="usub">${esc(u.email||'')} · ${esc(u.neighborhood||'No area')} · ⭐${u.rep_points||0}</div>
+      </div>
+      <div class="uacts">
+        ${u.is_banned
+          ?`<button class="pill pill-ok" onclick="unban('${u.id}')">✓ Unban</button>`
+          :`<button class="pill pill-ban" onclick="ban('${u.id}')">🚫 Ban</button>`}
+        <button class="pill pill-badge" onclick="upgrade('${u.id}',${u.badge_level||1})">⭐</button>
+      </div>
+    </div>`).join('')||'<div class="lmsg">No users found</div>'
 }
 
-function buildUserRow(u, compact) {
-  const col = gc(u.id), ini = getInitials(u.full_name)
-  const bl = u.badge_level || 1
-  return `<div class="user-row" id="ur-${u.id}">
-    <div class="u-av" style="background:${col}">${ini}</div>
-    <div class="u-info">
-      <div class="u-name">${esc(u.full_name||'Unknown')}<span class="u-badge ${BC[bl]}">${BN[bl]}</span>${u.is_admin?'<span class="u-badge" style="background:rgba(196,98,45,.2);color:var(--tc)">Admin</span>':''}</div>
-      <div class="u-sub">${esc(u.email||'')} · ${esc(u.neighborhood||'No neighborhood')} · ${u.rep_points||0} pts</div>
-    </div>
-    ${!compact ? `<div class="u-actions">
-      ${u.is_banned
-        ? `<button class="action-pill btn-approve" onclick="unbanUser('${u.id}')">✓ Unban</button>`
-        : `<button class="action-pill btn-ban" onclick="banUserAdmin('${u.id}')">🚫 Ban</button>`}
-      <button class="action-pill btn-badge" onclick="upgradeUser('${u.id}',${bl})">⭐ Badge</button>
-    </div>` : ''}
-  </div>`
+function filterUsers(){
+  const q=document.getElementById('usearch').value.toLowerCase()
+  renderUsers(allUsers.filter(u=>(u.full_name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)||(u.neighborhood||'').toLowerCase().includes(q)))
 }
 
-async function banUserAdmin(userId) {
-  if (!confirm('Ban this user? They will not be able to access Nearby.')) return
-  await banUser(userId)
-  document.getElementById('ur-' + userId).style.opacity = '.4'
-  toast('🚫 User banned.')
+async function ban(uid){if(!confirm('Ban this user?'))return;await sb.from('users').update({is_banned:true}).eq('id',uid);toast('🚫 User banned.');loadUsers()}
+async function unban(uid){await sb.from('users').update({is_banned:false}).eq('id',uid);toast('✅ User unbanned.');loadUsers()}
+async function upgrade(uid,lvl){
+  const next=Math.min(4,lvl+1)
+  const names={1:'Neighbor',2:'Community Star',3:'Ambassador',4:'Legend'}
+  if(!confirm('Upgrade to '+names[next]+'?'))return
+  await sb.from('users').update({badge_level:next,ambassador_approved:true}).eq('id',uid)
+  await sb.from('notifications').insert({user_id:uid,type:'badge',message:'🎉 Your badge has been upgraded to '+names[next]+'!',is_read:false})
+  toast('⭐ Upgraded to '+names[next]);loadUsers()
 }
 
-async function unbanUser(userId) {
-  await sb.from('users').update({ is_banned: false }).eq('id', userId)
-  toast('✅ User unbanned.')
-  await loadUsers()
-}
-
-async function upgradeUser(userId, currentLevel) {
-  const next = Math.min(4, currentLevel + 1)
-  const names = {1:'Neighbor',2:'Community Star',3:'Ambassador',4:'Legend'}
-  if (!confirm(`Upgrade this user to ${names[next]}?`)) return
-  await approveAmbassador(userId)
-  await sb.from('users').update({ badge_level: next }).eq('id', userId)
-  toast('⭐ Badge upgraded to ' + names[next])
-  await loadUsers()
-}
-
-async function loadPosts() {
-  const { data } = await sb.from('posts')
-    .select('*, users(full_name, email)')
-    .order('created_at', { ascending: false }).limit(30)
-  const container = document.getElementById('posts-list')
-  if (!data || !data.length) { container.innerHTML = '<div class="loading-msg">No posts yet</div>'; return }
-  container.innerHTML = data.map(p => `
+async function loadPosts(){
+  const{data}=await sb.from('posts').select('*,users(full_name)').order('created_at',{ascending:false}).limit(30)
+  document.getElementById('posts-list').innerHTML=(data||[]).map(p=>`
     <div class="post-row" id="pr-${p.id}">
-      <div class="post-meta">
-        <span>👤 ${esc(p.users?.full_name||'Unknown')} · ${esc(p.neighborhood||'?')}</span>
-        <span>${timeAgo(p.created_at)}</span>
+      <div class="pmeta"><span>👤 ${esc(p.users?.full_name||'Unknown')} · ${esc(p.neighborhood||'?')} ${p.is_flagged?'🚩 FLAGGED':''}</span><span>${ta(p.created_at)}</span></div>
+      <div class="ptext">${esc((p.content||'').slice(0,120))}</div>
+      <div class="pacts">
+        <button class="pill-ok" onclick="clearPost('${p.id}')">✓ Clear</button>
+        <button class="pill-rm" onclick="rmPost('${p.id}')">🗑️ Remove</button>
       </div>
-      <div class="post-content">${esc((p.content||'').slice(0,120))}${(p.content||'').length>120?'...':''}</div>
-      <div class="post-actions">
-        ${p.is_flagged ? '<span style="font-size:11px;font-weight:700;color:var(--red);margin-right:8px">🚩 FLAGGED</span>' : ''}
-        <button class="btn-approve" onclick="unflagPost('${p.id}')">✓ Clear</button>
-        <button class="btn-remove" onclick="removePostAdmin('${p.id}')">🗑️ Remove</button>
-      </div>
-    </div>`).join('')
+    </div>`).join('')||'<div class="lmsg">No posts yet</div>'
 }
 
-async function unflagPost(postId) {
-  await sb.from('posts').update({ is_flagged: false }).eq('id', postId)
-  toast('✅ Post cleared.')
-  loadPosts()
-}
+async function clearPost(id){await sb.from('posts').update({is_flagged:false}).eq('id',id);loadPosts();toast('✅ Post cleared.')}
+async function rmPost(id){if(!confirm('Delete this post?'))return;await sb.from('posts').delete().eq('id',id);document.getElementById('pr-'+id).style.display='none';toast('🗑️ Post removed.')}
 
-async function removePostAdmin(postId) {
-  if (!confirm('Permanently delete this post?')) return
-  await removePost(postId)
-  document.getElementById('pr-' + postId).style.display = 'none'
-  toast('🗑️ Post removed.')
-}
-
-async function loadReports() {
-  const { data } = await sb.from('reports')
-    .select('*, posts(content, neighborhood, user_id, users(full_name))')
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false })
-  const container = document.getElementById('reports-list')
-  if (!data || !data.length) { container.innerHTML = '<div class="loading-msg">✅ No pending reports! Great community.</div>'; return }
-  container.innerHTML = data.map(r => `
+async function loadReports(){
+  const{data}=await sb.from('reports').select('*,posts(content,neighborhood,users(full_name))').eq('status','pending').order('created_at',{ascending:false})
+  document.getElementById('reports-list').innerHTML=(data&&data.length?data.map(r=>`
     <div class="post-row" id="rr-${r.id}">
-      <div class="post-meta"><span>🚩 Reason: ${esc(r.reason||'Not specified')}</span><span>${timeAgo(r.created_at)}</span></div>
-      <div class="post-content">${esc((r.posts?.content||'Post deleted').slice(0,120))}</div>
-      <div style="font-size:12px;color:var(--light);margin-bottom:10px">By: ${esc(r.posts?.users?.full_name||'Unknown')} · ${esc(r.posts?.neighborhood||'?')}</div>
-      <div class="post-actions">
-        <button class="btn-approve" onclick="dismissReport('${r.id}')">✓ Dismiss</button>
-        <button class="btn-remove" onclick="actOnReport('${r.id}','${r.post_id}')">🗑️ Remove Post</button>
+      <div class="pmeta"><span>🚩 ${esc(r.reason||'No reason')}</span><span>${ta(r.created_at)}</span></div>
+      <div class="ptext">${esc((r.posts?.content||'Post deleted').slice(0,120))}</div>
+      <div style="font-size:11px;color:var(--l);margin-bottom:10px">By: ${esc(r.posts?.users?.full_name||'Unknown')}</div>
+      <div class="pacts">
+        <button class="pill-ok" onclick="dismissR('${r.id}')">✓ Dismiss</button>
+        <button class="pill-rm" onclick="actR('${r.id}','${r.post_id}')">🗑️ Remove Post</button>
       </div>
-    </div>`).join('')
+    </div>`).join(''):'<div class="lmsg">✅ No pending reports! Great community.</div>')
 }
 
-async function dismissReport(reportId) {
-  await sb.from('reports').update({ status: 'dismissed' }).eq('id', reportId)
-  document.getElementById('rr-' + reportId).style.display = 'none'
-  toast('✅ Report dismissed.')
+async function dismissR(id){await sb.from('reports').update({status:'dismissed'}).eq('id',id);document.getElementById('rr-'+id).style.display='none';toast('✅ Dismissed.')}
+async function actR(rid,pid){if(!confirm('Remove the reported post?'))return;await sb.from('posts').delete().eq('id',pid);await sb.from('reports').update({status:'resolved'}).eq('id',rid);document.getElementById('rr-'+rid).style.display='none';toast('🗑️ Resolved.')}
+
+async function sendBroadcast(){
+  const txt=document.getElementById('bc-text').value.trim()
+  const type=document.getElementById('bc-type').value
+  if(!txt){toast('Write a message first.');return}
+  const{data:users}=await sb.from('users').select('id').eq('is_banned',false)
+  if(!users||!users.length){toast('No users found.');return}
+  const inserts=users.map(u=>({user_id:u.id,type,message:txt,from_user_id:me.id,is_read:false}))
+  const{error}=await sb.from('notifications').insert(inserts)
+  if(error)toast('❌ Failed: '+error.message)
+  else{document.getElementById('bc-text').value='';toast('📢 Sent to '+users.length+' users!')}
 }
 
-async function actOnReport(reportId, postId) {
-  if (!confirm('Remove the reported post?')) return
-  await removePost(postId)
-  await sb.from('reports').update({ status: 'resolved' }).eq('id', reportId)
-  document.getElementById('rr-' + reportId).style.display = 'none'
-  toast('🗑️ Post removed & report resolved.')
-}
-
-async function sendAnnouncement() {
-  const text = document.getElementById('announce-text').value.trim()
-  const type = document.getElementById('announce-type').value
-  const nb = document.getElementById('announce-nb').value
-  if (!text) { toast('Write a message first.'); return }
-
-  // Get all users (or filtered by neighborhood)
-  let query = sb.from('users').select('id')
-  if (nb) query = query.eq('neighborhood', nb)
-  const { data: users } = await query.eq('is_banned', false)
-
-  if (!users || !users.length) { toast('No users found.'); return }
-
-  // Send notification to each
-  const inserts = users.map(u => ({
-    user_id: u.id, type, message: text,
-    from_user_id: me.id, is_read: false
-  }))
-
-  // Batch insert (Supabase supports bulk inserts)
-  const { error } = await sb.from('notifications').insert(inserts)
-
-  if (error) { toast('❌ Failed: ' + error.message); return }
-  document.getElementById('announce-text').value = ''
-  toast('📢 Sent to ' + users.length + ' users!')
-}
-
-async function loadAmbassadors() {
-  const { data } = await sb.from('users')
-    .select('id, full_name, neighborhood, rep_points, badge_level, ambassador_approved')
-    .gte('rep_points', 400)
-    .eq('ambassador_approved', false)
-    .order('rep_points', { ascending: false })
-  const container = document.getElementById('ambassador-list')
-  if (!data || !data.length) { container.innerHTML = '<div class="loading-msg">No pending ambassador applications.</div>'; return }
-  container.innerHTML = data.map(u => `
+async function loadAmb(){
+  const{data}=await sb.from('users').select('id,full_name,neighborhood,rep_points,badge_level').gte('rep_points',400).eq('ambassador_approved',false).order('rep_points',{ascending:false})
+  document.getElementById('amb-list').innerHTML=(data&&data.length?data.map(u=>`
     <div class="user-row">
-      <div class="u-av" style="background:${gc(u.id)}">${getInitials(u.full_name)}</div>
-      <div class="u-info">
-        <div class="u-name">${esc(u.full_name)}</div>
-        <div class="u-sub">📍 ${esc(u.neighborhood||'?')} · ⭐ ${u.rep_points} pts · Level ${u.badge_level}</div>
-      </div>
-      <div class="u-actions">
-        <button class="action-pill btn-badge" onclick="approveAmbassadorAdmin('${u.id}')">🏆 Approve</button>
-      </div>
-    </div>`).join('')
+      <div class="uav" style="background:${gc(u.id)}">${gi(u.full_name)}</div>
+      <div class="uinfo"><div class="uname">${esc(u.full_name)}</div><div class="usub">📍 ${esc(u.neighborhood||'?')} · ⭐ ${u.rep_points} pts · Level ${u.badge_level}</div></div>
+      <button class="pill pill-badge" onclick="approveAmb('${u.id}')">🏆 Approve</button>
+    </div>`).join(''):'<div class="lmsg">No ambassador candidates yet.</div>')
 }
 
-async function approveAmbassadorAdmin(userId) {
-  await approveAmbassador(userId)
-  toast('🏆 Ambassador approved!')
-  await loadAmbassadors()
+async function approveAmb(uid){
+  await sb.from('users').update({badge_level:3,ambassador_approved:true}).eq('id',uid)
+  await sb.from('notifications').insert({user_id:uid,type:'badge',message:'🎉 Congratulations! You are now a Community Ambassador!',is_read:false})
+  toast('🏆 Ambassador approved!');loadAmb()
 }
 
-function filterUsers() {
-  const q = document.getElementById('user-search').value.toLowerCase()
-  const filtered = allUsers.filter(u =>
-    (u.full_name||'').toLowerCase().includes(q) ||
-    (u.email||'').toLowerCase().includes(q) ||
-    (u.neighborhood||'').toLowerCase().includes(q)
-  )
-  renderUsers(filtered)
-}
-
-function showPanel(name, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'))
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'))
-  document.getElementById('panel-' + name).classList.add('on')
+function show(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'))
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'))
+  document.getElementById('panel-'+name).classList.add('on')
   btn.classList.add('on')
 }
 
-function toast(msg) {
-  const old = document.querySelector('.toast'); if (old) old.remove()
-  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg
-  document.body.appendChild(t)
-  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .4s' }, 2500)
-  setTimeout(() => t.remove(), 3000)
-}
+function toast(msg){const old=document.querySelector('.toast');if(old)old.remove();const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s'},2500);setTimeout(()=>t.remove(),3000)}
 
 init()
 </script>
