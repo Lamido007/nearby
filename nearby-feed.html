@@ -126,13 +126,21 @@ body{font-family:"DM Sans",sans-serif;background:#F0EBE1;color:var(--n);width:10
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
 .ov.open{display:block}
 /* FAB */
-.fab{position:fixed;bottom:84px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--t);color:white;border:none;font-size:24px;cursor:pointer;box-shadow:0 6px 20px rgba(196,98,45,.4);display:flex;align-items:center;justify-content:center;z-index:100}
+.fab{position:fixed;bottom:84px;right:16px;width:56px;height:56px;border-radius:50%;background:var(--t);color:white;border:none;font-size:26px;cursor:pointer;box-shadow:0 8px 24px rgba(196,98,45,.5);display:flex;align-items:center;justify-content:center;z-index:500;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 /* BOTTOM NAV */
 .bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--w);border-top:1px solid rgba(0,0,0,.08);display:flex;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:100}
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:"DM Sans",sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent}
 .bni-i{font-size:22px}.bni-l{font-size:10px;font-weight:600;color:var(--l)}
 .bni.on .bni-l{color:var(--t)}
 /* TOAST */
+
+/* IMAGE IN COMMENTS */
+.img-upload-btn{width:36px;height:36px;border-radius:50%;background:var(--c);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.comment-preview{margin:8px 16px 0;position:relative;display:none}
+.comment-preview img{width:100%;max-height:200px;object-fit:cover;border-radius:12px}
+.comment-preview .remove-img{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:white;border:none;border-radius:50%;width:24px;height:24px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.comment-img{border-radius:10px;max-width:100%;margin-top:6px;display:block}
+
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:999;white-space:nowrap;pointer-events:none}
 </style>
 </head>
@@ -198,9 +206,15 @@ body{font-family:"DM Sans",sans-serif;background:#F0EBE1;color:var(--n);width:10
 <div class="cdr" id="cdr">
   <div class="dh"><div class="dhandle"></div><div class="dtitle">💬 Comments (<span id="dcount">0</span>)</div></div>
   <div class="clist" id="clist"><div class="noc">No comments yet — be first!</div></div>
+  <input type="file" id="cmtImgInput" accept="image/*" style="display:none" onchange="previewCmtImg(this)"/>
+  <div class="comment-preview" id="cmtPreview">
+    <img id="cmtPreviewImg" src="" alt=""/>
+    <button class="remove-img" onclick="removeCmtImg()">✕</button>
+  </div>
   <div class="cinbar">
     <div class="cav2" id="drav" style="background:var(--t)">😊</div>
     <textarea class="cinput" id="cinput" rows="1" placeholder="Write a comment..." oninput="autoR(this)"></textarea>
+    <button class="img-upload-btn" onclick="document.getElementById('cmtImgInput').click()" title="Add image">🖼️</button>
     <button class="sbtn" id="sbtn" onclick="sendCmt()">➤</button>
   </div>
 </div>
@@ -374,7 +388,8 @@ function closeCmts(){document.getElementById('dov').classList.remove('open');doc
 
 async function sendCmt(){
   const inp=document.getElementById('cinput'),txt=inp.value.trim()
-  if(!txt||!activePid||!me)return
+  if(!txt&&!cmtImageFile){return}
+  if(!activePid||!me)return
   const btn=document.getElementById('sbtn');btn.disabled=true
   try{
     await sb.from('post_comments').insert({post_id:activePid,user_id:me.id,content:txt})
@@ -382,10 +397,16 @@ async function sendCmt(){
     if(cc)cc.textContent=parseInt(cc.textContent||0)+1
     dc.textContent=parseInt(dc.textContent||0)+1
     const list=document.getElementById('clist'),noc=list.querySelector('.noc');if(noc)noc.remove()
+    let imgHtml=''
+    if(cmtImageFile){
+      const reader=new FileReader()
+      await new Promise(r=>{reader.onload=e=>{imgHtml='<img class="comment-img" src="'+e.target.result+'" alt=""/>';r()};reader.readAsDataURL(cmtImageFile)})
+    }
     const nc=document.createElement('div');nc.className='ci'
-    nc.innerHTML='<div class="cav2" style="background:'+gc(me.id)+'">'+getInitials(me.full_name)+'</div><div class="cb"><div class="cbn">'+esc(me.full_name)+'</div><div class="cbt">'+esc(txt)+'</div><div class="ctime">just now</div></div>'
+    nc.innerHTML='<div class="cav2" style="background:'+gc(me.id)+'">'+getInitials(me.full_name)+'</div><div class="cb"><div class="cbn">'+esc(me.full_name)+'</div><div class="cbt">'+esc(txt)+(imgHtml)+'</div><div class="ctime">just now</div></div>'
     list.appendChild(nc);list.scrollTop=list.scrollHeight
     inp.value='';inp.style.height='auto'
+    cmtImageFile=null;document.getElementById('cmtPreview').style.display='none';document.getElementById('cmtImgInput').value=''
     try{await sb.from('users').update({rep_points:(me.rep_points||0)+2}).eq('id',me.id)}catch(e){}
   }catch(e){toast('❌ Could not post comment')}
   btn.disabled=false
@@ -437,4 +458,4 @@ document.getElementById('cinput').addEventListener('keydown',e=>{if(e.key==='Ent
 init()
 </script>
 </body>
-</html>
+  </html>
