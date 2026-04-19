@@ -1,175 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
 <title>Nearby — Profile</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --cream: #F5F0E8; --terracotta: #C4622D; --navy: #1A2332;
-  --sage: #7A9E7E; --amber: #E8A838; --mid: #4A5568; --light: #8A96A8;
-  --white: #FDFAF4; --gold: #D4AF37; --red: #E53E3E; --green: #38A169;
-}
-body { font-family:'DM Sans',sans-serif; background:#EEE9DF; color:var(--navy); max-width:480px; margin:0 auto; min-height:100vh; }
-
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4;--gold:#D4AF37;--r:#E53E3E;--g:#38A169}
+html{width:100%;background:#EEE9DF}
+body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);width:100%;min-height:100dvh}
+.wrap{width:100%;max-width:480px;margin:0 auto;min-height:100dvh;padding-bottom:80px}
 /* NAV */
-.topnav { background:var(--white); padding:14px 16px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; border-bottom:1px solid rgba(0,0,0,0.07); }
-.back-btn { background:none; border:none; font-size:22px; cursor:pointer; width:36px; }
-.nav-title { font-family:'Playfair Display',serif; font-size:18px; font-weight:900; color:var(--navy); }
-.edit-btn { background:var(--cream); border:none; border-radius:20px; padding:7px 14px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:var(--navy); cursor:pointer; }
-
+.topnav{background:var(--w);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(0,0,0,.07)}
+.back-btn{background:none;border:none;font-size:22px;cursor:pointer;width:36px}
+.nav-title{font-family:"Playfair Display",serif;font-size:18px;font-weight:900;color:var(--n)}
+.edit-btn{background:var(--c);border:none;border-radius:20px;padding:7px 14px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;color:var(--n);cursor:pointer}
 /* HERO */
-.profile-hero { background:var(--white); padding:0 20px 24px; margin-bottom:10px; position:relative; overflow:hidden; }
-.hero-cover { height:100px; background:linear-gradient(135deg,var(--navy) 0%,#2C3E6B 50%,var(--terracotta) 100%); margin:0 -20px 0; position:relative; }
-.hero-cover-pattern { position:absolute; inset:0; opacity:0.15; background-image:radial-gradient(circle,white 1px,transparent 1px); background-size:20px 20px; }
-
-.avatar-wrap { position:relative; width:88px; margin:-44px auto 14px; z-index:2; }
-.avatar-circle {
-  width:88px; height:88px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:32px; font-weight:900; color:white;
-  border:4px solid var(--white); overflow:hidden;
-  background:linear-gradient(135deg,var(--terracotta),var(--amber));
-  position:relative; cursor:pointer;
-}
-.avatar-circle img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
-.avatar-edit-overlay {
-  position:absolute; inset:0; border-radius:50%; background:rgba(0,0,0,0.45);
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; opacity:0; transition:opacity 0.2s;
-}
-.avatar-circle:hover .avatar-edit-overlay { opacity:1; }
-.avatar-level-ring { position:absolute; inset:-7px; border-radius:50%; border:3px solid transparent; }
-.ring-1 { border-color:var(--sage); }
-.ring-2 { border-color:var(--amber); animation:glow 2.5s ease-in-out infinite; }
-.ring-3 { border-color:var(--gold); animation:glow 2s ease-in-out infinite; }
-.ring-4 { border-color:#9B59B6; animation:glow 1.5s ease-in-out infinite; }
-@keyframes glow { 0%,100%{box-shadow:0 0 0 0 transparent} 50%{box-shadow:0 0 14px 4px rgba(212,175,55,0.35)} }
-.badge-crown { position:absolute; top:-14px; left:50%; transform:translateX(-50%); font-size:20px; z-index:3; animation:float 3s ease-in-out infinite; }
-@keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-4px)} }
-
-.profile-info { text-align:center; }
-.main-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:100px; font-size:12px; font-weight:700; margin-bottom:10px; }
-.badge-1 { background:rgba(122,158,126,0.15); color:var(--sage); border:1px solid rgba(122,158,126,0.3); }
-.badge-2 { background:linear-gradient(135deg,var(--amber),#F5C842); color:#6B4A00; }
-.badge-3 { background:linear-gradient(135deg,var(--gold),#F0D060); color:#5C4200; box-shadow:0 4px 16px rgba(212,175,55,0.3); }
-.badge-4 { background:linear-gradient(135deg,#9B59B6,#C39BD3); color:white; box-shadow:0 4px 16px rgba(155,89,182,0.3); }
-.profile-name { font-family:'Playfair Display',serif; font-size:24px; font-weight:900; color:var(--navy); margin-bottom:4px; }
-.profile-loc { font-size:13px; color:var(--light); margin-bottom:10px; }
-.profile-bio { font-size:14px; color:var(--mid); line-height:1.6; max-width:320px; margin:0 auto 6px; }
-.profile-occ { font-size:13px; color:var(--terracotta); font-weight:600; margin-bottom:14px; }
-
-.rep-score { display:inline-flex; align-items:center; gap:8px; background:var(--cream); border-radius:100px; padding:8px 18px; margin-bottom:16px; }
-.rep-num { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; color:var(--navy); }
-.rep-label { font-size:12px; color:var(--light); }
-
-.stats-row { display:flex; border-top:1px solid rgba(0,0,0,0.06); padding-top:16px; }
-.stat-item { flex:1; text-align:center; }
-.stat-item:not(:last-child) { border-right:1px solid rgba(0,0,0,0.06); }
-.stat-num { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; color:var(--navy); }
-.stat-label { font-size:11px; color:var(--light); margin-top:2px; }
-
-/* ACTION BUTTONS */
-.profile-actions { display:flex; gap:10px; padding:12px 16px; background:var(--white); margin-bottom:10px; }
-.btn-msg { flex:1; padding:12px; border-radius:12px; background:var(--navy); color:white; border:none; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:background 0.2s; }
-.btn-msg:hover { background:var(--terracotta); }
-.btn-signout { flex:1; padding:12px; border-radius:12px; background:transparent; color:var(--red); border:2px solid rgba(229,62,62,0.2); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; }
-
+.profile-hero{background:var(--w);padding:0 20px 24px;margin-bottom:10px;position:relative;overflow:hidden}
+/* COVER — editable */
+.cover-wrap{position:relative;height:110px;margin:0 -20px;overflow:hidden;cursor:pointer}
+.cover-img{width:100%;height:100%;object-fit:cover;display:none}
+.cover-gradient{position:absolute;inset:0;background:linear-gradient(135deg,var(--n) 0%,#2C3E6B 50%,var(--t) 100%)}
+.cover-pattern{position:absolute;inset:0;opacity:.15;background-image:radial-gradient(circle,white 1px,transparent 1px);background-size:20px 20px}
+.cover-edit-btn{position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.5);color:white;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:"DM Sans",sans-serif;backdrop-filter:blur(4px)}
+/* AVATAR */
+.avatar-wrap{position:relative;width:88px;margin:-44px auto 14px;z-index:2}
+.avatar-circle{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:white;border:4px solid var(--w);overflow:hidden;background:linear-gradient(135deg,var(--t),var(--a));position:relative;cursor:pointer}
+.avatar-circle img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.av-edit-ov{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;font-size:20px;opacity:0;transition:opacity .2s}
+.avatar-circle:hover .av-edit-ov,.avatar-circle:active .av-edit-ov{opacity:1}
+.av-uploading{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;font-size:13px;color:white;font-weight:700}
+.av-uploading.show{display:flex}
+.level-ring{position:absolute;inset:-7px;border-radius:50%;border:3px solid transparent}
+.r1c{border-color:var(--s)}.r2c{border-color:var(--a);animation:glow 2.5s ease-in-out infinite}.r3c{border-color:var(--gold);animation:glow 2s ease-in-out infinite}.r4c{border-color:#9B59B6;animation:glow 1.5s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 14px 4px rgba(212,175,55,.35)}}
+.badge-crown{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:20px;z-index:3;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+/* PROFILE INFO */
+.profile-info{text-align:center}
+.main-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;font-size:12px;font-weight:700;margin-bottom:10px}
+.mb1{background:rgba(122,158,126,.15);color:var(--s);border:1px solid rgba(122,158,126,.3)}
+.mb2{background:linear-gradient(135deg,var(--a),#F5C842);color:#6B4A00}
+.mb3{background:linear-gradient(135deg,var(--gold),#F0D060);color:#5C4200;box-shadow:0 4px 16px rgba(212,175,55,.3)}
+.mb4{background:linear-gradient(135deg,#9B59B6,#C39BD3);color:white;box-shadow:0 4px 16px rgba(155,89,182,.3)}
+.profile-name{font-family:"Playfair Display",serif;font-size:24px;font-weight:900;color:var(--n);margin-bottom:4px}
+.profile-loc{font-size:13px;color:var(--l);margin-bottom:10px}
+.profile-bio{font-size:14px;color:var(--m);line-height:1.6;max-width:320px;margin:0 auto 6px}
+.profile-occ{font-size:13px;color:var(--t);font-weight:600;margin-bottom:14px}
+.rep-score{display:inline-flex;align-items:center;gap:8px;background:var(--c);border-radius:100px;padding:8px 18px;margin-bottom:16px}
+.rep-num{font-family:"Playfair Display",serif;font-size:22px;font-weight:900;color:var(--n)}
+.rep-label{font-size:12px;color:var(--l)}
+.stats-row{display:flex;border-top:1px solid rgba(0,0,0,.06);padding-top:16px}
+.stat-item{flex:1;text-align:center}
+.stat-item:not(:last-child){border-right:1px solid rgba(0,0,0,.06)}
+.stat-num2{font-family:"Playfair Display",serif;font-size:22px;font-weight:900;color:var(--n)}
+.stat-label{font-size:11px;color:var(--l);margin-top:2px}
+/* ACTIONS */
+.profile-actions{display:flex;gap:10px;padding:12px 16px;background:var(--w);margin-bottom:10px}
+.btn-settings{flex:1;padding:12px;border-radius:12px;background:var(--n);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.btn-signout{flex:1;padding:12px;border-radius:12px;background:transparent;color:var(--r);border:2px solid rgba(229,62,62,.2);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer}
 /* SECTION */
-.section { background:var(--white); border-radius:18px; margin:0 10px 10px; padding:20px; }
-.section-title { font-size:14px; font-weight:700; color:var(--navy); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
-
+.section{background:var(--w);border-radius:18px;margin:0 10px 10px;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:var(--n);margin-bottom:16px}
 /* BADGE JOURNEY */
-.badge-journey { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; position:relative; }
-.badge-journey::before { content:''; position:absolute; top:22px; left:22px; right:22px; height:3px; background:rgba(0,0,0,0.08); z-index:0; }
-.badge-journey-fill { position:absolute; top:22px; left:22px; height:3px; background:linear-gradient(90deg,var(--sage),var(--amber)); z-index:1; transition:width 0.6s ease; }
-.journey-step { display:flex; flex-direction:column; align-items:center; gap:8px; z-index:2; }
-.journey-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; border:3px solid rgba(0,0,0,0.08); background:var(--cream); }
-.journey-icon.done { background:white; border-color:var(--sage); }
-.journey-icon.active { background:white; border-color:var(--amber); box-shadow:0 0 0 4px rgba(232,168,56,0.2); }
-.journey-icon.locked { opacity:0.4; }
-.journey-label { font-size:10px; font-weight:700; color:var(--mid); text-align:center; }
-.journey-label.active { color:var(--amber); }
-.journey-label.done { color:var(--sage); }
-
-.next-badge-card { background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(232,168,56,0.12)); border:1px solid rgba(212,175,55,0.25); border-radius:14px; padding:16px; }
-.nbc-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-.nbc-icon { font-size:28px; }
-.nbc-title { font-size:14px; font-weight:700; color:var(--navy); }
-.nbc-sub { font-size:12px; color:var(--mid); margin-top:2px; }
-.progress-bar-bg { background:rgba(0,0,0,0.08); border-radius:100px; height:8px; margin-bottom:8px; overflow:hidden; }
-.progress-bar-fill { height:8px; border-radius:100px; background:linear-gradient(90deg,var(--amber),var(--gold)); transition:width 0.8s ease; }
-.progress-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--light); }
-
+.bj{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;position:relative}
+.bj::before{content:'';position:absolute;top:22px;left:22px;right:22px;height:3px;background:rgba(0,0,0,.08);z-index:0}
+.bj-fill{position:absolute;top:22px;left:22px;height:3px;background:linear-gradient(90deg,var(--s),var(--a));z-index:1;transition:width .6s ease}
+.bj-step{display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2}
+.bj-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid rgba(0,0,0,.08);background:var(--c)}
+.bj-icon.done{background:white;border-color:var(--s)}
+.bj-icon.active{background:white;border-color:var(--a);box-shadow:0 0 0 4px rgba(232,168,56,.2)}
+.bj-icon.locked{opacity:.4}
+.bj-label{font-size:10px;font-weight:700;color:var(--m);text-align:center}
+.bj-label.active{color:var(--a)}.bj-label.done{color:var(--s)}
+.next-card{background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(232,168,56,.12));border:1px solid rgba(212,175,55,.25);border-radius:14px;padding:16px}
+.nc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.nc-icon{font-size:28px}
+.nc-title{font-size:14px;font-weight:700;color:var(--n)}
+.nc-sub{font-size:12px;color:var(--m);margin-top:2px}
+.prog-bar-bg{background:rgba(0,0,0,.08);border-radius:100px;height:8px;margin-bottom:8px;overflow:hidden}
+.prog-bar{height:8px;border-radius:100px;background:linear-gradient(90deg,var(--a),var(--gold));transition:width .8s ease}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--l)}
 /* POSTS */
-.post-card { background:var(--cream); border-radius:14px; padding:14px; margin-bottom:10px; }
-.post-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-.post-type { font-size:11px; font-weight:700; color:var(--terracotta); }
-.post-time { font-size:11px; color:var(--light); }
-.post-text { font-size:13px; color:var(--mid); line-height:1.5; margin-bottom:8px; }
-.post-likes { font-size:12px; color:var(--light); }
-.posts-loading { text-align:center; padding:20px; color:var(--light); font-size:13px; }
-
+.post-card{background:var(--c);border-radius:14px;padding:14px;margin-bottom:10px}
+.post-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.post-type{font-size:11px;font-weight:700;color:var(--t)}
+.post-time{font-size:11px;color:var(--l)}
+.post-text{font-size:13px;color:var(--m);line-height:1.5;margin-bottom:8px}
+.post-likes{font-size:12px;color:var(--l)}
 /* ACHIEVEMENTS */
-.achievements-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-.achievement { background:var(--cream); border-radius:14px; padding:14px 10px; text-align:center; position:relative; transition:transform 0.2s; }
-.achievement:hover { transform:scale(1.03); }
-.achievement.locked { opacity:0.4; }
-.ach-icon { font-size:26px; margin-bottom:6px; }
-.ach-name { font-size:11px; font-weight:700; color:var(--navy); }
-.ach-desc { font-size:10px; color:var(--light); margin-top:2px; }
-
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ach{background:var(--c);border-radius:14px;padding:14px 10px;text-align:center;transition:transform .2s}
+.ach:active{transform:scale(.97)}
+.ach.locked{opacity:.4}
+.ach-icon{font-size:26px;margin-bottom:6px}
+.ach-name{font-size:11px;font-weight:700;color:var(--n)}
+.ach-desc{font-size:10px;color:var(--l);margin-top:2px}
 /* EDIT SHEET */
-.sheet-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:150; }
-.sheet-overlay.open { display:block; }
-.edit-sheet {
-  display:none; position:fixed; bottom:0; left:50%; transform:translateX(-50%);
-  width:100%; max-width:480px; background:var(--white);
-  border-radius:24px 24px 0 0; padding:20px 20px 40px;
-  box-shadow:0 -8px 40px rgba(0,0,0,0.15); z-index:200;
-  max-height:90vh; overflow-y:auto;
-}
-.edit-sheet.open { display:block; }
-.sheet-handle { width:40px; height:4px; background:rgba(0,0,0,0.1); border-radius:100px; margin:0 auto 20px; }
-.sheet-title { font-size:18px; font-weight:700; color:var(--navy); margin-bottom:20px; }
-.field { margin-bottom:14px; }
-.field label { display:block; font-size:13px; font-weight:600; color:var(--navy); margin-bottom:6px; }
-.field input, .field textarea, .field select {
-  width:100%; padding:12px 14px; border:2px solid rgba(0,0,0,0.1); border-radius:12px;
-  background:white; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--navy);
-  outline:none; resize:none; appearance:none;
-}
-.field input:focus, .field textarea:focus, .field select:focus { border-color:var(--terracotta); }
-.save-profile-btn { width:100%; padding:14px; border-radius:14px; background:var(--terracotta); color:white; border:none; font-family:'DM Sans',sans-serif; font-size:16px; font-weight:700; cursor:pointer; }
-.save-profile-btn:disabled { opacity:0.6; }
-
+.sheet-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150}
+.sheet-ov.open{display:block}
+.edit-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--w);border-radius:24px 24px 0 0;padding:20px 20px 40px;box-shadow:0 -8px 40px rgba(0,0,0,.15);z-index:200;max-height:90dvh;overflow-y:auto;transition:transform .35s cubic-bezier(.32,.72,0,1)}
+.edit-sheet.open{transform:translateX(-50%) translateY(0)}
+.sheet-handle{width:40px;height:4px;background:rgba(0,0,0,.1);border-radius:100px;margin:0 auto 20px}
+.sheet-title{font-size:18px;font-weight:700;color:var(--n);margin-bottom:20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--n);margin-bottom:6px}
+.field input,.field textarea,.field select{width:100%;padding:12px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;background:white;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--n);outline:none;resize:none;appearance:none;-webkit-appearance:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--t)}
+.save-btn{width:100%;padding:14px;border-radius:14px;background:var(--t);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:16px;font-weight:700;cursor:pointer}
+.save-btn:disabled{opacity:.6}
 /* BOTTOM NAV */
-.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:var(--white); border-top:1px solid rgba(0,0,0,0.08); display:flex; padding:10px 0 16px; }
-.bnav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; border:none; background:none; font-family:'DM Sans',sans-serif; text-decoration:none; padding:4px 0; }
-.bnav-icon { font-size:22px; }
-.bnav-label { font-size:10px; font-weight:600; color:var(--light); }
-.bnav-item.active .bnav-label { color:var(--terracotta); }
-
-.page-pad { padding-bottom:100px; }
-
-/* Toast */
-.toast { position:fixed; top:70px; left:50%; transform:translateX(-50%); background:var(--navy); color:white; padding:12px 20px; border-radius:100px; font-size:14px; font-weight:600; z-index:999; white-space:nowrap; animation:slideDown 0.3s ease; }
-@keyframes slideDown { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-
-/* Avatar upload */
-#avatarInput { display:none; }
-
-/* Skeleton */
-.skeleton { animation:shimmer 1.5s ease infinite; }
-.sk-block { background:rgba(0,0,0,0.07); border-radius:8px; }
-@keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--w);border-top:1px solid rgba(0,0,0,.08);display:flex;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:"DM Sans",sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.bni-i{font-size:22px}.bni-l{font-size:10px;font-weight:600;color:var(--l)}
+.bni.on .bni-l{color:var(--t)}
+/* TOAST */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:999;white-space:nowrap;pointer-events:none}
 </style>
 </head>
 <body>
+<div class="wrap">
 
 <div class="topnav">
   <button class="back-btn" onclick="history.back()">←</button>
@@ -177,422 +131,370 @@ body { font-family:'DM Sans',sans-serif; background:#EEE9DF; color:var(--navy); 
   <button class="edit-btn" onclick="openEdit()">✏️ Edit</button>
 </div>
 
-<div class="page-pad">
+<!-- PROFILE HERO -->
+<div class="profile-hero">
+  <!-- COVER — tap to change -->
+  <div class="cover-wrap" onclick="document.getElementById('coverInput').click()">
+    <img id="coverImg" class="cover-img" alt=""/>
+    <div class="cover-gradient" id="coverGradient"></div>
+    <div class="cover-pattern" id="coverPattern"></div>
+    <button class="cover-edit-btn" onclick="event.stopPropagation();document.getElementById('coverInput').click()">🖼️ Change Cover</button>
+  </div>
+  <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadCover(this)"/>
 
-  <!-- HERO -->
-  <div class="profile-hero">
-    <div class="hero-cover"><div class="hero-cover-pattern"></div></div>
-
-    <div class="avatar-wrap">
-      <div class="badge-crown" id="badge-crown" style="display:none"></div>
-      <div class="avatar-circle" id="avatar-circle" onclick="document.getElementById('avatarInput').click()">
-        <img id="avatar-img" src="" alt="" style="display:none" />
-        <span id="avatar-initials">?</span>
-        <div class="avatar-edit-overlay">📷</div>
-        <div class="avatar-level-ring" id="level-ring"></div>
-      </div>
-      <input type="file" id="avatarInput" accept="image/*" onchange="uploadAvatar(this)" />
+  <!-- AVATAR -->
+  <div class="avatar-wrap">
+    <div class="badge-crown" id="badge-crown" style="display:none"></div>
+    <div class="avatar-circle" id="avatar-circle" onclick="document.getElementById('avatarInput').click()">
+      <img id="avatar-img" alt="" style="display:none"/>
+      <span id="avatar-initials">?</span>
+      <div class="av-edit-ov">📷</div>
+      <div class="av-uploading" id="av-uploading">Uploading...</div>
+      <div class="level-ring" id="level-ring"></div>
     </div>
-
-    <div class="profile-info">
-      <div class="main-badge" id="main-badge">🏡 Neighbor</div>
-      <div class="profile-name" id="profile-name">Loading...</div>
-      <div class="profile-loc" id="profile-loc">📍 —</div>
-      <div class="profile-bio" id="profile-bio"></div>
-      <div class="profile-occ" id="profile-occ"></div>
-
-      <div class="rep-score">
-        <div class="rep-icon">⭐</div>
-        <div class="rep-num" id="rep-num">0</div>
-        <div class="rep-label">Reputation Points</div>
-      </div>
-
-      <div class="stats-row">
-        <div class="stat-item">
-          <div class="stat-num" id="stat-posts">0</div>
-          <div class="stat-label">Posts</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num" id="stat-welcomed">0</div>
-          <div class="stat-label">Welcomed</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num" id="stat-joined">—</div>
-          <div class="stat-label">Member</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num" id="stat-type">—</div>
-          <div class="stat-label">Role</div>
-        </div>
-      </div>
-    </div>
+    <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)"/>
   </div>
 
-  <!-- ACTIONS -->
-  <div class="profile-actions">
-    <button class="btn-msg" onclick="window.location.href='nearby-settings.html'">⚙️ Settings</button>
-    <button class="btn-signout" onclick="confirmSignOut()">Sign Out</button>
-  </div>
-
-  <!-- BADGE JOURNEY -->
-  <div class="section">
-    <div class="section-title">🏅 Badge Journey</div>
-    <div class="badge-journey">
-      <div class="badge-journey-fill" id="journey-fill" style="width:0%"></div>
-      <div class="journey-step">
-        <div class="journey-icon" id="j1">🏡</div>
-        <div class="journey-label" id="jl1">Neighbor</div>
-      </div>
-      <div class="journey-step">
-        <div class="journey-icon" id="j2">⭐</div>
-        <div class="journey-label" id="jl2">Star</div>
-      </div>
-      <div class="journey-step">
-        <div class="journey-icon" id="j3">🏆</div>
-        <div class="journey-label" id="jl3">Ambassador</div>
-      </div>
-      <div class="journey-step">
-        <div class="journey-icon locked" id="j4">👑</div>
-        <div class="journey-label" id="jl4">Legend</div>
-      </div>
-    </div>
-
-    <div class="next-badge-card" id="next-badge-card">
-      <div class="nbc-top">
-        <div class="nbc-icon" id="next-icon">⭐</div>
-        <div>
-          <div class="nbc-title" id="next-title">Next: Community Star</div>
-          <div class="nbc-sub" id="next-sub">0 / 400 rep points</div>
-        </div>
-      </div>
-      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
-      <div class="progress-labels">
-        <span id="pts-current">0 pts</span>
-        <span id="pts-needed">400 pts needed</span>
-      </div>
+  <div class="profile-info">
+    <div class="main-badge" id="main-badge">🏡 Neighbor</div>
+    <div class="profile-name" id="profile-name">Loading...</div>
+    <div class="profile-loc" id="profile-loc">📍 —</div>
+    <div class="profile-bio" id="profile-bio"></div>
+    <div class="profile-occ" id="profile-occ"></div>
+    <div class="rep-score"><div style="font-size:18px">⭐</div><div class="rep-num" id="rep-num">0</div><div class="rep-label">Reputation Points</div></div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-num2" id="stat-posts">0</div><div class="stat-label">Posts</div></div>
+      <div class="stat-item"><div class="stat-num2" id="stat-welcomed">0</div><div class="stat-label">Welcomed</div></div>
+      <div class="stat-item"><div class="stat-num2" id="stat-joined">—</div><div class="stat-label">Member</div></div>
+      <div class="stat-item"><div class="stat-num2" id="stat-type">—</div><div class="stat-label">Role</div></div>
     </div>
   </div>
-
-  <!-- HOW TO EARN -->
-  <div class="section">
-    <div class="section-title">⭐ How to Earn Reputation</div>
-    <div style="display:flex;flex-direction:column;gap:0">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.05)"><div style="font-size:13px;color:var(--mid)">👋 Welcome a newcomer</div><div style="font-size:13px;font-weight:700;color:var(--sage)">+10 pts</div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.05)"><div style="font-size:13px;color:var(--mid)">💬 Create a post</div><div style="font-size:13px;font-weight:700;color:var(--sage)">+5 pts</div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.05)"><div style="font-size:13px;color:var(--mid)">❤️ Post liked by neighbors</div><div style="font-size:13px;font-weight:700;color:var(--sage)">+2 pts each</div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.05)"><div style="font-size:13px;color:var(--mid)">🎉 Post a community event</div><div style="font-size:13px;font-weight:700;color:var(--sage)">+25 pts</div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.05)"><div style="font-size:13px;color:var(--mid)">💼 Post a local job</div><div style="font-size:13px;font-weight:700;color:var(--sage)">+15 pts</div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.05)"><div style="font-size:13px;color:var(--mid)">🔔 Valid safety alert</div><div style="font-size:13px;font-weight:700;color:var(--sage)">+15 pts</div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0"><div style="font-size:13px;color:var(--red)">🚫 Post removed / violation</div><div style="font-size:13px;font-weight:700;color:var(--red)">−50 pts</div></div>
-    </div>
-  </div>
-
-  <!-- ACHIEVEMENTS -->
-  <div class="section">
-    <div class="section-title">🏅 Achievements</div>
-    <div class="achievements-grid" id="achievements-grid">
-      <div class="achievement" id="ach-welcomer"><div class="ach-icon">🤝</div><div class="ach-name">Welcomer</div><div class="ach-desc">Greet 5 arrivals</div></div>
-      <div class="achievement locked" id="ach-fire"><div class="ach-icon">🔥</div><div class="ach-name">On Fire</div><div class="ach-desc">10 posts made</div></div>
-      <div class="achievement locked" id="ach-job"><div class="ach-icon">💼</div><div class="ach-name">Job Connector</div><div class="ach-desc">Post a job</div></div>
-      <div class="achievement locked" id="ach-alert"><div class="ach-icon">🛡️</div><div class="ach-name">Watchdog</div><div class="ach-desc">Post a safety alert</div></div>
-      <div class="achievement locked" id="ach-star"><div class="ach-icon">⭐</div><div class="ach-name">Rising Star</div><div class="ach-desc">Reach 400 pts</div></div>
-      <div class="achievement locked" id="ach-legend"><div class="ach-icon">👑</div><div class="ach-name">Legend</div><div class="ach-desc">Reach 1000 pts</div></div>
-    </div>
-  </div>
-
-  <!-- RECENT POSTS -->
-  <div class="section">
-    <div class="section-title">💬 Your Recent Posts</div>
-    <div id="my-posts"><div class="posts-loading">Loading your posts...</div></div>
-  </div>
-
-  <!-- AMBASSADOR PERKS (show only for level 3+) -->
-  <div class="section" id="perks-section" style="display:none;background:linear-gradient(135deg,var(--navy),#2C3E6B)">
-    <div class="section-title" style="color:white">🏆 Your Ambassador Perks</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div style="display:flex;align-items:center;gap:12px"><div style="font-size:20px">⭐</div><div style="font-size:13px;color:rgba(255,255,255,0.75)">Priority in New Arrivals welcome screen</div></div>
-      <div style="display:flex;align-items:center;gap:12px"><div style="font-size:20px">📢</div><div style="font-size:13px;color:rgba(255,255,255,0.75)">Posts boosted to top of neighborhood feed</div></div>
-      <div style="display:flex;align-items:center;gap:12px"><div style="font-size:20px">🏆</div><div style="font-size:13px;color:rgba(255,255,255,0.75)">Gold ring and crown on your profile</div></div>
-      <div style="display:flex;align-items:center;gap:12px"><div style="font-size:20px">🎯</div><div style="font-size:13px;color:rgba(255,255,255,0.75)">Early access to new Nearby features</div></div>
-    </div>
-  </div>
-
 </div>
 
-<!-- EDIT SHEET OVERLAY -->
-<div class="sheet-overlay" id="sheet-overlay" onclick="closeEdit()"></div>
+<!-- ACTIONS -->
+<div class="profile-actions">
+  <button class="btn-settings" onclick="window.location.href='nearby-settings.html'">⚙️ Settings</button>
+  <button class="btn-signout" onclick="doSignOut()">Sign Out</button>
+</div>
 
-<!-- EDIT PROFILE SHEET -->
+<!-- BADGE JOURNEY -->
+<div class="section">
+  <div class="section-title">🏅 Badge Journey</div>
+  <div class="bj">
+    <div class="bj-fill" id="bj-fill" style="width:0%"></div>
+    <div class="bj-step"><div class="bj-icon" id="bj1">🏡</div><div class="bj-label" id="bl1">Neighbor</div></div>
+    <div class="bj-step"><div class="bj-icon" id="bj2">⭐</div><div class="bj-label" id="bl2">Star</div></div>
+    <div class="bj-step"><div class="bj-icon" id="bj3">🏆</div><div class="bj-label" id="bl3">Ambassador</div></div>
+    <div class="bj-step"><div class="bj-icon locked" id="bj4">👑</div><div class="bj-label" id="bl4">Legend</div></div>
+  </div>
+  <div class="next-card" id="next-card">
+    <div class="nc-top"><div class="nc-icon" id="next-icon">⭐</div><div><div class="nc-title" id="next-title">Next: Community Star</div><div class="nc-sub" id="next-sub">0 / 400 points</div></div></div>
+    <div class="prog-bar-bg"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="prog-labels"><span id="pts-cur">0 pts</span><span id="pts-needed">400 pts needed</span></div>
+  </div>
+</div>
+
+<!-- HOW TO EARN -->
+<div class="section">
+  <div class="section-title">⭐ How to Earn Reputation</div>
+  <div style="display:flex;flex-direction:column;gap:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,.05)"><div style="font-size:13px;color:var(--m)">👋 Welcome a newcomer</div><div style="font-size:13px;font-weight:700;color:var(--s)">+10 pts</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,.05)"><div style="font-size:13px;color:var(--m)">💬 Create a post</div><div style="font-size:13px;font-weight:700;color:var(--s)">+5 pts</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,.05)"><div style="font-size:13px;color:var(--m)">💬 Comment on a post</div><div style="font-size:13px;font-weight:700;color:var(--s)">+2 pts</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(0,0,0,.05)"><div style="font-size:13px;color:var(--m)">💼 Post a job</div><div style="font-size:13px;font-weight:700;color:var(--s)">+15 pts</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0"><div style="font-size:13px;color:var(--r)">🚫 Post removed / violation</div><div style="font-size:13px;font-weight:700;color:var(--r)">−50 pts</div></div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS -->
+<div class="section">
+  <div class="section-title">🏅 Achievements</div>
+  <div class="ach-grid">
+    <div class="ach" id="ach-w"><div class="ach-icon">🤝</div><div class="ach-name">Welcomer</div><div class="ach-desc">Welcome 5 arrivals</div></div>
+    <div class="ach locked" id="ach-f"><div class="ach-icon">🔥</div><div class="ach-name">On Fire</div><div class="ach-desc">10 posts made</div></div>
+    <div class="ach locked" id="ach-j"><div class="ach-icon">💼</div><div class="ach-name">Job Poster</div><div class="ach-desc">Post a job</div></div>
+    <div class="ach locked" id="ach-a"><div class="ach-icon">🔔</div><div class="ach-name">Watchdog</div><div class="ach-desc">Post a safety alert</div></div>
+    <div class="ach locked" id="ach-s"><div class="ach-icon">⭐</div><div class="ach-name">Rising Star</div><div class="ach-desc">Reach 400 pts</div></div>
+    <div class="ach locked" id="ach-l"><div class="ach-icon">👑</div><div class="ach-name">Legend</div><div class="ach-desc">Reach 1000 pts</div></div>
+  </div>
+</div>
+
+<!-- MY POSTS -->
+<div class="section">
+  <div class="section-title">💬 Your Recent Posts</div>
+  <div id="my-posts"><div style="text-align:center;padding:20px;color:var(--l);font-size:13px">Loading your posts...</div></div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- EDIT SHEET OVERLAY -->
+<div class="sheet-ov" id="sheet-ov" onclick="closeEdit()"></div>
 <div class="edit-sheet" id="edit-sheet">
   <div class="sheet-handle"></div>
   <div class="sheet-title">✏️ Edit Profile</div>
-  <div class="field"><label>Full Name</label><input type="text" id="edit-name" placeholder="Your full name" /></div>
+  <div class="field"><label>Full Name</label><input type="text" id="edit-name" placeholder="Your full name"/></div>
   <div class="field"><label>Bio</label><textarea id="edit-bio" rows="3" maxlength="160" placeholder="Tell your neighbors about yourself..."></textarea></div>
-  <div class="field"><label>Occupation</label><input type="text" id="edit-occ" placeholder="e.g. Teacher, Chef, Designer..." /></div>
+  <div class="field"><label>Occupation</label><input type="text" id="edit-occ" placeholder="e.g. Teacher, Chef, Designer..."/></div>
   <div class="field">
-    <label>Neighborhood</label>
-    <input type="text" id="edit-neighborhood" placeholder="e.g. Lekki Phase 1" />
-  </div>
-  <div class="field">
-    <label>City</label>
-    <select id="edit-city">
-      <option value="Lagos">Lagos</option>
-      <option value="Abuja">Abuja</option>
-      <option value="Port Harcourt">Port Harcourt</option>
-      <option value="Ibadan">Ibadan</option>
-      <option value="Kano">Kano</option>
-      <option value="Other">Other</option>
+    <label>State</label>
+    <select id="edit-state" onchange="updateEditAreas()">
+      <option value="">— Select state —</option>
+      <option>Lagos</option><option>Abuja (FCT)</option><option>Kano</option><option>Rivers</option>
+      <option>Oyo</option><option>Anambra</option><option>Delta</option><option>Edo</option>
+      <option>Enugu</option><option>Kaduna</option><option>Ogun</option><option>Ondo</option>
+      <option>Imo</option><option>Abia</option><option>Cross River</option><option>Akwa Ibom</option>
+      <option>Bauchi</option><option>Borno</option><option>Gombe</option><option>Jigawa</option>
+      <option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Nasarawa</option>
+      <option>Niger</option><option>Osun</option><option>Ekiti</option><option>Sokoto</option>
+      <option>Taraba</option><option>Yobe</option><option>Zamfara</option><option>Benue</option>
+      <option>Ebonyi</option><option>Plateau</option><option>Adamawa</option><option>Bayelsa</option>
     </select>
   </div>
-  <button class="save-profile-btn" id="save-profile-btn" onclick="saveProfile()">Save Changes</button>
+  <div class="field"><label>Neighborhood / Area</label><input type="text" id="edit-neighborhood" placeholder="e.g. Lekki Phase 1, Wuse 2..."/></div>
+  <button class="save-btn" id="save-btn" onclick="saveProfile()">Save Changes</button>
 </div>
 
 <!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <a href="nearby-feed.html" class="bnav-item"><div class="bnav-icon">🏡</div><div class="bnav-label">Home</div></a>
-  <a href="nearby-arrivals.html" class="bnav-item"><div class="bnav-icon">🆕</div><div class="bnav-label">Arrivals</div></a>
-  <a href="nearby-jobs.html" class="bnav-item"><div class="bnav-icon">💼</div><div class="bnav-label">Jobs</div></a>
-  <button class="bnav-item active"><div class="bnav-icon">👤</div><div class="bnav-label">Profile</div></button>
+<div class="bnav">
+  <a href="nearby-feed.html" class="bni"><div class="bni-i">🏡</div><div class="bni-l">Home</div></a>
+  <a href="nearby-arrivals.html" class="bni"><div class="bni-i">🆕</div><div class="bni-l">Arrivals</div></a>
+  <a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+  <button class="bni on"><div class="bni-i">👤</div><div class="bni-l">Profile</div></button>
 </div>
 
 <script>
-let currentUser = null
+let me=null
+const COLS=['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6']
+function gc(s){if(!s)return COLS[0];let h=0;for(let c of s)h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length]}
+function gi(n){if(!n)return'?';return n.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)}
+function ta(ts){if(!ts)return'?';const m=Math.floor((Date.now()-new Date(ts))/(1000*60*60*24*30));return m<1?'New':m+'mo'}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-const BADGE_DATA = {
-  1: { name:'🏡 Neighbor', cls:'badge-1', crown:'', ring:'ring-1', next:'⭐', nextName:'Community Star', nextPts:400 },
-  2: { name:'⭐ Community Star', cls:'badge-2', crown:'⭐', ring:'ring-2', next:'🏆', nextName:'Ambassador', nextPts:700 },
-  3: { name:'🏆 Ambassador', cls:'badge-3', crown:'🏆', ring:'ring-3', next:'👑', nextName:'Community Legend', nextPts:1000 },
-  4: { name:'👑 Community Legend', cls:'badge-4', crown:'👑', ring:'ring-4', next:null, nextName:null, nextPts:1000 }
+const BD={
+  1:{name:'🏡 Neighbor',cls:'mb1',crown:'',ring:'r1c',next:'⭐',nextName:'Community Star',nextPts:400,prevPts:0},
+  2:{name:'⭐ Community Star',cls:'mb2',crown:'⭐',ring:'r2c',next:'🏆',nextName:'Ambassador',nextPts:700,prevPts:400},
+  3:{name:'🏆 Ambassador',cls:'mb3',crown:'🏆',ring:'r3c',next:'👑',nextName:'Legend',nextPts:1000,prevPts:700},
+  4:{name:'👑 Community Legend',cls:'mb4',crown:'👑',ring:'r4c',next:null,nextName:null,nextPts:1000,prevPts:1000}
 }
 
-const COLORS = ['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6']
-function getColor(str) {
-  if (!str) return COLORS[0]
-  let h = 0; for (let c of str) h = c.charCodeAt(0) + ((h << 5) - h)
-  return COLORS[Math.abs(h) % COLORS.length]
-}
-
-async function init() {
-  const session = await getSession()
-  if (!session) { window.location.href = 'nearby-auth.html'; return }
-
-  currentUser = await getCurrentUser()
-  if (!currentUser) { window.location.href = 'nearby-onboarding.html'; return }
-
-  renderProfile(currentUser)
-  loadMyPosts()
+async function init(){
+  const sess=await sb.auth.getSession()
+  if(!sess.data.session){window.location.href='nearby-auth.html';return}
+  const{data,error}=await sb.from('users').select('*').eq('id',sess.data.session.user.id).single()
+  if(error||!data){window.location.href='nearby-onboarding.html';return}
+  me=data
+  renderProfile(me)
   loadStats()
+  loadPosts()
 }
 
-function renderProfile(user) {
-  const level = user.badge_level || 1
-  const bd = BADGE_DATA[level]
-  const pts = user.rep_points || 0
+function renderProfile(u){
+  const lvl=u.badge_level||1,pts=u.rep_points||0,bd=BD[lvl]
 
   // Avatar
-  if (user.avatar_url) {
-    document.getElementById('avatar-img').src = user.avatar_url
-    document.getElementById('avatar-img').style.display = 'block'
-    document.getElementById('avatar-initials').style.display = 'none'
-  } else {
-    document.getElementById('avatar-initials').textContent = getInitials(user.full_name)
-    document.getElementById('avatar-circle').style.background = getColor(user.id)
+  if(u.avatar_url){
+    document.getElementById('avatar-img').src=u.avatar_url+'?t='+Date.now()
+    document.getElementById('avatar-img').style.display='block'
+    document.getElementById('avatar-initials').style.display='none'
+    document.getElementById('avatar-circle').style.background='transparent'
+  }else{
+    document.getElementById('avatar-initials').textContent=gi(u.full_name)
+    document.getElementById('avatar-circle').style.background=gc(u.id)
   }
 
-  // Level ring & crown
-  document.getElementById('level-ring').className = 'avatar-level-ring ' + bd.ring
-  if (bd.crown) {
-    document.getElementById('badge-crown').textContent = bd.crown
-    document.getElementById('badge-crown').style.display = 'block'
+  // Cover image
+  if(u.cover_url){
+    const ci=document.getElementById('coverImg')
+    ci.src=u.cover_url+'?t='+Date.now()
+    ci.style.display='block'
+    document.getElementById('coverGradient').style.display='none'
+    document.getElementById('coverPattern').style.display='none'
   }
+
+  // Level ring + crown
+  document.getElementById('level-ring').className='level-ring '+bd.ring
+  if(bd.crown){document.getElementById('badge-crown').textContent=bd.crown;document.getElementById('badge-crown').style.display='block'}
 
   // Badge pill
-  const pill = document.getElementById('main-badge')
-  pill.textContent = bd.name
-  pill.className = 'main-badge ' + bd.cls
+  const pill=document.getElementById('main-badge')
+  pill.textContent=bd.name;pill.className='main-badge '+bd.cls
 
-  // Info
-  document.getElementById('profile-name').textContent = user.full_name || 'Your Name'
-  document.getElementById('profile-loc').textContent = '📍 ' + (user.neighborhood || '') + (user.city ? ', ' + user.city : '')
-  document.getElementById('profile-bio').textContent = user.bio || ''
-  document.getElementById('profile-occ').textContent = user.occupation || ''
-  document.getElementById('rep-num').textContent = pts.toLocaleString()
+  document.getElementById('profile-name').textContent=u.full_name||'Your Name'
+  document.getElementById('profile-loc').textContent='📍 '+(u.neighborhood||'')+(u.city?', '+u.city:'')
+  document.getElementById('profile-bio').textContent=u.bio||''
+  document.getElementById('profile-occ').textContent=u.occupation||''
+  document.getElementById('rep-num').textContent=(pts).toLocaleString()
 
-  const roleMap = { resident:'Resident', newcomer:'Newcomer', business:'Business', visitor:'Visitor' }
-  document.getElementById('stat-type').textContent = roleMap[user.user_type] || 'Resident'
-
-  // Joined
-  if (user.created_at) {
-    const months = Math.floor((Date.now() - new Date(user.created_at)) / (1000 * 60 * 60 * 24 * 30))
-    document.getElementById('stat-joined').textContent = months < 1 ? 'New' : months + 'mo'
-  }
+  const roles={resident:'Resident',newcomer:'Newcomer',business:'Business',visitor:'Visitor'}
+  document.getElementById('stat-type').textContent=roles[u.user_type]||'Resident'
+  document.getElementById('stat-joined').textContent=ta(u.created_at)
 
   // Badge journey
-  renderJourney(level, pts)
+  const steps=['bj1','bj2','bj3','bj4'],labels=['bl1','bl2','bl3','bl4']
+  steps.forEach((id,i)=>{
+    const el=document.getElementById(id),lbl=document.getElementById(labels[i])
+    el.className='bj-icon';lbl.className='bj-label'
+    if(i+1<lvl){el.classList.add('done');lbl.classList.add('done')}
+    else if(i+1===lvl){el.classList.add('active');lbl.classList.add('active')}
+    else el.classList.add('locked')
+  })
+  document.getElementById('bj-fill').style.width=Math.min(100,((lvl-1)/3)*100)+'%'
 
-  // Progress bar
-  if (bd.nextPts) {
-    const prev = [0, 0, 400, 700][level] || 0
-    const range = bd.nextPts - prev
-    const earned = Math.max(0, pts - prev)
-    const pct = Math.min(100, Math.round((earned / range) * 100))
-    document.getElementById('progress-fill').style.width = pct + '%'
-    document.getElementById('next-icon').textContent = bd.next
-    document.getElementById('next-title').textContent = 'Next: ' + bd.nextName
-    document.getElementById('next-sub').textContent = `${pts} / ${bd.nextPts} reputation points · ${pct}% there!`
-    document.getElementById('pts-current').textContent = pts + ' pts'
-    document.getElementById('pts-needed').textContent = bd.nextPts + ' pts needed'
+  // Progress to next
+  if(bd.nextName){
+    const range=bd.nextPts-bd.prevPts,earned=Math.max(0,pts-bd.prevPts),pct=Math.min(100,Math.round((earned/range)*100))
+    document.getElementById('prog-bar').style.width=pct+'%'
+    document.getElementById('next-icon').textContent=bd.next
+    document.getElementById('next-title').textContent='Next: '+bd.nextName
+    document.getElementById('next-sub').textContent=pts+' / '+bd.nextPts+' pts · '+pct+'% there!'
+    document.getElementById('pts-cur').textContent=pts+' pts'
+    document.getElementById('pts-needed').textContent=bd.nextPts+' pts needed'
   }
 
   // Achievements
-  if ((user.welcomes_count || 0) >= 5) document.getElementById('ach-welcomer').classList.remove('locked')
-  if (pts >= 400) document.getElementById('ach-star').classList.remove('locked')
-  if (pts >= 1000) document.getElementById('ach-legend').classList.remove('locked')
-
-  // Perks for ambassadors
-  if (level >= 3) document.getElementById('perks-section').style.display = 'block'
+  if(pts>=400)document.getElementById('ach-s').classList.remove('locked')
+  if(pts>=1000)document.getElementById('ach-l').classList.remove('locked')
 
   // Pre-fill edit form
-  document.getElementById('edit-name').value = user.full_name || ''
-  document.getElementById('edit-bio').value = user.bio || ''
-  document.getElementById('edit-occ').value = user.occupation || ''
-  document.getElementById('edit-neighborhood').value = user.neighborhood || ''
-  if (user.city) document.getElementById('edit-city').value = user.city
+  document.getElementById('edit-name').value=u.full_name||''
+  document.getElementById('edit-bio').value=u.bio||''
+  document.getElementById('edit-occ').value=u.occupation||''
+  document.getElementById('edit-neighborhood').value=u.neighborhood||''
+  if(u.city)document.getElementById('edit-state').value=u.city
 }
 
-function renderJourney(level, pts) {
-  const steps = ['j1','j2','j3','j4']
-  const labels = ['jl1','jl2','jl3','jl4']
-  steps.forEach((id, i) => {
-    const el = document.getElementById(id)
-    const lbl = document.getElementById(labels[i])
-    el.className = 'journey-icon'
-    lbl.className = 'journey-label'
-    if (i + 1 < level) { el.classList.add('done'); lbl.classList.add('done') }
-    else if (i + 1 === level) { el.classList.add('active'); lbl.classList.add('active') }
-    else { el.classList.add('locked') }
-  })
-  const pct = Math.min(100, ((level - 1) / 3) * 100)
-  document.getElementById('journey-fill').style.width = pct + '%'
+async function loadStats(){
+  if(!me)return
+  const[{count:pc},{count:wc}]=await Promise.all([
+    sb.from('posts').select('*',{count:'exact',head:true}).eq('user_id',me.id),
+    sb.from('welcomes').select('*',{count:'exact',head:true}).eq('sender_id',me.id)
+  ])
+  document.getElementById('stat-posts').textContent=pc||0
+  document.getElementById('stat-welcomed').textContent=wc||0
+  if((pc||0)>=10)document.getElementById('ach-f').classList.remove('locked')
+  if((wc||0)>=5)document.getElementById('ach-w').classList.remove('locked')
 }
 
-async function loadStats() {
-  if (!currentUser) return
-  // Posts count
-  const { count: postCount } = await sb.from('posts').select('*', { count:'exact', head:true }).eq('user_id', currentUser.id)
-  document.getElementById('stat-posts').textContent = postCount || 0
-
-  // Welcomed count
-  const { count: welcomeCount } = await sb.from('welcomes').select('*', { count:'exact', head:true }).eq('sender_id', currentUser.id)
-  document.getElementById('stat-welcomed').textContent = welcomeCount || 0
-
-  // Unlock achievements based on real data
-  if (postCount >= 10) document.getElementById('ach-fire').classList.remove('locked')
-  if (welcomeCount >= 5) document.getElementById('ach-welcomer').classList.remove('locked')
+async function loadPosts(){
+  if(!me)return
+  const{data}=await sb.from('posts').select('*').eq('user_id',me.id).order('created_at',{ascending:false}).limit(5)
+  const c=document.getElementById('my-posts')
+  if(!data||!data.length){c.innerHTML='<div style="text-align:center;padding:20px;color:var(--l);font-size:13px">You haven\'t posted yet. Share something! 🏘️</div>';return}
+  const TL={post:'💬 Post',job:'💼 Job',event:'🎉 Event',alert:'🔔 Alert',welcome:'👋 Welcome'}
+  c.innerHTML=data.map(p=>`<div class="post-card"><div class="post-top"><div class="post-type">${TL[p.post_type]||'💬 Post'}</div><div class="post-time">${timeAgo(p.created_at)}</div></div><div class="post-text">${esc(p.content)}</div><div class="post-likes">❤️ ${p.likes_count||0} · 💬 ${p.comments_count||0}</div></div>`).join('')
 }
 
-async function loadMyPosts() {
-  if (!currentUser) return
-  const { data } = await sb.from('posts')
-    .select('*').eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false }).limit(5)
+// AVATAR UPLOAD — saves to Supabase Storage
+async function uploadAvatar(input){
+  if(!input.files||!input.files[0]||!me)return
+  const file=input.files[0]
+  const uploading=document.getElementById('av-uploading')
+  uploading.classList.add('show')
 
-  const container = document.getElementById('my-posts')
-  if (!data || data.length === 0) {
-    container.innerHTML = '<div class="posts-loading">You haven\'t posted yet. Share something with your neighborhood! 🏘️</div>'
-    return
-  }
-  const typeMap = { post:'💬 Post', job:'💼 Job', event:'🎉 Event', alert:'🔔 Alert', welcome:'👋 Welcome' }
-  container.innerHTML = data.map(p => `
-    <div class="post-card">
-      <div class="post-top">
-        <div class="post-type">${typeMap[p.post_type] || '💬 Post'}</div>
-        <div class="post-time">${timeAgo(p.created_at)}</div>
-      </div>
-      <div class="post-text">${escHtml(p.content)}</div>
-      <div class="post-likes">❤️ ${p.likes_count || 0} likes · 💬 ${p.comments_count || 0} comments</div>
-    </div>`).join('')
+  try{
+    // Show preview immediately
+    const reader=new FileReader()
+    reader.onload=e=>{
+      document.getElementById('avatar-img').src=e.target.result
+      document.getElementById('avatar-img').style.display='block'
+      document.getElementById('avatar-initials').style.display='none'
+    }
+    reader.readAsDataURL(file)
+
+    // Upload to Supabase Storage
+    const ext=file.name.split('.').pop().toLowerCase()||'jpg'
+    const path=`${me.id}/avatar.${ext}`
+    const{error:upErr}=await sb.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type||'image/jpeg'})
+
+    if(upErr){
+      // Storage might not exist — save as base64 in avatar_url (fallback)
+      const reader2=new FileReader()
+      reader2.onload=async e=>{
+        const b64=e.target.result
+        await sb.from('users').update({avatar_url:b64}).eq('id',me.id)
+        toast('📸 Profile photo saved!')
+      }
+      reader2.readAsDataURL(file)
+    }else{
+      const{data:pub}=sb.storage.from('avatars').getPublicUrl(path)
+      const avatarUrl=pub.publicUrl+'?v='+Date.now()
+      await sb.from('users').update({avatar_url:avatarUrl}).eq('id',me.id)
+      me.avatar_url=avatarUrl
+      toast('📸 Profile photo saved!')
+    }
+  }catch(e){toast('❌ Upload failed. Please try again.')}
+  uploading.classList.remove('show')
 }
 
-function escHtml(str) {
-  if (!str) return ''
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-}
+// COVER UPLOAD
+async function uploadCover(input){
+  if(!input.files||!input.files[0]||!me)return
+  const file=input.files[0]
+  toast('⏳ Uploading cover...')
 
-// AVATAR UPLOAD
-async function uploadAvatar(input) {
-  if (!input.files || !input.files[0]) return
-  const file = input.files[0]
-  const ext = file.name.split('.').pop()
-  const path = `avatars/${currentUser.id}.${ext}`
+  try{
+    const reader=new FileReader()
+    reader.onload=async e=>{
+      const b64=e.target.result
+      // Show preview
+      const ci=document.getElementById('coverImg')
+      ci.src=b64;ci.style.display='block'
+      document.getElementById('coverGradient').style.display='none'
+      document.getElementById('coverPattern').style.display='none'
 
-  // Check if storage bucket exists — if not, use base64 preview
-  const reader = new FileReader()
-  reader.onload = async (e) => {
-    const base64 = e.target.result
-    document.getElementById('avatar-img').src = base64
-    document.getElementById('avatar-img').style.display = 'block'
-    document.getElementById('avatar-initials').style.display = 'none'
-    showToast('📸 Photo updated! (saved locally)')
-  }
-  reader.readAsDataURL(file)
+      // Try Supabase Storage first
+      try{
+        const ext=file.name.split('.').pop().toLowerCase()||'jpg'
+        const path=`${me.id}/cover.${ext}`
+        const{error:upErr}=await sb.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type})
+        if(!upErr){
+          const{data:pub}=sb.storage.from('avatars').getPublicUrl(path)
+          await sb.from('users').update({cover_url:pub.publicUrl+'?v='+Date.now()}).eq('id',me.id)
+        }else{
+          await sb.from('users').update({cover_url:b64}).eq('id',me.id)
+        }
+      }catch(e2){
+        await sb.from('users').update({cover_url:b64}).eq('id',me.id)
+      }
+      toast('🖼️ Cover photo updated!')
+    }
+    reader.readAsDataURL(file)
+  }catch(e){toast('❌ Upload failed.')}
 }
 
 // EDIT PROFILE
-function openEdit() {
-  document.getElementById('edit-sheet').classList.add('open')
-  document.getElementById('sheet-overlay').classList.add('open')
-}
-function closeEdit() {
-  document.getElementById('edit-sheet').classList.remove('open')
-  document.getElementById('sheet-overlay').classList.remove('open')
-}
+function openEdit(){document.getElementById('edit-sheet').classList.add('open');document.getElementById('sheet-ov').classList.add('open')}
+function closeEdit(){document.getElementById('edit-sheet').classList.remove('open');document.getElementById('sheet-ov').classList.remove('open')}
 
-async function saveProfile() {
-  const btn = document.getElementById('save-profile-btn')
-  btn.disabled = true
-  btn.textContent = 'Saving...'
-
-  const updates = {
-    full_name: document.getElementById('edit-name').value.trim(),
-    bio: document.getElementById('edit-bio').value.trim(),
-    occupation: document.getElementById('edit-occ').value.trim(),
-    neighborhood: document.getElementById('edit-neighborhood').value.trim(),
-    city: document.getElementById('edit-city').value
+async function saveProfile(){
+  const btn=document.getElementById('save-btn')
+  btn.disabled=true;btn.textContent='Saving...'
+  const updates={
+    full_name:document.getElementById('edit-name').value.trim(),
+    bio:document.getElementById('edit-bio').value.trim(),
+    occupation:document.getElementById('edit-occ').value.trim(),
+    neighborhood:document.getElementById('edit-neighborhood').value.trim(),
+    city:document.getElementById('edit-state').value
   }
-
-  const { error } = await updateProfile(currentUser.id, updates)
-  if (error) {
-    showToast('❌ Could not save. Try again.')
-  } else {
-    currentUser = { ...currentUser, ...updates }
-    renderProfile(currentUser)
-    closeEdit()
-    showToast('✅ Profile updated!')
-  }
-  btn.disabled = false
-  btn.textContent = 'Save Changes'
+  const{error}=await sb.from('users').update(updates).eq('id',me.id)
+  if(error)toast('❌ Could not save. Try again.')
+  else{me={...me,...updates};renderProfile(me);closeEdit();toast('✅ Profile updated!')}
+  btn.disabled=false;btn.textContent='Save Changes'
 }
 
-// SIGN OUT
-async function confirmSignOut() {
-  if (confirm('Sign out of Nearby?')) {
-    await signOut()
-  }
+function updateEditAreas(){}// placeholder
+
+async function doSignOut(){
+  if(!confirm('Sign out of Nearby?'))return
+  await sb.auth.signOut()
+  window.location.href='nearby-auth.html'
 }
 
-function showToast(msg) {
-  const old = document.querySelector('.toast')
-  if (old) old.remove()
-  const t = document.createElement('div')
-  t.className = 'toast'
-  t.textContent = msg
-  document.body.appendChild(t)
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s' }, 2500)
-  setTimeout(() => t.remove(), 3000)
-}
+function toast(msg){const old=document.querySelector('.toast');if(old)old.remove();const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s'},2500);setTimeout(()=>t.remove(),3000)}
+
+function timeAgo(ts){if(!ts)return'';const d=Math.floor((Date.now()-new Date(ts))/1000);if(d<60)return'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago'}
 
 init()
 </script>
 </body>
-</html>
+      </html>
