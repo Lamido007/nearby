@@ -1,140 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Nearby — Set Up Your Profile</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
+<title>Nearby — Set Up Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --cream: #F5F0E8; --terracotta: #C4622D; --navy: #1A2332;
-    --sage: #7A9E7E; --amber: #E8A838; --mid: #4A5568; --light: #8A96A8;
-  }
-  body { font-family: 'DM Sans', sans-serif; background: #FDFAF4; color: var(--navy); min-height: 100vh; display: flex; flex-direction: column; }
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.07);
-    background: #FDFAF4; position: sticky; top: 0; z-index: 10;
-  }
-  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
-  .logo span { color: var(--terracotta); }
-  .skip { font-size: 14px; color: var(--light); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-  .progress { padding: 16px 20px 0; }
-  .prog-bg { height: 4px; background: rgba(0,0,0,0.08); border-radius: 4px; margin-bottom: 8px; }
-  .prog-fill { height: 4px; background: var(--terracotta); border-radius: 4px; transition: width 0.4s; }
-  .prog-text { font-size: 12px; color: var(--light); }
-  .prog-text b { color: var(--terracotta); }
-  .content { flex: 1; padding: 28px 20px 120px; }
-  .step { display: none; }
-  .step.active { display: block; }
-  .badge {
-    display: inline-block; background: rgba(196,98,45,0.1); color: var(--terracotta);
-    padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 700;
-    letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 14px;
-  }
-  h1 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; line-height: 1.15; letter-spacing: -1px; margin-bottom: 10px; }
-  h1 em { color: var(--terracotta); font-style: italic; }
-  .sub { font-size: 15px; color: var(--mid); line-height: 1.6; margin-bottom: 24px; }
-  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-  .tcard {
-    background: var(--cream); border-radius: 14px; padding: 18px 14px;
-    border: 2px solid transparent; cursor: pointer; text-align: left; transition: all 0.2s;
-  }
-  .tcard.on { border-color: var(--terracotta); background: rgba(196,98,45,0.06); }
-  .tcard .ti { font-size: 26px; margin-bottom: 8px; display: block; }
-  .tcard .tn { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
-  .tcard .td { font-size: 12px; color: var(--mid); line-height: 1.4; }
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  .field input, .field textarea, .field select {
-    width: 100%; padding: 12px 14px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px;
-    background: white; font-family: 'DM Sans', sans-serif; font-size: 15px;
-    color: var(--navy); outline: none; resize: none; appearance: none;
-  }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--terracotta); }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .clen { font-size: 11px; color: var(--light); text-align: right; margin-top: 4px; }
-
-  /* NEIGHBORHOOD PICKER */
-  .nb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .nb-card {
-    background: var(--cream); border-radius: 12px; padding: 14px 12px;
-    border: 2px solid transparent; cursor: pointer; text-align: center; transition: all 0.2s;
-  }
-  .nb-card.on { border-color: var(--terracotta); background: rgba(196,98,45,0.06); }
-  .nb-card .nb-name { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
-  .nb-card .nb-city { font-size: 11px; color: var(--light); }
-  .nb-or { text-align: center; font-size: 12px; color: var(--light); margin: 12px 0; }
-
-  /* INTERESTS */
-  .cnt { font-size: 13px; color: var(--light); margin-bottom: 12px; }
-  .cnt b { color: var(--terracotta); }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-  .chip {
-    display: flex; align-items: center; gap: 6px; padding: 8px 14px;
-    border-radius: 100px; border: 2px solid rgba(0,0,0,0.1); background: white;
-    font-size: 13px; font-weight: 500; color: var(--mid); cursor: pointer; transition: all 0.2s;
-  }
-  .chip.on { background: var(--terracotta); border-color: var(--terracotta); color: white; }
-
-  /* DONE SCREEN */
-  .done-wrap { text-align: center; padding: 10px 0; }
-  .done-icon {
-    width: 88px; height: 88px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--terracotta), var(--amber));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 40px; margin: 0 auto 22px;
-  }
-  .done-wrap h2 { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 900; letter-spacing: -1px; margin-bottom: 12px; }
-  .done-wrap h2 em { color: var(--terracotta); font-style: italic; }
-  .done-wrap p { font-size: 15px; color: var(--mid); line-height: 1.6; margin-bottom: 28px; }
-  .done-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-  .dcard { background: var(--cream); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; text-align: left; }
-  .dcard .di { font-size: 22px; flex-shrink: 0; }
-  .dcard .dt { font-size: 14px; font-weight: 700; }
-  .dcard .ds { font-size: 12px; color: var(--mid); margin-top: 2px; }
-
-  /* BOTTOM NAV */
-  .bottom {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: #FDFAF4; border-top: 1px solid rgba(0,0,0,0.07);
-    padding: 14px 20px; display: flex; gap: 10px;
-  }
-  .bbk {
-    flex: 1; padding: 13px; border-radius: 12px; border: 2px solid rgba(0,0,0,0.1);
-    background: transparent; font-family: 'DM Sans', sans-serif;
-    font-size: 15px; font-weight: 600; color: var(--mid); cursor: pointer;
-  }
-  .bnx {
-    flex: 2; padding: 13px; border-radius: 12px; border: none;
-    background: var(--navy); color: white; font-family: 'DM Sans', sans-serif;
-    font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-  }
-  .bnx:disabled { opacity: 0.6; cursor: default; }
-  .bnx.solo { flex: 1; }
-  .bnx.finish { background: var(--terracotta); }
-
-  /* Saving indicator */
-  .saving-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(26,35,50,0.6);
-    z-index: 999; align-items: center; justify-content: center; flex-direction: column;
-  }
-  .saving-overlay.show { display: flex; }
-  .saving-box { background: white; border-radius: 20px; padding: 32px 40px; text-align: center; }
-  .saving-box .si { font-size: 36px; margin-bottom: 12px; }
-  .saving-box p { font-size: 15px; font-weight: 600; color: var(--navy); }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4}
+html{width:100%;background:var(--w)}
+body{font-family:"DM Sans",sans-serif;background:var(--w);color:var(--n);width:100%;min-height:100dvh}
+.wrap{width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;min-height:100dvh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(0,0,0,.07);background:var(--w);position:sticky;top:0;z-index:10}
+.logo{font-family:"Playfair Display",serif;font-size:22px;font-weight:900;color:var(--n)}
+.logo span{color:var(--t)}
+.skip{font-size:14px;color:var(--l);background:none;border:none;cursor:pointer;font-family:"DM Sans",sans-serif}
+.progress{padding:16px 20px 0}
+.prog-bg{height:4px;background:rgba(0,0,0,.08);border-radius:4px;margin-bottom:8px}
+.prog-fill{height:4px;background:var(--t);border-radius:4px;transition:width .4s}
+.prog-text{font-size:12px;color:var(--l)}
+.prog-text b{color:var(--t)}
+.content{flex:1;padding:28px 20px 120px;overflow-y:auto}
+.step{display:none}.step.active{display:block}
+.badge-lbl{display:inline-block;background:rgba(196,98,45,.1);color:var(--t);padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px}
+h1{font-family:"Playfair Display",serif;font-size:28px;font-weight:900;line-height:1.15;letter-spacing:-1px;margin-bottom:10px}
+h1 em{color:var(--t);font-style:italic}
+.sub{font-size:15px;color:var(--m);line-height:1.6;margin-bottom:24px}
+/* TYPE GRID */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.tcard{background:var(--c);border-radius:14px;padding:18px 14px;border:2px solid transparent;cursor:pointer;text-align:left;transition:all .2s}
+.tcard.on{border-color:var(--t);background:rgba(196,98,45,.06)}
+.tcard .ti{font-size:26px;margin-bottom:8px;display:block}
+.tcard .tn{font-size:14px;font-weight:700;color:var(--n);margin-bottom:3px}
+.tcard .td{font-size:12px;color:var(--m);line-height:1.4}
+/* AVATAR UPLOAD IN STEP 2 */
+.avatar-upload{display:flex;flex-direction:column;align-items:center;margin-bottom:24px}
+.av-circle{width:90px;height:90px;border-radius:50%;background:var(--c);border:3px dashed rgba(196,98,45,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-bottom:8px;overflow:hidden;position:relative;transition:border-color .2s}
+.av-circle:hover{border-color:var(--t)}
+.av-circle img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:none}
+.av-circle .av-icon{font-size:26px}
+.av-circle .av-txt{font-size:10px;color:var(--l);margin-top:4px}
+.av-hint{font-size:12px;color:var(--l)}
+/* FIELDS */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.field input,.field textarea,.field select{width:100%;padding:12px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;background:white;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--n);outline:none;resize:none;appearance:none;-webkit-appearance:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--t)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.clen{font-size:11px;color:var(--l);text-align:right;margin-top:4px}
+/* LOCATION STEP */
+.state-select{width:100%;padding:12px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;background:white;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--n);outline:none;appearance:none;-webkit-appearance:none;margin-bottom:14px}
+.state-select:focus{border-color:var(--t)}
+.area-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;max-height:220px;overflow-y:auto}
+.area-chip{background:var(--c);border-radius:10px;padding:10px 12px;border:2px solid transparent;cursor:pointer;font-size:13px;font-weight:500;color:var(--m);transition:all .2s;text-align:center}
+.area-chip.on{border-color:var(--t);background:rgba(196,98,45,.06);color:var(--t);font-weight:700}
+.or-divider{text-align:center;font-size:12px;color:var(--l);margin:10px 0}
+.custom-input{width:100%;padding:12px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;background:white;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--n);outline:none}
+.custom-input:focus{border-color:var(--t)}
+/* INTERESTS */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:100px;border:2px solid rgba(0,0,0,.1);background:white;font-size:13px;font-weight:500;color:var(--m);cursor:pointer;transition:all .2s}
+.chip.on{background:var(--t);border-color:var(--t);color:white}
+.cnt{font-size:13px;color:var(--l);margin-bottom:12px}
+.cnt b{color:var(--t)}
+/* DONE */
+.done-wrap{text-align:center;padding:10px 0}
+.done-icon{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--t),var(--a));display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 22px}
+.done-wrap h2{font-family:"Playfair Display",serif;font-size:30px;font-weight:900;letter-spacing:-1px;margin-bottom:12px}
+.done-wrap h2 em{color:var(--t);font-style:italic}
+.done-wrap p{font-size:15px;color:var(--m);line-height:1.6;margin-bottom:28px}
+.done-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.dcard{background:var(--c);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;text-align:left}
+.dcard .di{font-size:22px;flex-shrink:0}
+.dcard .dt{font-size:14px;font-weight:700}
+.dcard .ds{font-size:12px;color:var(--m);margin-top:2px}
+/* BOTTOM */
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--w);border-top:1px solid rgba(0,0,0,.07);padding:14px 20px;padding-bottom:max(14px,env(safe-area-inset-bottom));display:flex;gap:10px;z-index:50}
+.bbk{flex:1;padding:13px;border-radius:12px;border:2px solid rgba(0,0,0,.1);background:transparent;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:600;color:var(--m);cursor:pointer}
+.bnx{flex:2;padding:13px;border-radius:12px;border:none;background:var(--n);color:white;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s}
+.bnx:disabled{opacity:.6;cursor:default}
+.bnx.solo{flex:1}
+.bnx.finish{background:var(--t)}
+/* SAVING */
+.saving-ov{display:none;position:fixed;inset:0;background:rgba(26,35,50,.6);z-index:999;align-items:center;justify-content:center}
+.saving-ov.show{display:flex}
+.saving-box{background:white;border-radius:20px;padding:32px 40px;text-align:center}
+.saving-box .si{font-size:36px;margin-bottom:12px}
+.saving-box p{font-size:15px;font-weight:600;color:var(--n)}
 </style>
 </head>
 <body>
+<div class="wrap">
 
 <div class="topbar">
   <div class="logo">Near<span>by</span></div>
   <button class="skip" id="skipBtn" onclick="skipStep()">Skip →</button>
 </div>
-
 <div class="progress">
   <div class="prog-bg"><div class="prog-fill" id="fill" style="width:20%"></div></div>
   <div class="prog-text">Step <b id="snum">1</b> of 5 — <span id="sname">Who are you?</span></div>
@@ -142,95 +106,119 @@
 
 <div class="content">
 
-  <!-- STEP 1: User type -->
+  <!-- STEP 1: Type -->
   <div class="step active" id="s1">
-    <div class="badge">👋 Getting Started</div>
+    <div class="badge-lbl">👋 Getting Started</div>
     <h1>Who are <em>you?</em></h1>
     <p class="sub">Tell us how you're joining so we can connect you with the right people.</p>
     <div class="type-grid">
-      <div class="tcard on" onclick="pick(this,'resident')">
-        <span class="ti">🏠</span>
-        <div class="tn">Resident</div>
-        <div class="td">I live in this neighborhood.</div>
-      </div>
-      <div class="tcard" onclick="pick(this,'newcomer')">
-        <span class="ti">🆕</span>
-        <div class="tn">Newcomer</div>
-        <div class="td">I just moved here recently.</div>
-      </div>
-      <div class="tcard" onclick="pick(this,'business')">
-        <span class="ti">🏪</span>
-        <div class="tn">Business</div>
-        <div class="td">I own or run a local shop.</div>
-      </div>
-      <div class="tcard" onclick="pick(this,'visitor')">
-        <span class="ti">✈️</span>
-        <div class="tn">Visitor</div>
-        <div class="td">I'm passing through.</div>
-      </div>
+      <div class="tcard on" onclick="pick(this,'resident')"><span class="ti">🏠</span><div class="tn">Resident</div><div class="td">I live here</div></div>
+      <div class="tcard" onclick="pick(this,'newcomer')"><span class="ti">🆕</span><div class="tn">Newcomer</div><div class="td">Just moved</div></div>
+      <div class="tcard" onclick="pick(this,'business')"><span class="ti">🏪</span><div class="tn">Business</div><div class="td">I own a shop</div></div>
+      <div class="tcard" onclick="pick(this,'visitor')"><span class="ti">✈️</span><div class="tn">Visitor</div><div class="td">Passing through</div></div>
     </div>
   </div>
 
-  <!-- STEP 2: Profile -->
+  <!-- STEP 2: Profile + Avatar -->
   <div class="step" id="s2">
-    <div class="badge">📸 Your Profile</div>
+    <div class="badge-lbl">📸 Your Profile</div>
     <h1>Make it <em>yours</em></h1>
-    <p class="sub">Help your neighbors know who you are.</p>
+    <p class="sub">Add a photo and tell your neighbors about yourself.</p>
+    <div class="avatar-upload">
+      <div class="av-circle" id="avCircle" onclick="document.getElementById('avInput').click()">
+        <img id="avImg" alt=""/>
+        <span class="av-icon">📷</span>
+        <span class="av-txt">Add Photo</span>
+      </div>
+      <div class="av-hint">Tap to add a profile picture</div>
+      <input type="file" id="avInput" accept="image/*" style="display:none" onchange="previewAvatar(this)"/>
+    </div>
     <div class="row2">
-      <div class="field"><label>First Name</label><input type="text" id="firstName" placeholder="e.g. Amaka" /></div>
-      <div class="field"><label>Last Name</label><input type="text" id="lastName" placeholder="e.g. Obi" /></div>
+      <div class="field"><label>First Name</label><input type="text" id="firstName" placeholder="e.g. Amaka" autocomplete="given-name"/></div>
+      <div class="field"><label>Last Name</label><input type="text" id="lastName" placeholder="e.g. Obi" autocomplete="family-name"/></div>
     </div>
     <div class="field">
-      <label>Bio <span style="color:var(--light);font-weight:400">(optional)</span></label>
-      <textarea id="bio" rows="4" maxlength="160"
-        placeholder="Tell your neighbors a little about yourself..."
-        oninput="document.getElementById('bl').textContent=this.value.length+' / 160'"></textarea>
+      <label>Bio <span style="color:var(--l);font-weight:400">(optional)</span></label>
+      <textarea id="bio" rows="3" maxlength="160" placeholder="Tell your neighbors about yourself..." oninput="document.getElementById('bl').textContent=this.value.length+' / 160'"></textarea>
       <div class="clen" id="bl">0 / 160</div>
     </div>
     <div class="field">
-      <label>Occupation <span style="color:var(--light);font-weight:400">(optional)</span></label>
-      <input type="text" id="occupation" placeholder="e.g. Teacher, Chef, Designer..." />
+      <label>Occupation <span style="color:var(--l);font-weight:400">(optional)</span></label>
+      <input type="text" id="occupation" placeholder="e.g. Teacher, Chef, Designer..."/>
     </div>
   </div>
 
-  <!-- STEP 3: Neighborhood -->
+  <!-- STEP 3: Location — ALL 36 STATES -->
   <div class="step" id="s3">
-    <div class="badge">📍 Your Location</div>
+    <div class="badge-lbl">📍 Your Location</div>
     <h1>Where are <em>you?</em></h1>
-    <p class="sub">Pick your neighborhood so posts and jobs near you show up in your feed.</p>
-
+    <p class="sub">Pick your state and area. You can be anywhere in Nigeria — or type your own location.</p>
     <div class="field">
-      <label>City</label>
-      <select id="citySelect" onchange="updateNeighborhoods()">
-        <option value="">— Select your city —</option>
+      <label>State</label>
+      <select class="state-select" id="stateSelect" onchange="loadAreas()">
+        <option value="">— Select your state —</option>
         <option value="Lagos">Lagos</option>
-        <option value="Abuja">Abuja</option>
-        <option value="Port Harcourt">Port Harcourt</option>
-        <option value="Ibadan">Ibadan</option>
+        <option value="Abuja (FCT)">Abuja (FCT)</option>
         <option value="Kano">Kano</option>
-        <option value="Other">Other Nigerian City</option>
+        <option value="Rivers">Rivers</option>
+        <option value="Oyo">Oyo</option>
+        <option value="Anambra">Anambra</option>
+        <option value="Delta">Delta</option>
+        <option value="Edo">Edo</option>
+        <option value="Enugu">Enugu</option>
+        <option value="Kaduna">Kaduna</option>
+        <option value="Ogun">Ogun</option>
+        <option value="Ondo">Ondo</option>
+        <option value="Imo">Imo</option>
+        <option value="Abia">Abia</option>
+        <option value="Cross River">Cross River</option>
+        <option value="Akwa Ibom">Akwa Ibom</option>
+        <option value="Bauchi">Bauchi</option>
+        <option value="Borno">Borno</option>
+        <option value="Gombe">Gombe</option>
+        <option value="Jigawa">Jigawa</option>
+        <option value="Kebbi">Kebbi</option>
+        <option value="Kogi">Kogi</option>
+        <option value="Kwara">Kwara</option>
+        <option value="Nasarawa">Nasarawa</option>
+        <option value="Niger">Niger</option>
+        <option value="Osun">Osun</option>
+        <option value="Ekiti">Ekiti</option>
+        <option value="Sokoto">Sokoto</option>
+        <option value="Taraba">Taraba</option>
+        <option value="Yobe">Yobe</option>
+        <option value="Zamfara">Zamfara</option>
+        <option value="Benue">Benue</option>
+        <option value="Ebonyi">Ebonyi</option>
+        <option value="Plateau">Plateau</option>
+        <option value="Adamawa">Adamawa</option>
+        <option value="Bayelsa">Bayelsa</option>
+        <option value="Other">Other / Outside Nigeria</option>
       </select>
     </div>
-
-    <div id="nb-picker" style="display:none">
-      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:10px;">Neighborhood</label>
-      <div class="nb-grid" id="nb-grid"></div>
-      <div class="nb-or">— or type yours —</div>
+    <div id="areaSection" style="display:none">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:10px">Select your area</label>
+      <div class="area-grid" id="areaGrid"></div>
     </div>
-
-    <div class="field">
-      <label id="nb-manual-label">Neighborhood</label>
-      <input type="text" id="neighborhood" placeholder="e.g. Lekki Phase 1, Wuse 2..." />
+    <div class="or-divider">— or type your exact location —</div>
+    <input class="custom-input" type="text" id="customArea" placeholder="Type your neighborhood, area, or town..."/>
+    <div style="margin-top:14px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Privacy</label>
+      <select class="state-select" id="privacyLevel" style="margin-bottom:0">
+        <option value="neighborhood">Show neighborhood (recommended)</option>
+        <option value="city">Show city only</option>
+        <option value="private">Keep private</option>
+      </select>
     </div>
   </div>
 
   <!-- STEP 4: Interests -->
   <div class="step" id="s4">
-    <div class="badge">✨ Interests</div>
+    <div class="badge-lbl">✨ Interests</div>
     <h1>What are you <em>into?</em></h1>
     <p class="sub">Pick at least 3 so we can show you relevant posts and events.</p>
     <div class="cnt">Selected: <b id="cc">0</b></div>
-    <div class="chips" id="cw"></div>
+    <div class="chips-wrap" id="cw"></div>
   </div>
 
   <!-- STEP 5: Done -->
@@ -249,210 +237,170 @@
 
 </div>
 
-<!-- SAVING OVERLAY -->
-<div class="saving-overlay" id="saving-overlay">
-  <div class="saving-box">
-    <div class="si">⏳</div>
-    <p>Saving your profile...</p>
-  </div>
-</div>
+<div class="saving-ov" id="savingOv"><div class="saving-box"><div class="si">⏳</div><p>Saving your profile...</p></div></div>
 
-<div class="bottom" id="nav">
+<div class="bottom">
   <button class="bbk" id="bk" onclick="back()" style="display:none">← Back</button>
   <button class="bnx solo" id="nx" onclick="next()">Continue →</button>
 </div>
 
+</div><!-- /wrap -->
+
 <script>
-  var cur = 1
-  var selectedType = 'resident'
-  var selectedNeighborhood = ''
-  var selectedCity = ''
-  var currentUserId = null
+const NIGERIA = {"Lagos": ["Lekki Phase 1", "Victoria Island", "Yaba", "Ikeja", "Surulere", "Ikoyi", "Ajah", "Gbagada", "Maryland", "Ojodu", "Magodo", "Isale Eko", "Apapa", "Festac Town", "Agege", "Oshodi", "Mushin", "Ikorodu", "Badagry", "Epe"], "Abuja (FCT)": ["Garki", "Wuse 2", "Maitama", "Gwarinpa", "Asokoro", "Jabi", "Lugbe", "Kado", "Utako", "Kubwa", "Gwagwalada", "Bwari", "Karu", "Nyanya", "Durumi"], "Kano": ["Nassarawa GRA", "Fagge", "Gwale", "Tarauni", "Dala", "Kumbotso", "Ungogo", "Kurna", "Doguwa", "Rimin Gado"], "Rivers": ["Port Harcourt GRA", "Trans Amadi", "D-Line", "Mile 1", "Rumuola", "Rumuokwurusi", "Obio-Akpor", "Oyigbo", "Bonny", "Okrika"], "Oyo": ["Ibadan North", "Bodija", "Jericho", "Iyaganku", "Oluyole", "Sango", "Ring Road", "Ogbomoso", "Oyo Town", "Iseyin"], "Anambra": ["Awka", "Onitsha", "Nnewi", "Ekwulobia", "Agulu", "Ogidi", "Obosi", "Nkpor", "Ihiala", "Uli"], "Delta": ["Warri", "Asaba", "Sapele", "Ughelli", "Agbor", "Abraka", "Ozoro", "Eku", "Koko", "Burutu"], "Edo": ["Benin City GRA", "Ikpoba Hill", "Egor", "Oredo", "Ovia North", "Auchi", "Ekpoma", "Uromi", "Igarra", "Afuze"], "Enugu": ["Enugu North", "Independence Layout", "GRA Enugu", "Uwani", "Asata", "New Haven", "Abakpa", "Emene", "Nsukka", "Agbani"], "Kaduna": ["Kaduna North", "Kaduna South", "Sabon Gari", "Kawo", "Barnawa", "Malali", "Narayi", "Zaria", "Kafanchan", "Birnin Gwari"], "Ogun": ["Abeokuta", "Sagamu", "Ijebu-Ode", "Ota", "Ilaro", "Ifo", "Ado-Odo", "Ayetoro", "Remo North", "Shagamu"], "Ondo": ["Akure", "Ondo Town", "Owo", "Ikare", "Okitipupa", "Ile-Oluji", "Idanre", "Ifon", "Ode-Omi", "Irele"], "Imo": ["Owerri", "Orlu", "Okigwe", "Mbaise", "Oguta", "Ngor Okpala", "Ideato", "Ikeduru", "Obowo", "Ohaji"], "Abia": ["Umuahia", "Aba", "Ohafia", "Arochukwu", "Bende", "Ikwuano", "Isiala Ngwa", "Osisioma", "Ukwa", "Ugwunagbo"], "Cross River": ["Calabar", "Ikom", "Ogoja", "Obudu", "Bekwarra", "Etung", "Akamkpa", "Biase", "Yala", "Obubra"], "Akwa Ibom": ["Uyo", "Eket", "Ikot Ekpene", "Oron", "Abak", "Etinan", "Ikot Abasi", "Itu", "Ini", "Nsit-Ibom"], "Bauchi": ["Bauchi", "Misau", "Azare", "Katagum", "Darazo", "Ningi", "Toro", "Kirfi", "Dass", "Ganjuwa"], "Borno": ["Maiduguri", "Biu", "Bama", "Konduga", "Jere", "Gwoza", "Dikwa", "Monguno", "Ngala", "Kukawa"], "Gombe": ["Gombe", "Dukku", "Kaltungo", "Billiri", "Nafada", "Funakaye", "Yamaltu-Deba", "Akko", "Balanga", "Shomgom"], "Jigawa": ["Dutse", "Hadejia", "Kazaure", "Birnin Kudu", "Gumel", "Ringim", "Auyo", "Kafin Hausa", "Yankwashi", "Taura"], "Kebbi": ["Birnin Kebbi", "Argungu", "Yauri", "Koko", "Zuru", "Bagudo", "Aliero", "Gwandu", "Maiyama", "Suru"], "Kogi": ["Lokoja", "Idah", "Okene", "Kabba", "Isanlu", "Ankpa", "Bassa", "Dekina", "Ofu", "Olamaboro"], "Kwara": ["Ilorin", "Offa", "Erin Ile", "Okuta", "Lafiagi", "Patigi", "Kaiama", "Omu-Aran", "Ajasse Ipo", "Baruten"], "Nasarawa": ["Lafia", "Keffi", "Akwanga", "Doma", "Nasarawa Town", "Obi", "Toto", "Keana", "Awe", "Kokona"], "Niger": ["Minna", "Bida", "Kontagora", "Suleja", "Lapai", "Agaie", "Wushishi", "Chanchaga", "Shiroro", "Rafi"], "Osun": ["Osogbo", "Ile-Ife", "Ilesa", "Ede", "Ikirun", "Iwo", "Modakeke", "Inisa", "Ila Orangun", "Ejigbo"], "Ekiti": ["Ado-Ekiti", "Ikere", "Ikole", "Oye", "Emure", "Gbonyin", "Ilejemeje", "Ijero", "Efon", "Ise-Orun"], "Sokoto": ["Sokoto", "Tambuwal", "Gwadabawa", "Ilela", "Gada", "Kware", "Rabah", "Sabon Birni", "Wamako", "Yabo"], "Taraba": ["Jalingo", "Wukari", "Bali", "Gashaka", "Sardauna", "Takum", "Ussa", "Zing", "Kurmi", "Donga"], "Yobe": ["Damaturu", "Potiskum", "Nguru", "Gashua", "Geidam", "Bade", "Bursari", "Fika", "Gujba", "Karasuwa"], "Zamfara": ["Gusau", "Kaura Namoda", "Anka", "Bungudu", "Maru", "Bakura", "Birnin Magaji", "Shinkafi", "Zurmi", "Maradun"], "Benue": ["Makurdi", "Gboko", "Otukpo", "Katsina-Ala", "Vandeikya", "Ushongo", "Gwer West", "Agatu", "Logo", "Tarka"], "Ebonyi": ["Abakaliki", "Afikpo", "Onueke", "Ezza", "Ikwo", "Ishielu", "Ivo", "Izzi", "Ohaozara", "Ohaukwu"], "Plateau": ["Jos", "Bukuru", "Barkin Ladi", "Bassa", "Bokkos", "Kanke", "Langtang", "Pankshin", "Shendam", "Riyom"], "Adamawa": ["Yola", "Mubi", "Numan", "Ganye", "Gombi", "Guyuk", "Hong", "Lamurde", "Madagali", "Maiha"], "Bayelsa": ["Yenagoa", "Brass", "Ekeremor", "Kolokuma", "Nembe", "Ogbia", "Sagbama", "Odi", "Kaiama", "Amassoma"]};
 
-  var stepNames = ['Who are you?','Your profile','Your location','Your interests','All done!']
+let cur=1, userType='resident', selectedState='', selectedArea='', avatarFile=null, userId=null
 
-  var neighborhoods = {
-    'Lagos': ['Lekki Phase 1','Victoria Island','Yaba','Ikeja','Surulere','Ikoyi','Ajah','Gbagada','Maryland','Ojodu','Magodo','Isale Eko'],
-    'Abuja': ['Garki','Wuse 2','Maitama','Gwarinpa','Asokoro','Jabi','Lugbe','Kado','Utako','Kubwa'],
-    'Port Harcourt': ['GRA','Trans Amadi','Rumuola','D-Line','Mile 1','Rumuokwurusi'],
-    'Ibadan': ['Bodija','Jericho','Iyaganku','Oluyole','Sango','Ring Road'],
-    'Kano': ['Nassarawa','GRA','Fagge','Gwale','Tarauni'],
-    'Other': []
+const STEPS = ['Who are you?','Your profile','Your location','Your interests','All done!']
+const INTERESTS = [
+  ['🎨','Art'],['🍕','Food'],['🎵','Music'],['⚽','Sports'],['📚','Books'],
+  ['🌿','Gardening'],['🐾','Pets'],['💪','Fitness'],['🎬','Film'],['💻','Tech'],
+  ['🌍','Travel'],['🍳','Cooking'],['📸','Photography'],['🎮','Gaming'],
+  ['🧘','Mindfulness'],['🏠','Home & DIY'],['👶','Parenting'],['💼','Business'],
+  ['🎓','Education'],['🌱','Eco'],['🎪','Entertainment'],['🎭','Theatre'],
+  ['🧵','Fashion'],['🏡','Events'],['🚗','Cars'],['🏥','Health'],['🔧','Tech repair'],['🎵','Gospel']
+]
+
+// Build interest chips
+const cw = document.getElementById('cw')
+INTERESTS.forEach(([icon,label]) => {
+  const c = document.createElement('div')
+  c.className = 'chip'
+  c.innerHTML = icon + ' ' + label
+  c.onclick = () => { c.classList.toggle('on'); document.getElementById('cc').textContent = document.querySelectorAll('.chip.on').length }
+  cw.appendChild(c)
+})
+
+async function initOnboarding(){
+  const sess = await sb.auth.getSession()
+  if(!sess.data.session){ window.location.href='nearby-auth.html'; return }
+  userId = sess.data.session.user.id
+  // Pre-fill name from auth metadata
+  const meta = sess.data.session.user.user_metadata
+  if(meta?.full_name){
+    const parts = meta.full_name.split(' ')
+    document.getElementById('firstName').value = parts[0]||''
+    document.getElementById('lastName').value = parts.slice(1).join(' ')||''
   }
+  // Check if already onboarded
+  const{data:u}=await sb.from('users').select('neighborhood').eq('id',userId).single()
+  if(u?.neighborhood){ window.location.href='nearby-feed.html'; return }
+}
 
-  var ints = [
-    ['🎨','Art'],['🍕','Food'],['🎵','Music'],['⚽','Sports'],
-    ['📚','Books'],['🌿','Gardening'],['🐾','Pets'],['💪','Fitness'],
-    ['🎬','Film'],['💻','Tech'],['🌍','Travel'],['🍳','Cooking'],
-    ['📸','Photography'],['🎮','Gaming'],['🧘','Mindfulness'],['🏠','Home & DIY'],
-    ['👶','Parenting'],['💼','Business'],['🎓','Education'],['🌱','Eco'],
-    ['🎪','Entertainment'],['🎭','Theatre'],['🧵','Fashion'],['🏡','Events']
-  ]
+function render(){
+  document.getElementById('fill').style.width=(cur/5*100)+'%'
+  document.getElementById('snum').textContent=cur
+  document.getElementById('sname').textContent=STEPS[cur-1]
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'))
+  document.getElementById('s'+cur).classList.add('active')
+  const bk=document.getElementById('bk'),nx=document.getElementById('nx')
+  bk.style.display=cur>1?'block':'none'
+  nx.className=cur>1?'bnx':'bnx solo'
+  document.getElementById('skipBtn').style.display=cur===5?'none':'inline'
+  if(cur===5){nx.textContent='Enter Nearby →';nx.classList.add('finish')}
+  else{nx.textContent='Continue →';nx.classList.remove('finish')}
+  window.scrollTo(0,0)
+}
 
-  // Build interests chips
-  var cw = document.getElementById('cw')
-  ints.forEach(function(it) {
-    var c = document.createElement('div')
-    c.className = 'chip'
-    c.innerHTML = it[0] + ' ' + it[1]
-    c.onclick = function() {
-      c.classList.toggle('on')
-      document.getElementById('cc').textContent = document.querySelectorAll('.chip.on').length
-    }
-    cw.appendChild(c)
-  })
-
-  // Load current user on init
-  async function init() {
-    const session = await getSession()
-    if (!session) { window.location.href = 'nearby-auth.html'; return }
-    currentUserId = session.user.id
-
-    // Pre-fill name from auth
-    const user = await getCurrentUser()
-    if (user && user.full_name) {
-      var parts = user.full_name.split(' ')
-      document.getElementById('firstName').value = parts[0] || ''
-      document.getElementById('lastName').value = parts.slice(1).join(' ') || ''
-    }
-    if (user && user.neighborhood) {
-      // Already onboarded — go to feed
-      window.location.href = 'nearby-feed.html'
-    }
+async function next(){
+  if(cur===3){
+    const custom=document.getElementById('customArea').value.trim()
+    selectedArea=custom||selectedArea
+    if(!selectedState&&!selectedArea){alert('Please select your state or type your location.');return}
+    if(!selectedArea){alert('Please select or type your neighborhood/area.');return}
   }
+  if(cur===5){ await saveProfile(); return }
+  cur++; render()
+}
 
-  function render() {
-    document.getElementById('fill').style.width = (cur/5*100)+'%'
-    document.getElementById('snum').textContent = cur
-    document.getElementById('sname').textContent = stepNames[cur-1]
-    document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active') })
-    document.getElementById('s'+cur).classList.add('active')
-    var bk = document.getElementById('bk')
-    var nx = document.getElementById('nx')
-    bk.style.display = cur > 1 ? 'block' : 'none'
-    nx.className = cur > 1 ? 'bnx' : 'bnx solo'
-    document.getElementById('skipBtn').style.display = cur === 5 ? 'none' : 'inline'
-    if (cur === 5) { nx.textContent = 'Enter Nearby →'; nx.classList.add('finish') }
-    else { nx.textContent = 'Continue →'; nx.classList.remove('finish') }
-    window.scrollTo(0,0)
+function back(){ if(cur>1){ cur--; render() } }
+function skipStep(){ if(cur===5){ window.location.href='nearby-feed.html'; return } cur++; render() }
+
+function pick(el,type){
+  document.querySelectorAll('.tcard').forEach(c=>c.classList.remove('on'))
+  el.classList.add('on'); userType=type
+}
+
+function loadAreas(){
+  const state=document.getElementById('stateSelect').value
+  selectedState=state; selectedArea=''
+  const areas=NIGERIA[state]||[]
+  const section=document.getElementById('areaSection')
+  const grid=document.getElementById('areaGrid')
+  if(areas.length>0){
+    section.style.display='block'
+    grid.innerHTML=areas.map(a=>`<div class="area-chip" onclick="pickArea(this,'${a.replace(/'/g,"\\'")}'">${a}</div>`).join('')
+  }else{
+    section.style.display='none'
   }
+  document.getElementById('customArea').value=''
+}
 
-  async function next() {
-    if (cur === 3) {
-      // Validate neighborhood
-      var nb = document.getElementById('neighborhood').value.trim()
-      var city = document.getElementById('citySelect').value
-      if (!city) { alert('Please select your city.'); return }
-      if (!nb && !selectedNeighborhood) { alert('Please enter or pick your neighborhood.'); return }
-      selectedNeighborhood = nb || selectedNeighborhood
-      selectedCity = city
-    }
+function pickArea(el,area){
+  document.querySelectorAll('.area-chip').forEach(c=>c.classList.remove('on'))
+  el.classList.add('on'); selectedArea=area
+  document.getElementById('customArea').value=area
+}
 
-    if (cur === 5) {
-      // Save everything to Supabase
-      await saveProfile()
-      return
-    }
-
-    cur++
-    render()
+function previewAvatar(input){
+  if(!input.files||!input.files[0])return
+  avatarFile=input.files[0]
+  const r=new FileReader()
+  r.onload=e=>{
+    const img=document.getElementById('avImg')
+    img.src=e.target.result; img.style.display='block'
+    document.querySelector('.av-icon').style.display='none'
+    document.querySelector('.av-txt').style.display='none'
   }
+  r.readAsDataURL(input.files[0])
+}
 
-  function back() { if (cur > 1) { cur--; render() } }
+async function saveProfile(){
+  document.getElementById('savingOv').classList.add('show')
+  const firstName=document.getElementById('firstName').value.trim()
+  const lastName=document.getElementById('lastName').value.trim()
+  const bio=document.getElementById('bio').value.trim()
+  const occ=document.getElementById('occupation').value.trim()
+  const privacy=document.getElementById('privacyLevel').value
+  const interests=Array.from(document.querySelectorAll('.chip.on')).map(c=>c.textContent.trim())
+  const fullName=(firstName+' '+lastName).trim()||'New User'
+  const city=selectedState||'Lagos'
+  const neighborhood=selectedArea||'Lagos Island'
 
-  function skipStep() {
-    if (cur === 5) { window.location.href = 'nearby-feed.html'; return }
-    cur++
-    render()
-  }
-
-  async function saveProfile() {
-    document.getElementById('saving-overlay').classList.add('show')
-
-    var firstName = document.getElementById('firstName').value.trim()
-    var lastName = document.getElementById('lastName').value.trim()
-    var bio = document.getElementById('bio').value.trim()
-    var occupation = document.getElementById('occupation').value.trim()
-    var interests = Array.from(document.querySelectorAll('.chip.on')).map(c => c.textContent.trim())
-
-    var fullName = (firstName + ' ' + lastName).trim()
-
-    var updates = {
-      user_type: selectedType,
-      is_newcomer: selectedType === 'newcomer',
-      neighborhood: selectedNeighborhood || 'General',
-      city: selectedCity || 'Lagos',
-      country: 'Nigeria'
-    }
-
-    if (fullName) updates.full_name = fullName
-    if (bio) updates.bio = bio
-    if (occupation) updates.occupation = occupation
-
-    try {
-      const { error } = await updateProfile(currentUserId, updates)
-      if (error) {
-        console.error('Profile save error:', error)
-        alert('Could not save profile. Please try again.')
-        document.getElementById('saving-overlay').classList.remove('show')
-        return
+  let avatarUrl=null
+  if(avatarFile){
+    try{
+      const ext=avatarFile.name.split('.').pop()
+      const path=userId+'.'+ext
+      const{data:up,error:ue}=await sb.storage.from('avatars').upload(path,avatarFile,{upsert:true,contentType:avatarFile.type})
+      if(!ue){
+        const{data:pub}=sb.storage.from('avatars').getPublicUrl(path)
+        avatarUrl=pub.publicUrl
       }
-
-      // Award newcomer badge if newcomer
-      if (selectedType === 'newcomer') {
-        await addRepPoints(currentUserId, 20)
-      }
-
-      document.getElementById('saving-overlay').classList.remove('show')
-      window.location.href = 'nearby-feed.html'
-    } catch (e) {
-      console.error(e)
-      document.getElementById('saving-overlay').classList.remove('show')
-      alert('Something went wrong. Please try again.')
-    }
+    }catch(e){console.warn('Avatar upload failed:',e)}
   }
 
-  function pick(el, type) {
-    document.querySelectorAll('.tcard').forEach(function(c){ c.classList.remove('on') })
-    el.classList.add('on')
-    selectedType = type
+  const updates={
+    full_name:fullName,user_type:userType,
+    is_newcomer:userType==='newcomer',
+    neighborhood,city,country:'Nigeria',
+    privacy_level:privacy,
+    rep_points:0,badge_level:1
   }
+  if(bio)updates.bio=bio
+  if(occ)updates.occupation=occ
+  if(avatarUrl)updates.avatar_url=avatarUrl
 
-  function updateNeighborhoods() {
-    var city = document.getElementById('citySelect').value
-    selectedCity = city
-    selectedNeighborhood = ''
+  try{
+    await sb.from('users').upsert({id:userId,...updates},{onConflict:'id'})
+  }catch(e){console.error('Profile save error:',e)}
 
-    var list = neighborhoods[city] || []
-    var grid = document.getElementById('nb-grid')
-    var picker = document.getElementById('nb-picker')
+  document.getElementById('savingOv').classList.remove('show')
+  window.location.href='nearby-feed.html'
+}
 
-    if (list.length > 0) {
-      picker.style.display = 'block'
-      document.getElementById('nb-manual-label').textContent = 'Or type your neighborhood'
-      grid.innerHTML = list.map(function(nb) {
-        return `<div class="nb-card" onclick="pickNeighborhood(this,'${nb}')">
-          <div class="nb-name">${nb}</div>
-          <div class="nb-city">${city}</div>
-        </div>`
-      }).join('')
-    } else {
-      picker.style.display = 'none'
-      document.getElementById('nb-manual-label').textContent = 'Neighborhood'
-    }
-
-    document.getElementById('neighborhood').value = ''
-  }
-
-  function pickNeighborhood(el, name) {
-    document.querySelectorAll('.nb-card').forEach(function(c){ c.classList.remove('on') })
-    el.classList.add('on')
-    selectedNeighborhood = name
-    document.getElementById('neighborhood').value = name
-  }
-
-  render()
-  init()
+render()
+initOnboarding()
 </script>
 </body>
-</html>
+ </html>
