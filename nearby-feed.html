@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Nearby</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4;--wa:#25D366}
+html{width:100%;background:#F0EBE1}
+body{font-family:"DM Sans",sans-serif;background:#F0EBE1;color:var(--n);width:100%;min-height:100dvh;-webkit-font-smoothing:antialiased}
+.wrap{width:100%;max-width:480px;margin:0 auto;background:#F0EBE1;min-height:100dvh}
+/* NAV */
+.topnav{background:var(--w);padding:14px 16px 10px;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(0,0,0,.07)}
+.r1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.logo{font-family:"Playfair Display",serif;font-size:22px;font-weight:900;color:var(--n)}
+.logo span{color:var(--t)}
+.icons{display:flex;gap:8px}
+.ni{width:38px;height:38px;border-radius:50%;background:var(--c);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.ndot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--t);border-radius:50%;border:2px solid var(--w);display:none}
+.locbar{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--m)}
+.locbar b{color:var(--n);font-weight:600}
+.sbadge{margin-left:auto;background:rgba(122,158,126,.12);padding:3px 10px;border-radius:100px;font-size:12px;font-weight:700;color:var(--s)}
+.livebar{display:flex;align-items:center;gap:6px;padding:7px 16px;background:rgba(56,161,105,.07);border-bottom:1px solid rgba(56,161,105,.12);font-size:12px;color:#38A169;font-weight:600}
+.ldot{width:7px;height:7px;border-radius:50%;background:#38A169;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* TABS */
+.ftabs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:var(--w);scrollbar-width:none}
+.ftabs::-webkit-scrollbar{display:none}
+.ftab{flex-shrink:0;padding:7px 16px;border-radius:100px;border:2px solid rgba(0,0,0,.1);background:transparent;font-size:13px;font-weight:600;color:var(--m);cursor:pointer;font-family:"DM Sans",sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.ftab.on{background:var(--n);border-color:var(--n);color:white}
+/* FEED */
+.feed{padding:12px 16px 100px}
+/* SKELETON */
+.sk{background:var(--w);border-radius:18px;padding:16px;margin-bottom:12px;animation:shimmer 1.5s ease infinite}
+.sk-r{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.sk-ci{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.07);flex-shrink:0}
+.sk-m{flex:1}
+.skl{height:12px;border-radius:100px;background:rgba(0,0,0,.07);margin-bottom:6px}
+.skl.w8{width:80%}.skl.w6{width:60%}.skl.w4{width:40%}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+/* ARRIVALS */
+.sec-lbl{font-size:12px;font-weight:700;color:var(--t);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.astrip{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none}
+.astrip::-webkit-scrollbar{display:none}
+.acard{flex-shrink:0;background:var(--w);border-radius:16px;padding:14px 12px;text-align:center;width:100px;border:2px solid rgba(196,98,45,.15);cursor:pointer}
+.acard:active{transform:scale(.95)}
+.aav{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;margin:0 auto 8px;position:relative}
+.aring{position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--t)}
+.aname{font-size:12px;font-weight:600;color:var(--n);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asub{font-size:10px;color:var(--l)}
+/* CARD */
+.card{background:var(--w);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:white;flex-shrink:0;overflow:hidden;position:relative}
+.av img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.cm{flex:1;min-width:0}
+.cn{font-size:14px;font-weight:700;color:var(--n)}
+.cd{font-size:12px;color:var(--l);margin-top:2px}
+.bp{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:100px;margin-left:4px;vertical-align:middle}
+.bp1{background:rgba(122,158,126,.2);color:var(--s)}.bp2{background:rgba(232,168,56,.2);color:#B07D10}.bp3{background:rgba(212,175,55,.2);color:#8B6914}.bp4{background:rgba(155,89,182,.2);color:#9B59B6}
+.cmenu{font-size:20px;color:var(--l);background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0;line-height:1;-webkit-tap-highlight-color:transparent}
+.tb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;margin-bottom:8px}
+.tbp{background:rgba(196,98,45,.1);color:var(--t)}.tbj{background:rgba(122,158,126,.15);color:var(--s)}.tbe{background:rgba(232,168,56,.15);color:#B07D10}.tba{background:rgba(229,62,62,.1);color:#C53030}.tbw{background:rgba(122,158,126,.12);color:var(--s)}
+.ct{font-size:14px;color:var(--m);line-height:1.65;margin-bottom:12px;word-break:break-word}
+/* MEDIA IN CARDS */
+.card-media{width:100%;border-radius:14px;margin-bottom:10px;display:block;max-height:320px;object-fit:cover;cursor:pointer}
+.card-video{width:100%;border-radius:14px;margin-bottom:10px;display:block;background:#000}
+/* ACTIONS */
+.ca{display:flex;align-items:center;gap:2px;padding-top:10px;border-top:1px solid rgba(0,0,0,.06)}
+.ab{display:flex;align-items:center;gap:4px;padding:7px 10px;border-radius:100px;border:none;background:transparent;cursor:pointer;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:500;color:var(--l);-webkit-tap-highlight-color:transparent}
+.ab:active{background:var(--c);color:var(--n)}.ab.liked{color:var(--t)}
+.wab{display:flex;align-items:center;gap:4px;padding:7px 10px;border-radius:100px;border:none;background:transparent;cursor:pointer;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;color:var(--wa);-webkit-tap-highlight-color:transparent}
+/* COMMENTS DRAWER */
+.dov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200}
+.dov.open{display:block}
+.cdr{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--w);border-radius:24px 24px 0 0;z-index:201;max-height:82vh;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.32,.72,0,1)}
+.cdr.open{transform:translateX(-50%) translateY(0)}
+.dh{padding:16px 20px 12px;border-bottom:1px solid rgba(0,0,0,.07);flex-shrink:0}
+.dhandle{width:40px;height:4px;background:rgba(0,0,0,.1);border-radius:100px;margin:0 auto 14px}
+.dtitle{font-size:16px;font-weight:700;color:var(--n)}
+.clist{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.ci{display:flex;gap:10px}
+.cav2{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0}
+.cb{background:var(--c);border-radius:14px 14px 14px 4px;padding:10px 13px;flex:1}
+.cbn{font-size:12px;font-weight:700;color:var(--n);margin-bottom:4px}
+.cbt{font-size:13px;color:var(--m);line-height:1.5}
+.cbt img{max-width:100%;border-radius:8px;margin-top:6px;display:block}
+.ctime{font-size:11px;color:var(--l);margin-top:5px}
+.noc{text-align:center;padding:30px 20px;color:var(--l);font-size:14px}
+/* CMT INPUT */
+.cinbar{display:flex;gap:8px;padding:10px 14px;border-top:1px solid rgba(0,0,0,.07);background:var(--w);flex-shrink:0;align-items:flex-end}
+.cinput{flex:1;border:2px solid rgba(0,0,0,.1);border-radius:22px;padding:10px 14px;font-family:"DM Sans",sans-serif;font-size:14px;color:var(--n);outline:none;resize:none;max-height:100px;-webkit-appearance:none}
+.cinput:focus{border-color:var(--t)}
+.cibtn{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.cmt-img-prev{display:none;margin:6px 14px 0;position:relative}
+.cmt-img-prev img{width:100%;max-height:140px;object-fit:cover;border-radius:12px;display:block}
+.cmt-img-prev button{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:white;border:none;border-radius:50%;width:24px;height:24px;font-size:13px;cursor:pointer}
+/* COMPOSER */
+.cmp{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--w);border-radius:24px 24px 0 0;padding:20px 16px;padding-bottom:max(24px,env(safe-area-inset-bottom));box-shadow:0 -8px 40px rgba(0,0,0,.15);z-index:300}
+.cmp.open{display:block}
+.chandl{width:40px;height:4px;background:rgba(0,0,0,.1);border-radius:100px;margin:0 auto 16px}
+.cmpw{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cmpav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0}
+.cmpwho{font-size:13px;color:var(--m)}.cmpwho b{color:var(--n)}
+/* TYPE SELECTOR */
+.cmpts{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
+.cmpts::-webkit-scrollbar{display:none}
+.cmptype{flex-shrink:0;padding:6px 14px;border-radius:100px;border:2px solid rgba(0,0,0,.1);background:white;font-size:13px;font-weight:600;color:var(--m);cursor:pointer;font-family:"DM Sans",sans-serif;-webkit-tap-highlight-color:transparent}
+.cmptype.on{border-color:var(--t);color:var(--t);background:rgba(196,98,45,.06)}
+/* MEDIA PREVIEW IN COMPOSER */
+.comp-media-prev{display:none;position:relative;border-radius:14px;overflow:hidden;margin-bottom:10px;background:#000}
+.comp-media-prev img{width:100%;max-height:200px;object-fit:cover;display:block}
+.comp-media-prev video{width:100%;max-height:200px;display:block}
+.comp-media-prev button{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);color:white;border:none;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* MEDIA BUTTONS */
+.media-btns{display:flex;gap:8px;margin-bottom:10px}
+.media-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:100px;border:2px solid rgba(0,0,0,.1);background:white;font-size:13px;font-weight:600;color:var(--m);cursor:pointer;font-family:"DM Sans",sans-serif;-webkit-tap-highlight-color:transparent}
+.media-btn:active{background:var(--c);border-color:var(--t);color:var(--t)}
+.uprog{display:none;font-size:12px;color:var(--t);font-weight:600;text-align:center;padding:6px 0;margin-bottom:6px}
+.cmpinput{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:14px;padding:12px 14px;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--n);resize:none;outline:none;min-height:70px;-webkit-appearance:none;margin-bottom:12px}
+.cmpinput:focus{border-color:var(--t)}
+.cmpft{display:flex;justify-content:space-between;align-items:center}
+.cmppost{padding:12px 28px;border-radius:100px;background:var(--n);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cmppost:disabled{opacity:.6;cursor:default}
+.cmpcancel{background:none;border:none;font-size:14px;color:var(--l);cursor:pointer;font-family:"DM Sans",sans-serif}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:250}
+.ov.open{display:block}
+/* FAB */
+.fab{position:fixed;bottom:86px;right:16px;width:60px;height:60px;border-radius:50%;background:var(--t);color:white;border:none;font-size:26px;cursor:pointer;box-shadow:0 8px 28px rgba(196,98,45,.6);display:flex;align-items:center;justify-content:center;z-index:200;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--w);border-top:1px solid rgba(0,0,0,.08);display:flex;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:"DM Sans",sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.bni-i{font-size:22px}.bni-l{font-size:10px;font-weight:600;color:var(--l)}
+.bni.on .bni-l{color:var(--t)}
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;display:none}
+.empty .emoji{font-size:48px;margin-bottom:16px}
+.empty h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.empty p{font-size:14px;color:var(--m);line-height:1.6;margin-bottom:24px}
+.empty button{padding:12px 28px;border-radius:100px;background:var(--t);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+/* TOAST */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topnav">
+  <div class="r1">
+    <div class="logo">Near<span>by</span></div>
+    <div class="icons">
+      <a href="nearby-notifications.html" class="ni">🔔<div class="ndot" id="ndot"></div></a>
+      <a href="nearby-messages.html" class="ni">💬</a>
+      <a href="nearby-profile.html" class="ni">👤</a>
+    </div>
+  </div>
+  <div class="locbar">📍 <b id="nbn">Loading...</b><div class="sbadge" id="nbs">🏆 —</div></div>
+</div>
+
+<div class="livebar"><div class="ldot"></div>Live · updates in real time</div>
+
+<div class="ftabs">
+  <button class="ftab on" onclick="setTab(this,'all')">🏡 All</button>
+  <button class="ftab" onclick="setTab(this,'post')">💬 Posts</button>
+  <button class="ftab" onclick="setTab(this,'job')">💼 Jobs</button>
+  <button class="ftab" onclick="setTab(this,'event')">🎉 Events</button>
+  <button class="ftab" onclick="setTab(this,'alert')">🔔 Alerts</button>
+  <button class="ftab" onclick="setTab(this,'welcome')">🆕 Arrivals</button>
+</div>
+
+<div class="feed">
+  <div id="loading">
+    <div class="sk"><div class="sk-r"><div class="sk-ci"></div><div class="sk-m"><div class="skl w8"></div><div class="skl w4"></div></div></div><div class="skl w8"></div><div class="skl w6"></div></div>
+    <div class="sk"><div class="sk-r"><div class="sk-ci"></div><div class="sk-m"><div class="skl w6"></div><div class="skl w4"></div></div></div><div class="skl w8"></div></div>
+    <div class="sk"><div class="sk-r"><div class="sk-ci"></div><div class="sk-m"><div class="skl w8"></div><div class="skl w4"></div></div></div><div class="skl w6"></div></div>
+  </div>
+  <div id="arr-sec" style="display:none">
+    <div class="sec-lbl">🆕 New in your neighborhood</div>
+    <div class="astrip" id="arrivals"></div>
+  </div>
+  <div id="posts"></div>
+  <div class="empty" id="empty">
+    <div class="emoji">🏘️</div>
+    <h3>Be the first to post!</h3>
+    <p>Share a hello, a photo, a job, or anything with your neighbors.</p>
+    <button onclick="openComp()">Start the Conversation</button>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openComp()">✏️</button>
+
+<!-- OVERLAY -->
+<div class="ov" id="ov" onclick="closeComp()"></div>
+
+<!-- COMPOSER -->
+<div class="cmp" id="cmp">
+  <div class="chandl"></div>
+  <div class="cmpw">
+    <div class="cmpav" id="cmpav">😊</div>
+    <div class="cmpwho">Posting as <b id="cmpname">You</b> in <b id="cmpnb">your neighborhood</b></div>
+  </div>
+  <div class="cmpts">
+    <button class="cmptype on" onclick="setPT(this,'post')">💬 Post</button>
+    <button class="cmptype" onclick="setPT(this,'job')">💼 Job</button>
+    <button class="cmptype" onclick="setPT(this,'event')">🎉 Event</button>
+    <button class="cmptype" onclick="setPT(this,'alert')">🔔 Alert</button>
+    <button class="cmptype" onclick="setPT(this,'welcome')">👋 Welcome</button>
+  </div>
+  <!-- MEDIA PREVIEW -->
+  <div class="comp-media-prev" id="compPrev">
+    <img id="compPrevImg" alt=""/>
+    <video id="compPrevVid" controls playsinline></video>
+    <button onclick="clearMedia()">✕</button>
+  </div>
+  <!-- MEDIA BUTTONS -->
+  <div class="media-btns">
+    <button class="media-btn" onclick="document.getElementById('imgIn').click()">📷 Photo</button>
+    <button class="media-btn" onclick="document.getElementById('vidIn').click()">🎥 Video</button>
+  </div>
+  <input type="file" id="imgIn" accept="image/*" style="display:none" onchange="prevMedia(this,'image')"/>
+  <input type="file" id="vidIn" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="prevMedia(this,'video')"/>
+  <div class="uprog" id="uprog">⏳ Uploading media...</div>
+  <textarea class="cmpinput" id="cmptxt" placeholder="What's happening in your neighborhood?"></textarea>
+  <div class="cmpft">
+    <button class="cmpcancel" onclick="closeComp()">Cancel</button>
+    <button class="cmppost" id="cmpbtn" onclick="doPost()">Post Nearby</button>
+  </div>
+</div>
+
+<!-- COMMENTS DRAWER -->
+<div class="dov" id="dov" onclick="closeCmts()"></div>
+<div class="cdr" id="cdr">
+  <div class="dh">
+    <div class="dhandle"></div>
+    <div class="dtitle">💬 Comments (<span id="dcount">0</span>)</div>
+  </div>
+  <div class="clist" id="clist"><div class="noc">No comments yet — be first!</div></div>
+  <div class="cmt-img-prev" id="cmtPrev">
+    <img id="cmtPrevImg" alt=""/>
+    <button onclick="clearCmtImg()">✕</button>
+  </div>
+  <div class="cinbar">
+    <div class="cav2" id="drav" style="background:var(--t)">😊</div>
+    <textarea class="cinput" id="cinput" rows="1" placeholder="Write a comment..." oninput="autoR(this)"></textarea>
+    <button class="cibtn" style="background:var(--c)" onclick="document.getElementById('cmtImgIn').click()">🖼️</button>
+    <button class="cibtn" style="background:var(--t);color:white" id="sbtn" onclick="sendCmt()">➤</button>
+  </div>
+  <input type="file" id="cmtImgIn" accept="image/*" style="display:none" onchange="prevCmtImg(this)"/>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="bni on"><div class="bni-i">🏡</div><div class="bni-l">Home</div></button>
+  <a href="nearby-arrivals.html" class="bni"><div class="bni-i">🆕</div><div class="bni-l">Arrivals</div></a>
+  <a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+  <a href="nearby-profile.html" class="bni"><div class="bni-i">👤</div><div class="bni-l">Profile</div></a>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+var me = null;
+var posts = [];
+var filt = 'all';
+var ptype = 'post';
+var activePid = null;
+var mediaFile = null;
+var mediaType = null;
+var cmtImgFile = null;
+var liked = {};
+
+var COLS = ['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6','#E53E3E','#27AE60'];
+function gc(s){if(!s)return COLS[0];var h=0;for(var i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
+function gi(n){if(!n)return'?';return n.split(' ').map(function(x){return x[0]||'';}).join('').toUpperCase().slice(0,2)||'?';}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function tago(ts){if(!ts)return'';var d=Math.floor((Date.now()-new Date(ts))/1000);if(d<60)return'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago';}
+var TL={post:'💬 Post',job:'💼 Job',event:'🎉 Event',alert:'🔔 Alert',welcome:'👋 Welcome'};
+var TC={post:'tbp',job:'tbj',event:'tbe',alert:'tba',welcome:'tbw'};
+var BN={1:'Neighbor',2:'Star',3:'Ambassador',4:'Legend'};
+var BC={1:'bp1',2:'bp2',3:'bp3',4:'bp4'};
+
+async function init(){
+  var sess;
+  try{var r=await sb.auth.getSession();sess=r.data.session;}catch(e){}
+  if(!sess){window.location.href='nearby-auth.html';return;}
+  try{
+    var r2=await sb.from('users').select('*').eq('id',sess.user.id).single();
+    if(!r2.error&&r2.data){
+      me=r2.data;
+    }else{
+      var nm=sess.user.user_metadata&&sess.user.user_metadata.full_name?sess.user.user_metadata.full_name:sess.user.email.split('@')[0];
+      me={id:sess.user.id,full_name:nm,email:sess.user.email,neighborhood:'Lagos Island',city:'Lagos',rep_points:0,badge_level:1};
+      try{await sb.from('users').upsert(me,{onConflict:'id'});}catch(e2){}
+    }
+  }catch(e){
+    me={id:sess.user.id,full_name:'You',neighborhood:'Lagos Island',rep_points:0,badge_level:1};
+  }
+  var nb=me.neighborhood||'Lagos Island';
+  document.getElementById('nbn').textContent=nb;
+  document.getElementById('cmpname').textContent=(me.full_name||'You').split(' ')[0];
+  document.getElementById('cmpnb').textContent=nb;
+  var col=gc(me.id),ini=gi(me.full_name);
+  document.getElementById('cmpav').textContent=ini;
+  document.getElementById('cmpav').style.background=col;
+  document.getElementById('drav').textContent=ini;
+  document.getElementById('drav').style.background=col;
+  try{var rn=await sb.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',me.id).eq('is_read',false);if(rn.count>0)document.getElementById('ndot').style.display='block';}catch(e){}
+  await loadPosts(nb);
+  await loadArrivals(nb);
+  if(!me.neighborhood){
+    var sp=document.createElement('div');
+    sp.style.cssText='background:#1A2332;border-radius:18px;padding:18px;margin-bottom:12px;color:white';
+    sp.innerHTML='<div style="font-weight:700;margin-bottom:6px">📍 Set your neighborhood</div><div style="font-size:12px;opacity:.6;margin-bottom:10px">Pick your area to see local posts near you.</div><a href="nearby-onboarding.html" style="display:inline-block;padding:8px 16px;border-radius:100px;background:#C4622D;color:white;text-decoration:none;font-size:13px;font-weight:700">Set Up</a>';
+    document.getElementById('posts').prepend(sp);
+  }
+  try{
+    sb.channel('feed-'+nb).on('postgres_changes',{event:'INSERT',schema:'public',table:'posts',filter:'neighborhood=eq.'+nb},function(p){
+      if(p.new&&p.new.user_id!==me.id){posts.unshift(p.new);render();toast('New post!');}
+    }).subscribe();
+  }catch(e){}
+}
+
+async function loadPosts(nb){
+  document.getElementById('loading').style.display='block';
+  try{
+    var q=await sb.from('posts').select('*,users(id,full_name,avatar_url,badge_level,neighborhood)').eq('neighborhood',nb).eq('is_flagged',false).order('created_at',{ascending:false}).limit(40);
+    var data=q.data||[];
+    if(!data.length){
+      var q2=await sb.from('posts').select('*,users(id,full_name,avatar_url,badge_level,neighborhood)').eq('is_flagged',false).order('created_at',{ascending:false}).limit(40);
+      data=q2.data||[];
+    }
+    posts=data;
+  }catch(e){posts=[];}
+  document.getElementById('loading').style.display='none';
+  render();
+}
+
+function render(){
+  var c=document.getElementById('posts');
+  var e=document.getElementById('empty');
+  var p=filt==='all'?posts:posts.filter(function(x){return x.post_type===filt;});
+  if(!p.length){c.innerHTML='';e.style.display='block';return;}
+  e.style.display='none';
+  c.innerHTML=p.map(buildCard).join('');
+}
+
+function buildCard(p){
+  var u=p.users||{};
+  var name=u.full_name||'Community Member';
+  var col=gc(u.id||p.user_id);
+  var ini=gi(name);
+  var time=tago(p.created_at);
+  var bl=u.badge_level||1;
+  var isOwn=me&&p.user_id===me.id;
+  var lk=liked[p.id];
+  var avH=u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt=""/>':ini;
+  var mH='';
+  if(p.media_url){
+    if(p.media_type==='video'){mH='<video class="card-video" controls playsinline src="'+esc(p.media_url)+'"></video>';}
+    else{mH='<img class="card-media" src="'+esc(p.media_url)+'" alt="photo" onclick="window.open(this.src)">';}
+  }
+  var menuBtn=isOwn?'<button class="cmenu" onclick="delPost(\''+p.id+'\')">🗑️</button>':'<button class="cmenu" onclick="flagP(\''+p.id+'\')">···</button>';
+  var bdg='<span class="bp '+(BC[bl]||'bp1')+'">'+(BN[bl]||'Neighbor')+'</span>';
+  var typeH='<span class="tb '+(TC[p.post_type]||'tbp')+'">'+(TL[p.post_type]||'💬 Post')+'</span>';
+  var likeH='<button class="ab'+(lk?' liked':'')+'" id="lb-'+p.id+'" onclick="doLike(\''+p.id+'\',this)">'+(lk?'❤️':'🤍')+' <span id="lc-'+p.id+'">'+(p.likes_count||0)+'</span></button>';
+  var cmtH='<button class="ab" onclick="openCmts(\''+p.id+'\','+(p.comments_count||0)+')">💬 <span id="cc-'+p.id+'">'+(p.comments_count||0)+'</span></button>';
+  var waH='<button class="wab" onclick="shareWA(\''+esc((p.content||'').slice(0,60))+'\',\''+esc(p.neighborhood||'')+'\')">📲</button>';
+  return '<div class="card" id="p-'+p.id+'"><div class="ch"><div class="av" style="background:'+col+'">'+avH+'</div><div class="cm"><div class="cn">'+esc(name)+bdg+'</div><div class="cd">📍 '+esc(p.neighborhood||'Nearby')+' · '+time+'</div></div>'+menuBtn+'</div>'+typeH+'<div class="ct">'+esc(p.content)+'</div>'+mH+'<div class="ca">'+likeH+cmtH+waH+'</div></div>';
+}
+
+async function loadArrivals(nb){
+  try{
+    var r=await sb.from('users').select('id,full_name,created_at').eq('neighborhood',nb).eq('is_newcomer',true).order('created_at',{ascending:false}).limit(10);
+    var arr=r.data||[];
+    if(!arr.length)return;
+    document.getElementById('arrivals').innerHTML=arr.map(function(u){
+      return '<div class="acard" onclick="doWelcome(\''+u.id+'\')"><div class="aav" style="background:'+gc(u.id)+'">'+gi(u.full_name)+'<div class="aring"></div></div><div class="aname">'+esc((u.full_name||'?').split(' ')[0])+'</div><div class="asub">'+tago(u.created_at)+'</div></div>';
+    }).join('');
+    document.getElementById('arr-sec').style.display='block';
+  }catch(e){}
+}
+
+function setTab(el,f){document.querySelectorAll('.ftab').forEach(function(t){t.classList.remove('on');});el.classList.add('on');filt=f;render();}
+
+async function doLike(pid,btn){
+  if(!me)return;
+  var lc=document.getElementById('lc-'+pid);
+  var n=parseInt(lc?lc.textContent:'0')||0;
+  if(liked[pid]){liked[pid]=false;btn.classList.remove('liked');btn.innerHTML='🤍 <span id="lc-'+pid+'">'+Math.max(0,n-1)+'</span>';}
+  else{liked[pid]=true;btn.classList.add('liked');btn.innerHTML='❤️ <span id="lc-'+pid+'">'+(n+1)+'</span>';try{await sb.from('post_likes').insert({post_id:pid,user_id:me.id});}catch(e){}try{await sb.rpc('increment_likes',{post_id:pid});}catch(e){}}
+}
+
+async function openCmts(pid,cnt){
+  activePid=pid;
+  document.getElementById('dcount').textContent=cnt;
+  document.getElementById('clist').innerHTML='<div class="noc" style="color:var(--l)">Loading...</div>';
+  document.getElementById('dov').classList.add('open');
+  document.getElementById('cdr').classList.add('open');
+  document.body.style.overflow='hidden';
+  document.getElementById('cinput').value='';
+  try{
+    var r=await sb.from('post_comments').select('*,users(id,full_name,avatar_url)').eq('post_id',pid).order('created_at',{ascending:true});
+    var list=document.getElementById('clist');
+    var data=r.data||[];
+    if(!data.length){list.innerHTML='<div class="noc">No comments yet — be first!</div>';return;}
+    document.getElementById('dcount').textContent=data.length;
+    list.innerHTML=data.map(function(c){
+      var u=c.users||{};
+      var imgP=c.media_url?'<img src="'+esc(c.media_url)+'" style="max-width:100%;border-radius:8px;margin-top:6px;display:block" alt=""/>':'';
+      return '<div class="ci"><div class="cav2" style="background:'+gc(u.id)+'">'+gi(u.full_name)+'</div><div class="cb"><div class="cbn">'+esc(u.full_name||'Neighbor')+'</div><div class="cbt">'+esc(c.content)+imgP+'</div><div class="ctime">'+tago(c.created_at)+'</div></div></div>';
+    }).join('');
+    setTimeout(function(){list.scrollTop=list.scrollHeight;},100);
+  }catch(e){document.getElementById('clist').innerHTML='<div class="noc">Could not load comments.</div>';}
+}
+
+function closeCmts(){document.getElementById('dov').classList.remove('open');document.getElementById('cdr').classList.remove('open');document.body.style.overflow='';activePid=null;}
+
+async function sendCmt(){
+  var inp=document.getElementById('cinput');
+  var txt=inp.value.trim();
+  if(!txt&&!cmtImgFile)return;
+  if(!activePid||!me)return;
+  var btn=document.getElementById('sbtn');
+  btn.disabled=true;
+  var imgUrl=null;
+  if(cmtImgFile){
+    var reader=new FileReader();
+    imgUrl=await new Promise(function(res){reader.onload=function(e){res(e.target.result);};reader.readAsDataURL(cmtImgFile);});
+  }
+  try{
+    var row={post_id:activePid,user_id:me.id,content:txt||'📷'};
+    if(imgUrl)row.media_url=imgUrl;
+    await sb.from('post_comments').insert(row);
+    var cc=document.getElementById('cc-'+activePid);
+    var dc=document.getElementById('dcount');
+    if(cc)cc.textContent=parseInt(cc.textContent||0)+1;
+    if(dc)dc.textContent=parseInt(dc.textContent||0)+1;
+    var list=document.getElementById('clist');
+    var noc=list.querySelector('.noc');
+    if(noc)noc.remove();
+    var nc=document.createElement('div');
+    nc.className='ci';
+    var imgPart=imgUrl?'<img src="'+imgUrl+'" style="max-width:100%;border-radius:8px;margin-top:6px;display:block" alt=""/>':'';
+    nc.innerHTML='<div class="cav2" style="background:'+gc(me.id)+'">'+gi(me.full_name)+'</div><div class="cb"><div class="cbn">'+esc(me.full_name)+'</div><div class="cbt">'+esc(txt)+imgPart+'</div><div class="ctime">just now</div></div>';
+    list.appendChild(nc);
+    list.scrollTop=list.scrollHeight;
+    inp.value='';inp.style.height='auto';
+    clearCmtImg();
+    try{await sb.from('users').update({rep_points:(me.rep_points||0)+2}).eq('id',me.id);me.rep_points=(me.rep_points||0)+2;}catch(e){}
+  }catch(e){toast('Could not post comment: '+e.message);}
+  btn.disabled=false;
+}
+
+function prevCmtImg(input){
+  if(!input.files||!input.files[0])return;
+  cmtImgFile=input.files[0];
+  var reader=new FileReader();
+  reader.onload=function(e){document.getElementById('cmtPrevImg').src=e.target.result;document.getElementById('cmtPrev').style.display='block';};
+  reader.readAsDataURL(input.files[0]);
+}
+function clearCmtImg(){cmtImgFile=null;document.getElementById('cmtPrev').style.display='none';document.getElementById('cmtImgIn').value='';}
+
+function openComp(){document.getElementById('cmp').classList.add('open');document.getElementById('ov').classList.add('open');setTimeout(function(){document.getElementById('cmptxt').focus();},150);}
+function closeComp(){document.getElementById('cmp').classList.remove('open');document.getElementById('ov').classList.remove('open');}
+function setPT(el,t){document.querySelectorAll('.cmptype').forEach(function(c){c.classList.remove('on');});el.classList.add('on');ptype=t;}
+
+function prevMedia(input,type){
+  if(!input.files||!input.files[0])return;
+  mediaFile=input.files[0];mediaType=type;
+  var prev=document.getElementById('compPrev');
+  var img=document.getElementById('compPrevImg');
+  var vid=document.getElementById('compPrevVid');
+  prev.style.display='block';
+  var url=URL.createObjectURL(input.files[0]);
+  if(type==='video'){vid.src=url;vid.style.display='block';img.style.display='none';}
+  else{img.src=url;img.style.display='block';vid.style.display='none';}
+}
+function clearMedia(){
+  mediaFile=null;mediaType=null;
+  document.getElementById('compPrev').style.display='none';
+  document.getElementById('imgIn').value='';
+  document.getElementById('vidIn').value='';
+}
+
+async function uploadMedia(file){
+  try{
+    var ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+    var path=(me?me.id:'anon')+'/'+Date.now()+'.'+ext;
+    var res=await sb.storage.from('media').upload(path,file,{upsert:false,contentType:file.type});
+    if(res.error)return null;
+    var pub=sb.storage.from('media').getPublicUrl(path);
+    return pub.data.publicUrl;
+  }catch(e){return null;}
+}
+
+async function doPost(){
+  var txt=document.getElementById('cmptxt').value.trim();
+  if(!txt&&!mediaFile){toast('Write something or add a photo/video!');return;}
+  if(!me){toast('Please sign in first');return;}
+  var btn=document.getElementById('cmpbtn');
+  btn.disabled=true;btn.textContent='Posting...';
+  var nb=me.neighborhood||'Lagos Island';
+  var mUrl=null;
+  if(mediaFile){
+    document.getElementById('uprog').style.display='block';
+    btn.textContent='Uploading...';
+    mUrl=await uploadMedia(mediaFile);
+    document.getElementById('uprog').style.display='none';
+  }
+  try{
+    var row={user_id:me.id,content:txt||(mediaType==='video'?'🎥':'📷'),post_type:ptype,neighborhood:nb,is_flagged:false,likes_count:0,comments_count:0};
+    if(mUrl){row.media_url=mUrl;row.media_type=mediaType;}
+    var res=await sb.from('posts').insert(row).select('*,users(id,full_name,avatar_url,badge_level,neighborhood)');
+    if(res.error){toast('Error: '+res.error.message);}
+    else{
+      closeComp();
+      document.getElementById('cmptxt').value='';
+      clearMedia();
+      var pts=(me.rep_points||0)+(mUrl?10:5);
+      toast('Posted! +'+(mUrl?10:5)+' pts');
+      if(res.data&&res.data[0]){res.data[0].users=me;posts.unshift(res.data[0]);render();}
+      try{await sb.from('users').update({rep_points:pts}).eq('id',me.id);me.rep_points=pts;}catch(e){}
+    }
+  }catch(e){toast('Error: '+e.message);}
+  btn.disabled=false;btn.textContent='Post Nearby';
+}
+
+async function doWelcome(uid){
+  if(!me||uid===me.id)return;
+  try{await sb.from('welcomes').insert({sender_id:me.id,receiver_id:uid});toast('Welcome sent! +10 pts');}catch(e){toast('Already welcomed!');}
+}
+
+async function flagP(pid){
+  if(!me)return;
+  try{await sb.from('posts').update({is_flagged:true}).eq('id',pid);var el=document.getElementById('p-'+pid);if(el)el.style.opacity='.4';toast('Reported.');}catch(e){}
+}
+
+async function delPost(pid){
+  if(!me)return;
+  try{
+    await sb.from('posts').delete().eq('id',pid);
+    var el=document.getElementById('p-'+pid);
+    if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(function(){el.remove();},300);}
+    posts=posts.filter(function(x){return x.id!==pid;});
+    toast('Deleted.');
+  }catch(e){}
+}
+
+function shareWA(content,nb){
+  var msg=encodeURIComponent('Nearby - '+nb+' - '+content+' - Join: https://nearby-navy.vercel.app');
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+function autoR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+function toast(msg){
+  var old=document.querySelector('.toast');
+  if(old)old.remove();
+  var t=document.createElement('div');
+  t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2500);
+  setTimeout(function(){if(t.parentNode)t.remove();},3000);
+}
+
+document.getElementById('cinput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendCmt();}});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
+init();
+</script>
+</body>
+</html>
