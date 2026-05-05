@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
+<title>Nearby — Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4;--gold:#D4AF37;--r:#E53E3E;--g:#38A169}
+html{width:100%;background:#EEE9DF}
+body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);width:100%;min-height:100dvh;-webkit-font-smoothing:antialiased}
+.wrap{width:100%;max-width:480px;margin:0 auto;min-height:100dvh;padding-bottom:90px}
+.topnav{background:var(--w);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(0,0,0,.07)}
+.back-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:4px 8px;-webkit-tap-highlight-color:transparent}
+.nav-title{font-family:"Playfair Display",serif;font-size:18px;font-weight:900;color:var(--n)}
+.edit-btn{background:var(--c);border:none;border-radius:20px;padding:8px 16px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;color:var(--n);cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* HERO */
+.profile-hero{background:var(--w);padding:0 0 24px;margin-bottom:10px}
+.cover-wrap{position:relative;height:130px;overflow:hidden;cursor:pointer}
+.cover-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A2332 0%,#2C3E6B 50%,#C4622D 100%)}
+.cover-pattern{position:absolute;inset:0;opacity:.12;background-image:radial-gradient(circle,white 1px,transparent 1px);background-size:18px 18px}
+.cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.cover-btn{position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.55);color:white;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:"DM Sans",sans-serif;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);z-index:2}
+.av-wrap{position:relative;width:90px;margin:-45px auto 12px;z-index:5}
+.av-circle{width:90px;height:90px;border-radius:50%;border:4px solid var(--w);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:white;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
+.av-circle img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:none}
+.av-ov{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:22px;opacity:0;transition:opacity .2s}
+.av-circle:active .av-ov{opacity:1}
+.av-spin{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;text-align:center;padding:4px}
+.av-spin.show{display:flex}
+.lv-ring{position:absolute;inset:-7px;border-radius:50%;border:3px solid transparent;pointer-events:none}
+.r1{border-color:var(--s)}.r2{border-color:var(--a);animation:glow 2.5s ease-in-out infinite}.r3{border-color:var(--gold);animation:glow 2s ease-in-out infinite}.r4{border-color:#9B59B6;animation:glow 1.5s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 16px 5px rgba(212,175,55,.4)}}
+.crown{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:22px;animation:float 3s ease-in-out infinite;z-index:6}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
+.pinfo{text-align:center;padding:0 20px}
+.mbadge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:100px;font-size:12px;font-weight:700;margin-bottom:10px}
+.mb1{background:rgba(122,158,126,.15);color:var(--s);border:1px solid rgba(122,158,126,.3)}
+.mb2{background:linear-gradient(135deg,var(--a),#F5C842);color:#6B4A00}
+.mb3{background:linear-gradient(135deg,var(--gold),#F0D060);color:#5C4200;box-shadow:0 4px 16px rgba(212,175,55,.3)}
+.mb4{background:linear-gradient(135deg,#9B59B6,#C39BD3);color:white;box-shadow:0 4px 16px rgba(155,89,182,.3)}
+.pname{font-family:"Playfair Display",serif;font-size:24px;font-weight:900;color:var(--n);margin-bottom:4px}
+.ploc{font-size:13px;color:var(--l);margin-bottom:8px}
+.pbio{font-size:14px;color:var(--m);line-height:1.6;margin-bottom:4px}
+.pocc{font-size:13px;color:var(--t);font-weight:600;margin-bottom:14px}
+.rep-wrap{display:inline-flex;align-items:center;gap:8px;background:var(--c);border-radius:100px;padding:8px 20px;margin-bottom:16px}
+.rep-num{font-family:"Playfair Display",serif;font-size:22px;font-weight:900;color:var(--n)}
+.rep-lbl{font-size:12px;color:var(--l)}
+.stats-row{display:flex;border-top:1px solid rgba(0,0,0,.06);padding-top:16px}
+.stat{flex:1;text-align:center}
+.stat:not(:last-child){border-right:1px solid rgba(0,0,0,.06)}
+.stat-n{font-family:"Playfair Display",serif;font-size:20px;font-weight:900;color:var(--n)}
+.stat-l{font-size:11px;color:var(--l);margin-top:2px}
+/* ACTIONS */
+.pactions{display:flex;gap:10px;padding:12px 16px;background:var(--w);margin-bottom:10px}
+.btn-a{flex:1;padding:13px;border-radius:12px;border:none;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.btn-settings{background:var(--n);color:white}
+.btn-signout{background:transparent;color:var(--r);border:2px solid rgba(229,62,62,.25)!important;border:none}
+/* SECTION */
+.sec{background:var(--w);border-radius:18px;margin:0 10px 10px;padding:18px}
+.sec-t{font-size:14px;font-weight:700;color:var(--n);margin-bottom:14px}
+/* BADGE JOURNEY */
+.bj{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;position:relative}
+.bj::before{content:"";position:absolute;top:22px;left:22px;right:22px;height:3px;background:rgba(0,0,0,.08);z-index:0}
+.bj-fill{position:absolute;top:22px;left:22px;height:3px;background:linear-gradient(90deg,var(--s),var(--a));z-index:1;transition:width .6s}
+.bj-step{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2}
+.bji{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid rgba(0,0,0,.08);background:var(--c)}
+.bji.done{background:white;border-color:var(--s)}.bji.active{background:white;border-color:var(--a);box-shadow:0 0 0 4px rgba(232,168,56,.2)}.bji.locked{opacity:.4}
+.bjl{font-size:10px;font-weight:700;color:var(--m);text-align:center}
+.bjl.active{color:var(--a)}.bjl.done{color:var(--s)}
+.next-card{background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(232,168,56,.12));border:1px solid rgba(212,175,55,.25);border-radius:14px;padding:14px}
+.nc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.nc-icon{font-size:26px}
+.nc-title{font-size:14px;font-weight:700;color:var(--n)}
+.nc-sub{font-size:12px;color:var(--m);margin-top:2px}
+.prog-bg{background:rgba(0,0,0,.08);border-radius:100px;height:8px;overflow:hidden;margin-bottom:6px}
+.prog-bar{height:8px;border-radius:100px;background:linear-gradient(90deg,var(--a),var(--gold));transition:width .8s}
+.prog-lbls{display:flex;justify-content:space-between;font-size:11px;color:var(--l)}
+/* POSTS */
+.pcard{background:var(--c);border-radius:14px;padding:12px;margin-bottom:8px}
+.ptop{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ptype{font-size:11px;font-weight:700;color:var(--t)}
+.ptime{font-size:11px;color:var(--l)}
+.ptxt{font-size:13px;color:var(--m);line-height:1.5;margin-bottom:6px}
+.plikes{font-size:12px;color:var(--l)}
+.pmedia{width:100%;border-radius:10px;margin-bottom:8px;display:block;max-height:200px;object-fit:cover}
+/* ACHIEVEMENTS */
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ach{background:var(--c);border-radius:14px;padding:12px 8px;text-align:center}
+.ach.locked{opacity:.4}
+.ach-i{font-size:24px;margin-bottom:5px}
+.ach-n{font-size:10px;font-weight:700;color:var(--n)}
+.ach-d{font-size:9px;color:var(--l);margin-top:2px}
+/* EDIT SHEET */
+.sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200}
+.sov.open{display:block}
+.esheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--w);border-radius:24px 24px 0 0;padding:20px 20px 40px;box-shadow:0 -8px 40px rgba(0,0,0,.2);z-index:201;max-height:92dvh;overflow-y:auto;transition:transform .35s cubic-bezier(.32,.72,0,1)}
+.esheet.open{transform:translateX(-50%) translateY(0)}
+.sh{width:40px;height:4px;background:rgba(0,0,0,.12);border-radius:100px;margin:0 auto 18px}
+.et{font-size:17px;font-weight:700;color:var(--n);margin-bottom:18px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--n);margin-bottom:5px}
+.field input,.field textarea,.field select{width:100%;padding:12px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;background:white;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--n);outline:none;resize:none;-webkit-appearance:none;appearance:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--t)}
+.save-btn{width:100%;padding:14px;border-radius:14px;background:var(--t);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
+.save-btn:disabled{opacity:.6}
+/* SIGNOUT MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;align-items:flex-end;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:var(--w);width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:28px 24px 40px}
+.modal h3{font-size:18px;font-weight:700;color:var(--n);margin-bottom:8px}
+.modal p{font-size:14px;color:var(--m);line-height:1.5;margin-bottom:24px}
+.modal-btns{display:flex;flex-direction:column;gap:10px}
+.btn-confirm{padding:14px;border-radius:14px;background:var(--r);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.btn-cancel{padding:14px;border-radius:14px;background:var(--c);color:var(--n);border:none;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--w);border-top:1px solid rgba(0,0,0,.08);display:flex;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:"DM Sans",sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.bni-i{font-size:22px}.bni-l{font-size:10px;font-weight:600;color:var(--l)}
+.bni.on .bni-l{color:var(--t)}
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topnav">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <div class="nav-title">My Profile</div>
+  <button class="edit-btn" onclick="openEdit()">✏️ Edit</button>
+</div>
+
+<div class="profile-hero">
+  <div class="cover-wrap" onclick="document.getElementById('coverIn').click()">
+    <div class="cover-bg" id="coverBg"></div>
+    <div class="cover-pattern" id="coverPat"></div>
+    <img class="cover-img" id="coverImg" alt=""/>
+    <button class="cover-btn" onclick="event.stopPropagation();document.getElementById('coverIn').click()">🖼️ Change Cover</button>
+  </div>
+  <input type="file" id="coverIn" accept="image/*" style="display:none" onchange="uploadCover(this)"/>
+
+  <div class="av-wrap">
+    <div class="crown" id="crown" style="display:none"></div>
+    <div class="av-circle" id="avCircle" onclick="document.getElementById('avIn').click()">
+      <img id="avImg" alt=""/>
+      <span id="avIni">?</span>
+      <div class="av-ov">📷</div>
+      <div class="av-spin" id="avSpin">Saving...</div>
+      <div class="lv-ring" id="lvRing"></div>
+    </div>
+    <input type="file" id="avIn" accept="image/*" style="display:none" onchange="uploadAvatar(this)"/>
+  </div>
+
+  <div class="pinfo">
+    <div class="mbadge" id="mbadge">🏡 Neighbor</div>
+    <div class="pname" id="pname">Loading...</div>
+    <div class="ploc" id="ploc">📍 —</div>
+    <div class="pbio" id="pbio"></div>
+    <div class="pocc" id="pocc"></div>
+    <div class="rep-wrap"><div style="font-size:18px">⭐</div><div class="rep-num" id="repNum">0</div><div class="rep-lbl">Reputation Points</div></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-n" id="sPosts">0</div><div class="stat-l">Posts</div></div>
+      <div class="stat"><div class="stat-n" id="sWelc">0</div><div class="stat-l">Welcomed</div></div>
+      <div class="stat"><div class="stat-n" id="sJoin">—</div><div class="stat-l">Member</div></div>
+      <div class="stat"><div class="stat-n" id="sType">—</div><div class="stat-l">Role</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="pactions">
+  <button class="btn-a btn-settings" onclick="window.location.href='nearby-settings.html'">⚙️ Settings</button>
+  <button class="btn-a btn-signout" onclick="openSignout()" style="background:transparent;color:var(--r);border:2px solid rgba(229,62,62,.25)">Sign Out</button>
+</div>
+
+<!-- BADGE JOURNEY -->
+<div class="sec">
+  <div class="sec-t">🏅 Badge Journey</div>
+  <div class="bj">
+    <div class="bj-fill" id="bjFill" style="width:0%"></div>
+    <div class="bj-step"><div class="bji" id="bj1">🏡</div><div class="bjl" id="bl1">Neighbor</div></div>
+    <div class="bj-step"><div class="bji" id="bj2">⭐</div><div class="bjl" id="bl2">Star</div></div>
+    <div class="bj-step"><div class="bji" id="bj3">🏆</div><div class="bjl" id="bl3">Ambassador</div></div>
+    <div class="bj-step"><div class="bji locked" id="bj4">👑</div><div class="bjl" id="bl4">Legend</div></div>
+  </div>
+  <div class="next-card">
+    <div class="nc-top"><div class="nc-icon" id="ncIcon">⭐</div><div><div class="nc-title" id="ncTitle">Next: Community Star</div><div class="nc-sub" id="ncSub">0 / 400 pts</div></div></div>
+    <div class="prog-bg"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+    <div class="prog-lbls"><span id="ptsCur">0 pts</span><span id="ptsNeed">400 pts needed</span></div>
+  </div>
+</div>
+
+<!-- HOW TO EARN -->
+<div class="sec">
+  <div class="sec-t">⭐ How to Earn Reputation</div>
+  <div style="display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:13px;color:var(--m)">👋 Welcome a newcomer</span><span style="font-size:13px;font-weight:700;color:var(--s)">+10 pts</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:13px;color:var(--m)">💬 Create a post</span><span style="font-size:13px;font-weight:700;color:var(--s)">+5 pts</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:13px;color:var(--m)">🖼️ Post with photo/video</span><span style="font-size:13px;font-weight:700;color:var(--s)">+10 pts</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:13px;color:var(--m)">💼 Post a job</span><span style="font-size:13px;font-weight:700;color:var(--s)">+15 pts</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="font-size:13px;color:var(--r)">🚫 Post removed</span><span style="font-size:13px;font-weight:700;color:var(--r)">−50 pts</span></div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS -->
+<div class="sec">
+  <div class="sec-t">🏅 Achievements</div>
+  <div class="ach-grid">
+    <div class="ach" id="ach-w"><div class="ach-i">🤝</div><div class="ach-n">Welcomer</div><div class="ach-d">Welcome 5 arrivals</div></div>
+    <div class="ach locked" id="ach-f"><div class="ach-i">🔥</div><div class="ach-n">On Fire</div><div class="ach-d">10 posts made</div></div>
+    <div class="ach locked" id="ach-j"><div class="ach-i">💼</div><div class="ach-n">Job Poster</div><div class="ach-d">Post a job</div></div>
+    <div class="ach locked" id="ach-s"><div class="ach-i">⭐</div><div class="ach-n">Rising Star</div><div class="ach-d">Reach 400 pts</div></div>
+    <div class="ach locked" id="ach-p"><div class="ach-i">📸</div><div class="ach-n">Storyteller</div><div class="ach-d">Post 5 photos</div></div>
+    <div class="ach locked" id="ach-l"><div class="ach-i">👑</div><div class="ach-n">Legend</div><div class="ach-d">Reach 1000 pts</div></div>
+  </div>
+</div>
+
+<!-- MY POSTS -->
+<div class="sec">
+  <div class="sec-t">💬 Your Recent Posts</div>
+  <div id="myPosts"><div style="text-align:center;padding:20px;color:var(--l);font-size:13px">Loading your posts...</div></div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- SIGNOUT MODAL -->
+<div class="modal-ov" id="signoutModal" onclick="closeSignout()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>Sign out of Nearby?</h3>
+    <p>You can sign back in anytime. Your profile and posts will still be here.</p>
+    <div class="modal-btns">
+      <button class="btn-confirm" id="soBtn" onclick="doSignOut()">Yes, Sign Out</button>
+      <button class="btn-cancel" onclick="closeSignout()">Cancel — Stay</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SHEET -->
+<div class="sov" id="sov" onclick="closeEdit()"></div>
+<div class="esheet" id="esheet">
+  <div class="sh"></div>
+  <div class="et">✏️ Edit Profile</div>
+  <div class="field"><label>Full Name</label><input type="text" id="eName" placeholder="Your full name"/></div>
+  <div class="field"><label>Bio <span style="color:var(--l);font-weight:400">(optional)</span></label><textarea id="eBio" rows="3" maxlength="160" placeholder="Tell your neighbors about yourself..."></textarea></div>
+  <div class="field"><label>Occupation</label><input type="text" id="eOcc" placeholder="e.g. Teacher, Chef, Designer..."/></div>
+  <div class="field">
+    <label>State</label>
+    <select id="eState">
+      <option value="">— Select state —</option>
+      <option>Lagos</option><option>Abuja (FCT)</option><option>Kano</option><option>Rivers</option><option>Oyo</option>
+      <option>Anambra</option><option>Delta</option><option>Edo</option><option>Enugu</option><option>Kaduna</option>
+      <option>Ogun</option><option>Ondo</option><option>Imo</option><option>Abia</option><option>Cross River</option>
+      <option>Akwa Ibom</option><option>Bauchi</option><option>Borno</option><option>Gombe</option><option>Jigawa</option>
+      <option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Nasarawa</option><option>Niger</option>
+      <option>Osun</option><option>Ekiti</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option>
+      <option>Zamfara</option><option>Benue</option><option>Ebonyi</option><option>Plateau</option><option>Adamawa</option>
+      <option>Bayelsa</option><option>Other / Outside Nigeria</option>
+    </select>
+  </div>
+  <div class="field"><label>Neighborhood / Area</label><input type="text" id="eArea" placeholder="e.g. Lekki Phase 1, Wuse 2..."/></div>
+  <button class="save-btn" id="saveBtn" onclick="saveProfile()">Save Changes</button>
+</div>
+
+<div class="bnav">
+  <a href="nearby-feed.html" class="bni"><div class="bni-i">🏡</div><div class="bni-l">Home</div></a>
+  <a href="nearby-arrivals.html" class="bni"><div class="bni-i">🆕</div><div class="bni-l">Arrivals</div></a>
+  <a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+  <button class="bni on"><div class="bni-i">👤</div><div class="bni-l">Profile</div></button>
+</div>
+
+<script>
+let me = null
+const COLS = ['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6','#E53E3E','#27AE60']
+function gc(s){if(!s)return COLS[0];let h=0;for(let c of s)h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length]}
+function gi(n){if(!n)return'?';return n.split(' ').map(x=>x[0]||'').join('').toUpperCase().slice(0,2)||'?'}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function ta(ts){if(!ts)return'?';const m=Math.floor((Date.now()-new Date(ts))/(1000*60*60*24*30));return m<1?'New':m+'mo'}
+function tago(ts){if(!ts)return'';const d=Math.floor((Date.now()-new Date(ts))/1000);if(d<60)return'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago'}
+
+const BD = {
+  1:{n:'🏡 Neighbor',c:'mb1',cr:'',r:'r1',ni:'⭐',nn:'Community Star',np:400,pp:0},
+  2:{n:'⭐ Community Star',c:'mb2',cr:'⭐',r:'r2',ni:'🏆',nn:'Ambassador',np:700,pp:400},
+  3:{n:'🏆 Ambassador',c:'mb3',cr:'🏆',r:'r3',ni:'👑',nn:'Legend',np:1000,pp:700},
+  4:{n:'👑 Community Legend',c:'mb4',cr:'👑',r:'r4',ni:null,nn:null,np:1000,pp:1000}
+}
+
+async function init() {
+  // Show loading indicator
+  document.getElementById('pname').textContent = 'Loading...'
+
+  // Step 1: Get session with timeout
+  let session = null
+  try {
+    const { data } = await Promise.race([
+      sb.auth.getSession(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+    ])
+    session = data?.session
+  } catch(e) {
+    console.warn('Session error:', e)
+  }
+
+  if (!session) {
+    window.location.href = 'nearby-auth.html'
+    return
+  }
+
+  const uid = session.user.id
+  const email = session.user.email
+  const metaName = session.user.user_metadata?.full_name || email?.split('@')[0] || 'You'
+
+  // Step 2: Load user profile
+  try {
+    const { data, error } = await sb
+      .from('users')
+      .select('*')
+      .eq('id', uid)
+      .single()
+
+    if (!error && data) {
+      me = data
+      // Fix missing name
+      if (!me.full_name || me.full_name === 'New User') {
+        me.full_name = metaName
+        await sb.from('users').update({ full_name: metaName }).eq('id', uid)
+      }
+    } else {
+      // User exists in auth but profile incomplete — build from auth data
+      console.warn('Profile fetch issue:', error?.message)
+      me = {
+        id: uid,
+        full_name: metaName,
+        email: email,
+        neighborhood: 'Lagos Island',
+        city: 'Lagos',
+        country: 'Nigeria',
+        rep_points: 0,
+        badge_level: 1,
+        user_type: 'resident',
+        created_at: new Date().toISOString()
+      }
+      // Try to upsert
+      try {
+        await sb.from('users').upsert(me, { onConflict: 'id' })
+      } catch(e2) { console.warn('Upsert failed:', e2) }
+    }
+  } catch(e) {
+    console.warn('Profile load error:', e)
+    me = {
+      id: uid,
+      full_name: metaName,
+      email: email,
+      neighborhood: 'Lagos Island',
+      city: 'Lagos',
+      rep_points: 0,
+      badge_level: 1,
+      user_type: 'resident',
+      created_at: new Date().toISOString()
+    }
+  }
+
+  // Step 3: Render — always works even with minimal data
+  renderProfile(me)
+
+  // Step 4: Load stats and posts in background
+  loadStats()
+  loadPosts()
+}
+
+function renderProfile(u) {
+  const lvl = u.badge_level || 1, pts = u.rep_points || 0, bd = BD[lvl] || BD[1]
+
+  // Avatar
+  const img = document.getElementById('avImg')
+  const ini = document.getElementById('avIni')
+  if (u.avatar_url && u.avatar_url.length > 10) {
+    img.src = u.avatar_url
+    img.style.display = 'block'
+    ini.style.display = 'none'
+    document.getElementById('avCircle').style.background = 'transparent'
+  } else {
+    ini.textContent = gi(u.full_name)
+    document.getElementById('avCircle').style.background = gc(u.id)
+    img.style.display = 'none'
+    ini.style.display = 'block'
+  }
+
+  // Cover
+  if (u.cover_url && u.cover_url.length > 10) {
+    const ci = document.getElementById('coverImg')
+    ci.src = u.cover_url; ci.style.display = 'block'
+    document.getElementById('coverBg').style.display = 'none'
+    document.getElementById('coverPat').style.display = 'none'
+  }
+
+  // Level ring + crown
+  document.getElementById('lvRing').className = 'lv-ring ' + bd.r
+  if (bd.cr) { const c = document.getElementById('crown'); c.textContent = bd.cr; c.style.display = 'block' }
+
+  // Badge
+  const pill = document.getElementById('mbadge')
+  pill.textContent = bd.n; pill.className = 'mbadge ' + bd.c
+
+  // Info
+  document.getElementById('pname').textContent = u.full_name || 'Your Name'
+  document.getElementById('ploc').textContent = '📍 ' + (u.neighborhood || '') + (u.city ? ', ' + u.city : '')
+  document.getElementById('pbio').textContent = u.bio || ''
+  document.getElementById('pocc').textContent = u.occupation || ''
+  document.getElementById('repNum').textContent = pts.toLocaleString()
+
+  const roles = { resident:'Resident', newcomer:'Newcomer', business:'Business', visitor:'Visitor' }
+  document.getElementById('sType').textContent = roles[u.user_type] || 'Resident'
+  document.getElementById('sJoin').textContent = ta(u.created_at)
+
+  // Badge journey
+  ;['bj1','bj2','bj3','bj4'].forEach((id, i) => {
+    const el = document.getElementById(id), lbl = document.getElementById('bl'+(i+1))
+    el.className = 'bji'
+    lbl.className = 'bjl'
+    if (i+1 < lvl) { el.classList.add('done'); lbl.classList.add('done') }
+    else if (i+1 === lvl) { el.classList.add('active'); lbl.classList.add('active') }
+    else el.classList.add('locked')
+  })
+  document.getElementById('bjFill').style.width = Math.min(100, ((lvl-1)/3)*100) + '%'
+
+  // Progress bar
+  if (bd.nn) {
+    const range = bd.np - bd.pp, earned = Math.max(0, pts - bd.pp)
+    const pct = Math.min(100, Math.round((earned / range) * 100))
+    document.getElementById('progBar').style.width = pct + '%'
+    document.getElementById('ncIcon').textContent = bd.ni
+    document.getElementById('ncTitle').textContent = 'Next: ' + bd.nn
+    document.getElementById('ncSub').textContent = pts + ' / ' + bd.np + ' pts · ' + pct + '% there!'
+    document.getElementById('ptsCur').textContent = pts + ' pts'
+    document.getElementById('ptsNeed').textContent = bd.np + ' pts needed'
+  }
+
+  // Achievements
+  if (pts >= 400) document.getElementById('ach-s').classList.remove('locked')
+  if (pts >= 1000) document.getElementById('ach-l').classList.remove('locked')
+
+  // Pre-fill edit
+  document.getElementById('eName').value = u.full_name || ''
+  document.getElementById('eBio').value = u.bio || ''
+  document.getElementById('eOcc').value = u.occupation || ''
+  document.getElementById('eArea').value = u.neighborhood || ''
+  if (u.city) document.getElementById('eState').value = u.city
+}
+
+async function loadStats() {
+  if (!me) return
+  try {
+    const [{ count: pc }, { count: wc }] = await Promise.all([
+      sb.from('posts').select('*', { count:'exact', head:true }).eq('user_id', me.id),
+      sb.from('welcomes').select('*', { count:'exact', head:true }).eq('sender_id', me.id)
+    ])
+    document.getElementById('sPosts').textContent = pc || 0
+    document.getElementById('sWelc').textContent = wc || 0
+    if ((pc||0) >= 10) document.getElementById('ach-f').classList.remove('locked')
+    if ((wc||0) >= 5) document.getElementById('ach-w').classList.remove('locked')
+  } catch(e) {}
+}
+
+async function loadPosts() {
+  if (!me) return
+  try {
+    const { data } = await sb.from('posts').select('*').eq('user_id', me.id).order('created_at', { ascending: false }).limit(5)
+    const c = document.getElementById('myPosts')
+    if (!data || !data.length) { c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--l);font-size:13px">No posts yet. Share something with your neighborhood! 🏘️</div>'; return }
+    const TL = { post:'💬 Post', job:'💼 Job', event:'🎉 Event', alert:'🔔 Alert', welcome:'👋 Welcome' }
+    c.innerHTML = data.map(p => `
+      <div class="pcard">
+        <div class="ptop"><div class="ptype">${TL[p.post_type]||'💬 Post'}</div><div class="ptime">${tago(p.created_at)}</div></div>
+        ${p.media_url && p.media_type === 'video' ? `<video class="pmedia" src="${esc(p.media_url)}" controls playsinline></video>` : ''}
+        ${p.media_url && p.media_type !== 'video' ? `<img class="pmedia" src="${esc(p.media_url)}" alt=""/>` : ''}
+        <div class="ptxt">${esc(p.content)}</div>
+        <div class="plikes">❤️ ${p.likes_count||0} · 💬 ${p.comments_count||0}</div>
+      </div>`).join('')
+  } catch(e) {}
+}
+
+// AVATAR UPLOAD
+async function uploadAvatar(input) {
+  if (!input.files || !input.files[0] || !me) return
+  const file = input.files[0]
+  const spin = document.getElementById('avSpin')
+  spin.classList.add('show')
+
+  // Show preview immediately
+  const reader = new FileReader()
+  reader.onload = e => {
+    const img = document.getElementById('avImg')
+    img.src = e.target.result
+    img.style.display = 'block'
+    document.getElementById('avIni').style.display = 'none'
+    document.getElementById('avCircle').style.background = 'transparent'
+  }
+  reader.readAsDataURL(file)
+
+  try {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+    const path = me.id + '/avatar.' + ext
+    const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
+
+    let url
+    if (!upErr) {
+      const { data: pub } = sb.storage.from('avatars').getPublicUrl(path)
+      url = pub.publicUrl + '?v=' + Date.now()
+    } else {
+      // Fallback: store base64 directly
+      await new Promise(res => { const r = new FileReader(); r.onload = async e => { url = e.target.result; res() }; r.readAsDataURL(file) })
+    }
+
+    await sb.from('users').update({ avatar_url: url }).eq('id', me.id)
+    me.avatar_url = url
+    toast('📸 Profile photo saved!')
+  } catch(e) {
+    toast('❌ Upload failed. Please try again.')
+  }
+  spin.classList.remove('show')
+}
+
+// COVER UPLOAD
+async function uploadCover(input) {
+  if (!input.files || !input.files[0] || !me) return
+  const file = input.files[0]
+  toast('⏳ Uploading cover...')
+
+  const reader = new FileReader()
+  reader.onload = async e => {
+    const b64 = e.target.result
+    const ci = document.getElementById('coverImg')
+    ci.src = b64; ci.style.display = 'block'
+    document.getElementById('coverBg').style.display = 'none'
+    document.getElementById('coverPat').style.display = 'none'
+
+    let url = b64
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+      const path = me.id + '/cover.' + ext
+      const { error } = await sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type })
+      if (!error) {
+        const { data: pub } = sb.storage.from('avatars').getPublicUrl(path)
+        url = pub.publicUrl + '?v=' + Date.now()
+      }
+    } catch(e) {}
+    await sb.from('users').update({ cover_url: url }).eq('id', me.id)
+    toast('🖼️ Cover updated!')
+  }
+  reader.readAsDataURL(file)
+}
+
+// EDIT
+function openEdit() { document.getElementById('esheet').classList.add('open'); document.getElementById('sov').classList.add('open') }
+function closeEdit() { document.getElementById('esheet').classList.remove('open'); document.getElementById('sov').classList.remove('open') }
+
+async function saveProfile() {
+  const btn = document.getElementById('saveBtn')
+  btn.disabled = true; btn.textContent = 'Saving...'
+  const up = {
+    full_name: document.getElementById('eName').value.trim() || me.full_name,
+    bio: document.getElementById('eBio').value.trim(),
+    occupation: document.getElementById('eOcc').value.trim(),
+    neighborhood: document.getElementById('eArea').value.trim() || me.neighborhood,
+    city: document.getElementById('eState').value || me.city
+  }
+  try {
+    const { error } = await sb.from('users').update(up).eq('id', me.id)
+    if (error) throw error
+    me = { ...me, ...up }
+    renderProfile(me)
+    closeEdit()
+    toast('✅ Profile updated!')
+  } catch(e) {
+    toast('❌ Could not save: ' + (e.message || 'Try again'))
+  }
+  btn.disabled = false; btn.textContent = 'Save Changes'
+}
+
+// SIGNOUT — uses modal instead of confirm() 
+function openSignout() { document.getElementById('signoutModal').classList.add('open') }
+function closeSignout() { document.getElementById('signoutModal').classList.remove('open') }
+async function doSignOut() {
+  const btn = document.getElementById('soBtn')
+  if (btn) { btn.textContent = 'Signing out...'; btn.disabled = true }
+  try { await sb.auth.signOut() } catch(e) { console.warn(e) }
+  // Force redirect even if signOut fails
+  window.location.replace('nearby-auth.html')
+}
+
+function toast(msg) {
+  const old = document.querySelector('.toast'); if (old) old.remove()
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg
+  document.body.appendChild(t)
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .4s' }, 2500)
+  setTimeout(() => t.remove(), 3000)
+}
+
+init()
+</script>
+</body>
+</html>
