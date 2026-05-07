@@ -1,11 +1,4 @@
-// ============================================
-// NEARBY — SUPABASE CONFIG v2
-// ============================================
-// SETUP:
-// 1. Find YOUR_ANON_KEY_HERE below
-// 2. Replace it with your full Supabase anon key
-//    (starts with wYlIdK...)
-// 3. Save file + push to GitHub
+
 // ============================================
 
 const SUPABASE_URL = 'https://heyxaatplgcgjwqvtjof.supabase.co'
