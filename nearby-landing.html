@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
+<meta name="description" content="Nearby — The neighborhood that actually knows you. Nigeria's local community platform."/>
+<link rel="manifest" href="manifest.json"/>
+<title>Nearby — The neighborhood that actually knows you</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--t:#C4622D;--tl:#E07A4A;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--w:#FDFAF4;--c:#F5F0E8}
+html{width:100%;scroll-behavior:smooth}
+body{font-family:"DM Sans",sans-serif;background:var(--w);color:var(--n);width:100%;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ── LOGO MARK ── */
+.logo-mark{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--t) 0%,#E8622D 50%,var(--a) 100%);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 4px 16px rgba(196,98,45,.4);flex-shrink:0}
+.logo-icon::after{content:"";position:absolute;inset:0;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent);pointer-events:none}
+.logo-icon svg{width:24px;height:24px}
+.logo-text{font-family:"Playfair Display",serif;font-size:26px;font-weight:900;color:var(--n);letter-spacing:-1px;line-height:1}
+.logo-text span{color:var(--t)}
+.logo-sub{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--s);display:block;margin-top:1px}
+
+/* ── NAV ── */
+nav{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;background:rgba(253,250,244,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,.06)}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.btn-login{padding:9px 20px;border-radius:100px;border:2px solid rgba(26,35,50,.12);background:transparent;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;color:var(--n);cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.btn-join{padding:10px 22px;border-radius:100px;border:none;background:linear-gradient(135deg,var(--t),var(--tl));color:white;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(196,98,45,.35);-webkit-tap-highlight-color:transparent}
+
+/* ── HERO ── */
+.hero{padding:60px 24px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(196,98,45,.08) 0%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(122,158,126,.12);border:1px solid rgba(122,158,126,.25);color:var(--s);padding:7px 16px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:24px}
+.hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--s);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-family:"Playfair Display",serif;font-size:clamp(38px,8vw,64px);font-weight:900;line-height:1.05;letter-spacing:-3px;color:var(--n);margin-bottom:20px;max-width:600px;margin-left:auto;margin-right:auto}
+h1 em{color:var(--t);font-style:italic}
+h1 .line2{display:block;color:var(--n)}
+.hero-sub{font-size:17px;color:#5A6478;line-height:1.7;max-width:420px;margin:0 auto 36px;font-weight:400}
+.hero-sub b{color:var(--n);font-weight:600}
+.hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:48px}
+.cta-primary{display:inline-flex;align-items:center;gap:8px;padding:16px 32px;border-radius:100px;background:linear-gradient(135deg,var(--n),#2C3E6B);color:white;font-family:"DM Sans",sans-serif;font-size:16px;font-weight:700;text-decoration:none;box-shadow:0 8px 32px rgba(26,35,50,.3);transition:transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
+.cta-primary:active{transform:scale(.97)}
+.cta-secondary{display:inline-flex;align-items:center;gap:8px;padding:16px 28px;border-radius:100px;border:2px solid rgba(26,35,50,.15);background:transparent;color:var(--n);font-family:"DM Sans",sans-serif;font-size:16px;font-weight:600;text-decoration:none;transition:border-color .2s;-webkit-tap-highlight-color:transparent}
+.cta-secondary:active{border-color:var(--t);color:var(--t)}
+
+/* ── PHONE MOCKUP ── */
+.phone-wrap{position:relative;max-width:300px;margin:0 auto 60px}
+.phone-frame{background:var(--n);border-radius:44px;padding:12px;box-shadow:0 40px 80px rgba(26,35,50,.35),0 0 0 1px rgba(255,255,255,.08);position:relative}
+.phone-notch{width:100px;height:6px;background:rgba(255,255,255,.1);border-radius:100px;margin:0 auto 12px}
+.phone-screen{background:var(--w);border-radius:36px;overflow:hidden;aspect-ratio:9/18}
+.phone-ui{padding:16px 14px}
+.p-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.p-logo{font-family:"Playfair Display",serif;font-size:16px;font-weight:900;color:var(--n)}
+.p-logo span{color:var(--t)}
+.p-icons{display:flex;gap:6px}
+.p-icon{width:28px;height:28px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center;font-size:13px}
+.p-locbar{display:flex;align-items:center;gap:5px;font-size:10px;color:#666;margin-bottom:12px}
+.p-locbar b{color:var(--n);font-weight:700}
+.p-livebar{background:rgba(56,161,105,.08);border-radius:8px;padding:5px 10px;font-size:9px;color:#38A169;font-weight:700;display:flex;align-items:center;gap:5px;margin-bottom:10px}
+.p-ldot{width:5px;height:5px;border-radius:50%;background:#38A169;animation:blink 1.5s ease-in-out infinite}
+.p-card{background:white;border-radius:14px;padding:12px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.p-card-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.p-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0}
+.p-name{font-size:11px;font-weight:700;color:var(--n)}
+.p-loc{font-size:9px;color:#999}
+.p-txt{font-size:10px;color:#555;line-height:1.5;margin-bottom:8px}
+.p-img{width:100%;height:70px;border-radius:10px;object-fit:cover;background:linear-gradient(135deg,#E8A838,#C4622D);margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.p-actions{display:flex;gap:8px}
+.p-action{font-size:9px;color:#999;display:flex;align-items:center;gap:3px}
+.p-badge{display:inline-block;font-size:8px;font-weight:700;padding:1px 5px;border-radius:100px;margin-left:3px;background:rgba(122,158,126,.2);color:var(--s)}
+.p-bnav{display:flex;border-top:1px solid rgba(0,0,0,.07);padding:8px 0 4px;margin:0 -14px -16px}
+.p-bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:8px;font-weight:600;color:#aaa}
+.p-bni.on{color:var(--t)}
+.p-bni-i{font-size:16px}
+
+/* ── STATS STRIP ── */
+.stats{display:flex;justify-content:center;gap:0;background:var(--n);margin:0;padding:32px 24px}
+.stat{flex:1;text-align:center;max-width:140px;padding:0 12px}
+.stat:not(:last-child){border-right:1px solid rgba(255,255,255,.1)}
+.stat-n{font-family:"Playfair Display",serif;font-size:32px;font-weight:900;color:white;line-height:1}
+.stat-l{font-size:12px;color:rgba(255,255,255,.5);margin-top:6px;font-weight:500}
+.stat-n span{color:var(--a)}
+
+/* ── FEATURES ── */
+.features{padding:60px 24px;max-width:480px;margin:0 auto}
+.section-tag{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t);margin-bottom:12px}
+.section-title{font-family:"Playfair Display",serif;font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1.15;margin-bottom:36px}
+.section-title em{color:var(--t);font-style:italic}
+.feat-list{display:flex;flex-direction:column;gap:16px}
+.feat{background:var(--c);border-radius:20px;padding:22px;display:flex;gap:16px;align-items:flex-start;transition:transform .2s}
+.feat:active{transform:scale(.98)}
+.feat-icon{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.fi1{background:linear-gradient(135deg,rgba(196,98,45,.15),rgba(232,168,56,.15))}
+.fi2{background:linear-gradient(135deg,rgba(122,158,126,.15),rgba(56,161,105,.15))}
+.fi3{background:linear-gradient(135deg,rgba(41,128,185,.15),rgba(155,89,182,.15))}
+.fi4{background:linear-gradient(135deg,rgba(232,168,56,.15),rgba(212,175,55,.15))}
+.fi5{background:linear-gradient(135deg,rgba(37,211,102,.15),rgba(122,158,126,.15))}
+.feat-content h3{font-size:16px;font-weight:700;color:var(--n);margin-bottom:5px}
+.feat-content p{font-size:13px;color:#5A6478;line-height:1.6}
+
+/* ── NEIGHBORHOODS ── */
+.nbs-section{background:var(--n);padding:48px 24px}
+.nbs-title{font-family:"Playfair Display",serif;font-size:26px;font-weight:900;color:white;margin-bottom:6px;letter-spacing:-1px}
+.nbs-sub{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:24px}
+.nb-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.nb-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px;transition:background .2s}
+.nb-card:active{background:rgba(255,255,255,.12)}
+.nb-name{font-size:14px;font-weight:700;color:white;margin-bottom:3px}
+.nb-city{font-size:11px;color:rgba(255,255,255,.4)}
+.nb-score{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;color:var(--a);font-weight:600}
+
+/* ── AMBASSADOR ── */
+.amb-section{padding:60px 24px;max-width:480px;margin:0 auto;text-align:center}
+.amb-badges{display:flex;justify-content:center;gap:12px;margin:28px 0;flex-wrap:wrap}
+.amb-badge{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 20px;border-radius:20px;min-width:80px}
+.ab1{background:rgba(122,158,126,.12)}.ab2{background:rgba(232,168,56,.12)}.ab3{background:rgba(212,175,55,.15)}.ab4{background:rgba(155,89,182,.12)}
+.amb-icon{font-size:28px}
+.amb-name{font-size:11px;font-weight:700;color:var(--n)}
+.amb-pts{font-size:10px;color:var(--l)}
+
+/* ── FINAL CTA ── */
+.final-cta{background:linear-gradient(135deg,var(--n) 0%,#2C3E6B 100%);padding:60px 24px;text-align:center;position:relative;overflow:hidden}
+.final-cta::before{content:"";position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(196,98,45,.2),transparent 70%);pointer-events:none}
+.final-cta::after{content:"";position:absolute;bottom:-100px;left:-100px;width:300px;height:300px;background:radial-gradient(circle,rgba(122,158,126,.15),transparent 70%);pointer-events:none}
+.final-cta h2{font-family:"Playfair Display",serif;font-size:32px;font-weight:900;color:white;letter-spacing:-1px;line-height:1.15;margin-bottom:14px;position:relative;z-index:1}
+.final-cta h2 em{color:var(--a);font-style:italic}
+.final-cta p{font-size:15px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:32px;position:relative;z-index:1}
+.cta-big{display:inline-flex;align-items:center;gap:10px;padding:18px 40px;border-radius:100px;background:linear-gradient(135deg,var(--t),var(--tl));color:white;font-family:"DM Sans",sans-serif;font-size:17px;font-weight:700;text-decoration:none;box-shadow:0 8px 32px rgba(196,98,45,.4);position:relative;z-index:1;-webkit-tap-highlight-color:transparent}
+.cta-big:active{transform:scale(.97)}
+.footer-note{font-size:12px;color:rgba(255,255,255,.3);margin-top:20px;position:relative;z-index:1}
+
+/* ── FOOTER ── */
+footer{padding:24px;text-align:center;background:var(--n);border-top:1px solid rgba(255,255,255,.07)}
+.footer-logo{font-family:"Playfair Display",serif;font-size:20px;font-weight:900;color:white;margin-bottom:6px}
+.footer-logo span{color:var(--t)}
+.footer-sub{font-size:12px;color:rgba(255,255,255,.3)}
+
+:root{--l:#8A96A8}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="nearby-landing.html" class="logo-mark">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="white"/>
+        <circle cx="12" cy="9" r="2.5" fill="#E8A838"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">Near<span>by</span></div>
+      <div class="logo-sub">Nigeria</div>
+    </div>
+  </a>
+  <div class="nav-actions">
+    <a href="nearby-auth.html" class="btn-login">Sign In</a>
+    <a href="nearby-auth.html" class="btn-join">Join Free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"><div class="hero-badge-dot"></div>Now Live in Lagos &amp; Abuja</div>
+  <h1>The neighborhood<em><span class="line2">that actually</span><span class="line2">knows you.</span></em></h1>
+  <p class="hero-sub">Nearby is <b>Nigeria's local community platform</b> — connecting neighbors, local jobs, and real conversations in your area.</p>
+  <div class="hero-cta">
+    <a href="nearby-auth.html" class="cta-primary">🏡 Join Your Neighborhood</a>
+    <a href="nearby-feed.html" class="cta-secondary">👀 See What's Happening</a>
+  </div>
+
+  <!-- PHONE MOCKUP -->
+  <div class="phone-wrap">
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="phone-ui">
+          <div class="p-topbar">
+            <div class="p-logo">Near<span>by</span></div>
+            <div class="p-icons">
+              <div class="p-icon">🔔</div>
+              <div class="p-icon">💬</div>
+              <div class="p-icon">👤</div>
+            </div>
+          </div>
+          <div class="p-locbar">📍 <b>Lekki Phase 1</b> <span style="margin-left:auto;background:rgba(122,158,126,.12);padding:2px 8px;border-radius:100px;color:#7A9E7E;font-weight:700">🏆 72</span></div>
+          <div class="p-livebar"><div class="p-ldot"></div>Live · updates in real time</div>
+          <div class="p-card">
+            <div class="p-card-h">
+              <div class="p-av" style="background:#C4622D">AO</div>
+              <div>
+                <div class="p-name">Amaka O. <span class="p-badge">Star</span></div>
+                <div class="p-loc">📍 Lekki Phase 1 · 2m ago</div>
+              </div>
+            </div>
+            <div class="p-txt">Anyone know a good electrician in the area? Need someone reliable 🙏</div>
+            <div class="p-actions">
+              <span class="p-action">❤️ 12</span>
+              <span class="p-action">💬 8</span>
+              <span class="p-action">📲 Share</span>
+            </div>
+          </div>
+          <div class="p-card">
+            <div class="p-card-h">
+              <div class="p-av" style="background:#7A9E7E">KB</div>
+              <div>
+                <div class="p-name">Konga Store <span class="p-badge" style="background:rgba(122,158,126,.2);color:#7A9E7E">💼 Job</span></div>
+                <div class="p-loc">📍 Ikeja · 1h ago</div>
+              </div>
+            </div>
+            <div class="p-txt">Hiring: Sales Assistant · ₦80k/mo · Apply via WhatsApp</div>
+          </div>
+          <div class="p-bnav">
+            <div class="p-bni on"><div class="p-bni-i">🏡</div>Home</div>
+            <div class="p-bni"><div class="p-bni-i">🆕</div>New</div>
+            <div class="p-bni"><div class="p-bni-i">💼</div>Jobs</div>
+            <div class="p-bni"><div class="p-bni-i">👤</div>Me</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-n"><span>2</span>+</div><div class="stat-l">Users & Growing</div></div>
+  <div class="stat"><div class="stat-n"><span>36</span></div><div class="stat-l">Nigerian States</div></div>
+  <div class="stat"><div class="stat-n"><span>0</span>₦</div><div class="stat-l">Free to Join</div></div>
+</div>
+
+<!-- FEATURES -->
+<div class="features">
+  <div class="section-tag">What Nearby Does</div>
+  <div class="section-title">Everything your neighborhood <em>needs</em></div>
+  <div class="feat-list">
+    <div class="feat">
+      <div class="feat-icon fi1">🏡</div>
+      <div class="feat-content">
+        <h3>Neighborhood Feed</h3>
+        <p>Real-time posts, alerts, events and conversations from people in your exact area. Photos and videos welcome.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon fi2">💼</div>
+      <div class="feat-content">
+        <h3>Local Jobs Board</h3>
+        <p>Find work close to home. Businesses post jobs, residents apply directly via WhatsApp. No middleman.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon fi3">💬</div>
+      <div class="feat-content">
+        <h3>Private Messaging</h3>
+        <p>End-to-end encrypted DMs with any neighbor. Real conversations, real connections.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon fi4">🏆</div>
+      <div class="feat-content">
+        <h3>Ambassador System</h3>
+        <p>Earn reputation points by helping neighbors. Rise from Neighbor → Star → Ambassador → Legend.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon fi5">📲</div>
+      <div class="feat-content">
+        <h3>WhatsApp Sharing</h3>
+        <p>Share any post or job directly to WhatsApp with one tap. Grow your community organically.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEIGHBORHOODS -->
+<div class="nbs-section">
+  <div class="nbs-title">Your city. Your neighborhood.</div>
+  <div class="nbs-sub">Join neighbors across Nigeria — any state, any area.</div>
+  <div class="nb-grid">
+    <div class="nb-card"><div class="nb-name">Lekki Phase 1</div><div class="nb-city">Lagos</div><div class="nb-score">🏆 72 score</div></div>
+    <div class="nb-card"><div class="nb-name">Wuse 2</div><div class="nb-city">Abuja</div><div class="nb-score">🏆 58 score</div></div>
+    <div class="nb-card"><div class="nb-name">GRA</div><div class="nb-city">Port Harcourt</div><div class="nb-score">🏆 44 score</div></div>
+    <div class="nb-card"><div class="nb-name">Bodija</div><div class="nb-city">Ibadan</div><div class="nb-score">🏆 38 score</div></div>
+  </div>
+  <p style="font-size:13px;color:rgba(255,255,255,.4);text-align:center">+ 36 states, 375 neighborhoods across Nigeria</p>
+</div>
+
+<!-- AMBASSADOR BADGES -->
+<div class="amb-section">
+  <div class="section-tag">Reputation System</div>
+  <div class="section-title">Earn your <em>badge</em></div>
+  <p style="font-size:14px;color:#5A6478;line-height:1.6;margin-bottom:0">Post, welcome newcomers, share jobs — earn rep points and unlock ambassador status.</p>
+  <div class="amb-badges">
+    <div class="amb-badge ab1"><div class="amb-icon">🏡</div><div class="amb-name">Neighbor</div><div class="amb-pts">0 pts</div></div>
+    <div class="amb-badge ab2"><div class="amb-icon">⭐</div><div class="amb-name">Star</div><div class="amb-pts">400 pts</div></div>
+    <div class="amb-badge ab3"><div class="amb-icon">🏆</div><div class="amb-name">Ambassador</div><div class="amb-pts">700 pts</div></div>
+    <div class="amb-badge ab4"><div class="amb-icon">👑</div><div class="amb-name">Legend</div><div class="amb-pts">1000 pts</div></div>
+  </div>
+</div>
+
+<!-- FINAL CTA -->
+<div class="final-cta">
+  <h2>Ready to meet your<em><br/>real neighbors?</em></h2>
+  <p>Join Nearby for free. No ads. No spam. Just real community — starting with your street.</p>
+  <a href="nearby-auth.html" class="cta-big">🏡 Join Nearby Free</a>
+  <div class="footer-note">Available anywhere in Nigeria · Free forever for residents</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Near<span>by</span></div>
+  <div class="footer-sub">The neighborhood that actually knows you · Nigeria</div>
+</footer>
+
+</body>
+</html>
