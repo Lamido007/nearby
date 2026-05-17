@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Verify — Nearby</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --cream:#F5F0E8;--warm-white:#FDFAF4;--terracotta:#C4622D;
+  --terracotta-light:#E07A4A;--navy:#1A2332;--sage:#7A9E7E;
+  --amber:#E8A838;--mid:#4A5568;--light:#8A96A8;
+}
+body{background:var(--cream);font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:80px;}
+.header{background:var(--navy);padding:16px 16px 20px;}
+.header-inner{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:12px;}
+.back-btn{background:none;border:none;color:rgba(255,255,255,.7);font-size:22px;cursor:pointer;}
+.page-title{font-family:'Playfair Display',serif;font-size:22px;color:#fff;font-weight:700;}
+
+.content{max-width:480px;margin:0 auto;padding:16px;}
+
+/* SCORE BAR */
+.score-card{background:var(--navy);border-radius:16px;padding:16px;margin-bottom:16px;text-align:center;}
+.score-title{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:6px;}
+.score-val{font-size:36px;font-weight:700;color:#fff;font-family:'Playfair Display',serif;}
+.score-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
+.score-bar-row{display:flex;gap:6px;margin-top:12px;}
+.score-seg{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.15);}
+.score-seg.done{background:var(--terracotta-light);}
+
+/* VERIFY CARD */
+.verify-card{background:var(--warm-white);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid rgba(0,0,0,.07);}
+.verify-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.verify-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.verify-info{flex:1;}
+.verify-name{font-size:15px;font-weight:700;color:var(--navy);}
+.verify-pts{font-size:12px;color:var(--terracotta);font-weight:600;}
+.verify-badge{font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;}
+.badge-done{background:#E8F4EE;color:#3A7D5A;}
+.badge-pending{background:#FFF8E1;color:#B8860B;}
+.badge-none{background:var(--cream);color:var(--light);}
+
+.verify-desc{font-size:13px;color:var(--mid);line-height:1.5;margin-bottom:14px;}
+
+.verify-btn{
+  width:100%;background:var(--terracotta);color:#fff;border:none;border-radius:12px;
+  padding:12px;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;
+}
+.verify-btn:active{background:var(--terracotta-light);}
+.verify-btn.done{background:var(--sage);}
+.verify-btn.pending{background:var(--amber);}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--warm-white);border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-width:480px;}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--light);margin-bottom:16px;}
+.modal-close{float:right;background:none;border:none;font-size:22px;color:var(--light);cursor:pointer;margin-top:-4px;}
+
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:700;color:var(--mid);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.05em;}
+.form-input{width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.1);border-radius:12px;
+  padding:11px 14px;font-size:14px;color:var(--navy);outline:none;font-family:'DM Sans',sans-serif;}
+.form-input:focus{border-color:var(--terracotta);}
+
+.gps-btn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;
+  padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;}
+.submit-btn{width:100%;background:var(--terracotta);color:#fff;border:none;border-radius:12px;
+  padding:13px;font-size:14px;font-weight:700;cursor:pointer;}
+
+.upload-box{
+  border:2px dashed rgba(196,98,45,.3);border-radius:12px;padding:20px;
+  text-align:center;cursor:pointer;background:rgba(196,98,45,.04);
+}
+.upload-box:active{background:rgba(196,98,45,.08);}
+.upload-label{font-size:13px;font-weight:600;color:var(--terracotta);}
+.upload-sub{font-size:11px;color:var(--light);margin-top:4px;}
+.upload-preview{width:100%;max-height:160px;object-fit:cover;border-radius:10px;margin-top:10px;display:none;}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--navy);color:#fff;padding:10px 20px;border-radius:20px;
+  font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:2000;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--navy);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px;color:rgba(255,255,255,0.5);font-size:10px;font-weight:600;cursor:pointer;text-decoration:none;gap:3px;}
+.nav-item.active{color:var(--terracotta-light);}
+.nav-icon{font-size:20px;line-height:1;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="page-title">Get Verified</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- SCORE -->
+  <div class="score-card">
+    <div class="score-title">Nearby Score</div>
+    <div class="score-val" id="nearbyScore">—</div>
+    <div class="score-sub">reputation points</div>
+    <div class="score-bar-row">
+      <div class="score-seg" id="seg1"></div>
+      <div class="score-seg" id="seg2"></div>
+      <div class="score-seg" id="seg3"></div>
+    </div>
+  </div>
+
+  <!-- LOCATION -->
+  <div class="verify-card">
+    <div class="verify-header">
+      <div class="verify-icon" style="background:#FEF3E8;">📍</div>
+      <div class="verify-info">
+        <div class="verify-name">Location Verification</div>
+        <div class="verify-pts">+50 rep points</div>
+      </div>
+      <span class="verify-badge" id="locBadge">Not done</span>
+    </div>
+    <div class="verify-desc">Confirm you actually live in your neighborhood using GPS. This makes you a trusted local voice and unlocks community features.</div>
+    <button class="verify-btn" id="locBtn" onclick="openLocationModal()">📍 Verify My Location</button>
+  </div>
+
+  <!-- IDENTITY -->
+  <div class="verify-card">
+    <div class="verify-header">
+      <div class="verify-icon" style="background:#E8F4EE;">🪪</div>
+      <div class="verify-info">
+        <div class="verify-name">Identity Verification</div>
+        <div class="verify-pts">+100 rep points</div>
+      </div>
+      <span class="verify-badge" id="idBadge">Not done</span>
+    </div>
+    <div class="verify-desc">Upload a selfie + any valid ID (NIN, Voter card, Driver's licence, or Passport). Admin review takes 24–48 hours. Your data is kept private.</div>
+    <button class="verify-btn" id="idBtn" onclick="openIdentityModal()">🪪 Verify Identity</button>
+  </div>
+
+  <!-- PHONE -->
+  <div class="verify-card">
+    <div class="verify-header">
+      <div class="verify-icon" style="background:#EEF2FF;">📱</div>
+      <div class="verify-info">
+        <div class="verify-name">Phone Verification</div>
+        <div class="verify-pts">+30 rep points</div>
+      </div>
+      <span class="verify-badge" id="phoneBadge">Not done</span>
+    </div>
+    <div class="verify-desc">Link your WhatsApp number to your Nearby profile. Helps neighbors reach you and confirms you're a real person.</div>
+    <button class="verify-btn" id="phoneBtn" onclick="openPhoneModal()">📱 Verify Phone</button>
+  </div>
+
+</div>
+
+<!-- ── LOCATION MODAL ──────────────────────────────────── -->
+<div class="modal-overlay" id="locationModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('locationModal')">✕</button>
+    <div class="modal-title">📍 Location Verification</div>
+    <div class="modal-sub">We'll use your GPS to confirm your neighborhood</div>
+    <div class="form-group">
+      <label class="form-label">Detected location</label>
+      <input class="form-input" id="locAddress" placeholder="Tap GPS button to detect…" readonly>
+    </div>
+    <button class="gps-btn" onclick="detectGPS()">🛰️ Detect My Location</button>
+    <button class="submit-btn" id="locSubmitBtn" onclick="submitLocation()" style="display:none;">Submit for Verification</button>
+  </div>
+</div>
+
+<!-- ── IDENTITY MODAL ──────────────────────────────────── -->
+<div class="modal-overlay" id="identityModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('identityModal')">✕</button>
+    <div class="modal-title">🪪 Identity Verification</div>
+    <div class="modal-sub">Upload selfie + government ID. Admin reviews within 48 hours.</div>
+    <div class="form-group">
+      <label class="form-label">Selfie</label>
+      <div class="upload-box" onclick="document.getElementById('selfieInput').click()">
+        <div class="upload-label">📷 Take or upload selfie</div>
+        <div class="upload-sub">Clear face photo, good lighting</div>
+        <img class="upload-preview" id="selfiePreview">
+      </div>
+      <input type="file" id="selfieInput" accept="image/*" capture="user" style="display:none" onchange="previewFile('selfieInput','selfiePreview')">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ID Type</label>
+      <select class="form-input" id="idType">
+        <option value="">Select ID type…</option>
+        <option value="nin">NIN Slip</option>
+        <option value="voters">Voter's Card</option>
+        <option value="drivers">Driver's Licence</option>
+        <option value="passport">International Passport</option>
+        <option value="other">Other Government ID</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ID Photo</label>
+      <div class="upload-box" onclick="document.getElementById('idInput').click()">
+        <div class="upload-label">📄 Upload ID document</div>
+        <div class="upload-sub">Front of the ID card</div>
+        <img class="upload-preview" id="idPreview">
+      </div>
+      <input type="file" id="idInput" accept="image/*" style="display:none" onchange="previewFile('idInput','idPreview')">
+    </div>
+    <button class="submit-btn" onclick="submitIdentity()">Submit for Review</button>
+  </div>
+</div>
+
+<!-- ── PHONE MODAL ─────────────────────────────────────── -->
+<div class="modal-overlay" id="phoneModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('phoneModal')">✕</button>
+    <div class="modal-title">📱 Phone Verification</div>
+    <div class="modal-sub">Link your WhatsApp number to your Nearby profile</div>
+    <div class="form-group">
+      <label class="form-label">WhatsApp Number</label>
+      <input class="form-input" id="phoneInput" type="tel" placeholder="+234 800 000 0000">
+    </div>
+    <button class="submit-btn" onclick="submitPhone()">Link WhatsApp Number</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="nearby-feed.html"><span class="nav-icon">🏠</span>Home</a>
+  <a class="nav-item" href="nearby-search.html"><span class="nav-icon">🔍</span>Search</a>
+  <a class="nav-item" href="nearby-jobs.html"><span class="nav-icon">💼</span>Jobs</a>
+  <a class="nav-item" href="nearby-messages.html"><span class="nav-icon">💬</span>Messages</a>
+  <a class="nav-item active" href="nearby-settings.html"><span class="nav-icon">⚙️</span>Settings</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+var currentUser = null;
+var detectedLat = null;
+var detectedLng = null;
+
+async function init() {
+  var session = await getSession();
+  if (!session) { window.location.href = 'nearby-auth.html'; return; }
+  currentUser = await getCurrentUser();
+  if (currentUser) {
+    document.getElementById('nearbyScore').textContent = currentUser.rep_points || 0;
+    updateBadges(currentUser);
+  }
+}
+
+function updateBadges(user) {
+  setBadge('locBadge', 'locBtn', user.location_verified, user.verification_status === 'pending' && !user.location_verified);
+  setBadge('idBadge', 'idBtn', user.identity_verified, user.verification_status === 'pending' && !user.identity_verified);
+  setBadge('phoneBadge', 'phoneBtn', user.phone_verified, false);
+
+  var done = [user.location_verified, user.identity_verified, user.phone_verified];
+  for (var i = 0; i < 3; i++) {
+    if (done[i]) document.getElementById('seg' + (i+1)).classList.add('done');
+  }
+}
+
+function setBadge(badgeId, btnId, isDone, isPending) {
+  var badge = document.getElementById(badgeId);
+  var btn = document.getElementById(btnId);
+  if (isDone) {
+    badge.textContent = '✅ Verified';
+    badge.className = 'verify-badge badge-done';
+    btn.textContent = 'Verified ✓';
+    btn.className = 'verify-btn done';
+    btn.disabled = true;
+  } else if (isPending) {
+    badge.textContent = '⏳ Pending';
+    badge.className = 'verify-badge badge-pending';
+    btn.textContent = 'Under Review…';
+    btn.className = 'verify-btn pending';
+    btn.disabled = true;
+  } else {
+    badge.textContent = 'Not done';
+    badge.className = 'verify-badge badge-none';
+  }
+}
+
+// ── MODALS ──────────────────────────────────────────────────
+function openLocationModal() { document.getElementById('locationModal').classList.add('open'); }
+function openIdentityModal() { document.getElementById('identityModal').classList.add('open'); }
+function openPhoneModal()    { document.getElementById('phoneModal').classList.add('open'); }
+function closeModal(id)      { document.getElementById(id).classList.remove('open'); }
+
+// ── GPS DETECT ───────────────────────────────────────────────
+function detectGPS() {
+  document.getElementById('locAddress').value = 'Detecting…';
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    detectedLat = pos.coords.latitude;
+    detectedLng = pos.coords.longitude;
+    document.getElementById('locAddress').value = detectedLat.toFixed(5) + ', ' + detectedLng.toFixed(5) + ' (GPS confirmed)';
+    document.getElementById('locSubmitBtn').style.display = 'block';
+  }, function() {
+    document.getElementById('locAddress').value = '';
+    showToast('Could not get location. Check browser permissions.');
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+// ── SUBMIT LOCATION ──────────────────────────────────────────
+async function submitLocation() {
+  if (!detectedLat) { showToast('Please detect location first'); return; }
+  showToast('Submitting…');
+  try {
+    await sb.from('verification_requests').insert({
+      user_id: currentUser.id,
+      type: 'location',
+      status: 'pending',
+      latitude: detectedLat,
+      longitude: detectedLng,
+      neighborhood: currentUser.neighborhood
+    });
+    // Auto-approve location (GPS is self-verifying)
+    await sb.from('users').update({
+      location_verified: true,
+      latitude: detectedLat,
+      longitude: detectedLng,
+      verification_status: 'approved'
+    }).eq('id', currentUser.id);
+    await addRepPoints(currentUser.id, 50);
+    closeModal('locationModal');
+    showToast('✅ Location verified! +50 pts');
+    currentUser.location_verified = true;
+    updateBadges(currentUser);
+    document.getElementById('nearbyScore').textContent = (parseInt(document.getElementById('nearbyScore').textContent) || 0) + 50;
+  } catch(e) {
+    showToast('Error: ' + (e.message || 'Try again'));
+  }
+}
+
+// ── FILE PREVIEW ─────────────────────────────────────────────
+function previewFile(inputId, previewId) {
+  var file = document.getElementById(inputId).files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById(previewId);
+    img.src = e.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── SUBMIT IDENTITY ──────────────────────────────────────────
+async function submitIdentity() {
+  var selfieFile = document.getElementById('selfieInput').files[0];
+  var idFile = document.getElementById('idInput').files[0];
+  var idType = document.getElementById('idType').value;
+  if (!selfieFile || !idFile || !idType) { showToast('Please fill all fields'); return; }
+  showToast('Uploading documents…');
+  try {
+    var selfieUrl = '', idUrl = '';
+    // Upload selfie
+    var selfieExt = selfieFile.name.split('.').pop();
+    var selfiePath = 'verify/' + currentUser.id + '/selfie.' + selfieExt;
+    var s1 = await sb.storage.from('avatars').upload(selfiePath, selfieFile, { upsert: true });
+    if (s1.data) selfieUrl = sb.storage.from('avatars').getPublicUrl(selfiePath).data.publicUrl;
+    // Upload ID
+    var idExt = idFile.name.split('.').pop();
+    var idPath = 'verify/' + currentUser.id + '/id.' + idExt;
+    var s2 = await sb.storage.from('avatars').upload(idPath, idFile, { upsert: true });
+    if (s2.data) idUrl = sb.storage.from('avatars').getPublicUrl(idPath).data.publicUrl;
+
+    await sb.from('verification_requests').insert({
+      user_id: currentUser.id,
+      type: 'identity',
+      status: 'pending',
+      selfie_url: selfieUrl,
+      id_url: idUrl,
+      id_type: idType
+    });
+    await sb.from('users').update({ verification_status: 'pending' }).eq('id', currentUser.id);
+    closeModal('identityModal');
+    showToast('📬 Submitted! Admin reviews in 48hrs');
+  } catch(e) {
+    showToast('Error: ' + (e.message || 'Try again'));
+  }
+}
+
+// ── SUBMIT PHONE ─────────────────────────────────────────────
+async function submitPhone() {
+  var phone = document.getElementById('phoneInput').value.trim();
+  if (!phone) { showToast('Enter your WhatsApp number'); return; }
+  showToast('Saving…');
+  try {
+    await sb.from('verification_requests').insert({
+      user_id: currentUser.id,
+      type: 'phone',
+      status: 'approved',
+      phone: phone
+    });
+    await sb.from('users').update({ phone_number: phone, phone_verified: true }).eq('id', currentUser.id);
+    await addRepPoints(currentUser.id, 30);
+    closeModal('phoneModal');
+    showToast('✅ Phone verified! +30 pts');
+    currentUser.phone_verified = true;
+    updateBadges(currentUser);
+    document.getElementById('nearbyScore').textContent = (parseInt(document.getElementById('nearbyScore').textContent) || 0) + 30;
+  } catch(e) {
+    showToast('Error: ' + (e.message || 'Try again'));
+  }
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2800);
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(function(m) {
+  m.addEventListener('click', function(e) { if (e.target === m) m.classList.remove('open'); });
+});
+
+init();
+</script>
+</body>
+</html>
