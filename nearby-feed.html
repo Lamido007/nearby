@@ -587,6 +587,106 @@ init();
 </script>
   <script src="nearby-distance.js"></script>
 <script src="nearby-push.js"></script>
-<script src="nearby-feed-patch.js"></script>
+<script src="nearby-feed-patch.js"></script>no 
+<style id="light-widget-styles">
+.light-widget{
+  background:var(--warm-white, #FDFAF4);border-radius:14px;
+  padding:12px 14px;margin:0 16px 12px;
+  border:1.5px solid rgba(0,0,0,.08);cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  max-width:448px;margin-left:auto;margin-right:auto;
+  transition:all .2s;
+}
+.light-widget:active{transform:scale(.98);}
+.lw-indicator{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.lw-on{background:#F0FDF4;}
+.lw-off{background:#FEF2F2;}
+.lw-flicker{background:#FFFBEB;}
+.lw-unknown{background:var(--cream, #F5F0E8);}
+.lw-body{flex:1;}
+.lw-status{font-size:13px;font-weight:700;color:#1A2332;}
+.lw-meta{font-size:11px;color:#8A96A8;margin-top:1px;}
+.lw-arrow{font-size:16px;color:#8A96A8;}
+.lw-dot{width:7px;height:7px;border-radius:50%;animation:lw-pulse 1.5s infinite;flex-shrink:0;}
+.lw-dot-on{background:#22C55E;}
+.lw-dot-off{background:#EF4444;}
+.lw-dot-flicker{background:#F59E0B;}
+.lw-dot-unknown{background:#D1D5DB;animation:none;}
+@keyframes lw-pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+</style>
+
+<!-- PASTE THIS HTML WHERE YOU WANT THE WIDGET TO APPEAR IN THE FEED -->
+<div class="light-widget lw-unknown" id="lightWidget" onclick="window.location.href='nearby-light.html'">
+  <div class="lw-indicator lw-unknown" id="lwIndicator">❓</div>
+  <div class="lw-body">
+    <div class="lw-status" id="lwStatus">Checking light status…</div>
+    <div class="lw-meta" id="lwMeta">Tap to report or view details</div>
+  </div>
+  <div class="lw-dot lw-dot-unknown" id="lwDot"></div>
+  <div class="lw-arrow">›</div>
+</div>
+
+<!-- PASTE THIS SCRIPT AT THE BOTTOM, INSIDE YOUR EXISTING <script> BLOCK
+     (add it after your existing code, before the closing </script>) -->
+<script id="light-widget-script">
+(function() {
+  async function loadLightWidget() {
+    try {
+      var user = await getCurrentUser();
+      if (!user || !user.neighborhood) return;
+
+      var res = await sb.from('light_status')
+        .select('status,updated_at,confirmations,reporter_name')
+        .eq('neighborhood', user.neighborhood)
+        .single();
+
+      var widget  = document.getElementById('lightWidget');
+      var indic   = document.getElementById('lwIndicator');
+      var status  = document.getElementById('lwStatus');
+      var meta    = document.getElementById('lwMeta');
+      var dot     = document.getElementById('lwDot');
+
+      if (!res.data) {
+        status.textContent = '⚡ ' + user.neighborhood + ' — No reports yet';
+        meta.textContent = 'Tap to be the first to report!';
+        return;
+      }
+
+      var d = res.data;
+      var map = {
+        on:          { icon:'💡', label:'Light is ON',   wClass:'lw-on',      dotClass:'lw-dot-on' },
+        off:         { icon:'🌑', label:'Light is OFF',  wClass:'lw-off',     dotClass:'lw-dot-off' },
+        fluctuating: { icon:'⚡', label:'Flickering',    wClass:'lw-flicker', dotClass:'lw-dot-flicker' },
+        unknown:     { icon:'❓', label:'Status unknown',wClass:'lw-unknown', dotClass:'lw-dot-unknown' }
+      };
+      var m = map[d.status] || map.unknown;
+
+      widget.className  = 'light-widget ' + m.wClass;
+      indic.className   = 'lw-indicator ' + m.wClass;
+      indic.textContent = m.icon;
+      status.textContent = '⚡ ' + user.neighborhood + ' — ' + m.label;
+      dot.className = 'lw-dot ' + m.dotClass;
+
+      var ago = '';
+      if (d.updated_at) {
+        var diff = Math.floor((Date.now() - new Date(d.updated_at).getTime()) / 1000);
+        ago = diff < 60 ? 'just now' : diff < 3600 ? Math.floor(diff/60) + 'm ago' : Math.floor(diff/3600) + 'h ago';
+      }
+      meta.textContent = 'Updated ' + ago + (d.confirmations ? ' · ' + d.confirmations + ' confirmed' : '') + ' · Tap to update';
+
+    } catch(e) {
+      console.log('Light widget error:', e);
+    }
+  }
+
+  // Load after feed initializes
+  setTimeout(loadLightWidget, 800);
+})();
+</script>
+
 </body>
 </html>
