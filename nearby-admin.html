@@ -64,6 +64,68 @@ body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);width:10
 .usearch{width:100%;padding:11px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;font-family:"DM Sans",sans-serif;font-size:14px;outline:none;margin-bottom:12px;background:var(--w)}
 .usearch:focus{border-color:var(--t)}
 </style>
+  <style id="admin-reports-css">
+.rpt-filter-btn{
+  background:#F5F0E8;border:none;border-radius:20px;padding:7px 14px;
+  font-size:12px;font-weight:600;color:#4A5568;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;
+}
+.rpt-filter-btn.active{background:#1A2332;color:#fff;}
+
+.report-card{
+  background:#FDFAF4;border-radius:14px;padding:14px;margin-bottom:10px;
+  border:1px solid rgba(0,0,0,.07);border-left:4px solid #EF4444;
+}
+.report-card.status-dismissed{border-left-color:#D1D5DB;opacity:.7;}
+.report-card.status-actioned{border-left-color:#22C55E;}
+
+.rc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.rc-reason-badge{
+  font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;
+  background:#FEE2E2;color:#DC2626;flex-shrink:0;
+}
+.rc-reason-badge.spam{background:#FEF3E8;color:#C4622D;}
+.rc-reason-badge.fake_news{background:#FFF8E1;color:#B8860B;}
+.rc-reason-badge.harassment{background:#FEE2E2;color:#DC2626;}
+.rc-reason-badge.scam{background:#FEE2E2;color:#DC2626;}
+.rc-reason-badge.inappropriate{background:#F3E8FF;color:#7C3AED;}
+.rc-reason-badge.violence{background:#FEE2E2;color:#DC2626;}
+.rc-reason-badge.hate_speech{background:#FEE2E2;color:#DC2626;}
+.rc-reason-badge.other{background:#F5F0E8;color:#4A5568;}
+
+.rc-meta{flex:1;font-size:12px;color:#8A96A8;}
+.rc-time{font-size:11px;color:#8A96A8;flex-shrink:0;}
+
+.rc-post-preview{
+  background:#F5F0E8;border-radius:10px;padding:10px 12px;
+  font-size:13px;color:#1A2332;margin-bottom:10px;
+  border-left:3px solid rgba(196,98,45,.3);
+}
+.rc-post-author{font-size:11px;color:#8A96A8;margin-bottom:4px;}
+.rc-post-content{font-size:13px;color:#1A2332;}
+.rc-post-count{font-size:11px;color:#DC2626;font-weight:600;margin-top:4px;}
+
+.rc-details{font-size:12px;color:#4A5568;font-style:italic;
+  margin-bottom:10px;padding:8px 10px;background:rgba(0,0,0,.04);border-radius:8px;}
+
+.rc-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.rc-action-btn{
+  flex:1;min-width:0;border:none;border-radius:10px;padding:9px 6px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;text-align:center;
+}
+.rc-action-btn:active{transform:scale(.97);}
+.btn-dismiss{background:#F5F0E8;color:#4A5568;}
+.btn-remove{background:#FEE2E2;color:#DC2626;}
+.btn-warn{background:#FFF8E1;color:#B8860B;}
+.btn-ban{background:#1A2332;color:#fff;}
+.btn-done{background:#F0FDF4;color:#16A34A;cursor:default;}
+
+.rc-admin-note{
+  font-size:11px;color:#7A9E7E;margin-top:8px;
+  display:flex;align-items:center;gap:4px;
+}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -91,7 +153,17 @@ body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);width:10
     <button class="tab" onclick="show('reports',this)">🚩 Reports</button>
     <button class="tab" onclick="show('broadcast',this)">📢 Broadcast</button>
   </div>
-
+<button class="admin-tab" id="tabReports"
+  onclick="switchAdminTab('reports')"
+  style="position:relative;">
+  🚨 Reports
+  <span id="reportsBadge" style="
+    display:none;position:absolute;top:4px;right:4px;
+    background:#EF4444;color:#fff;font-size:10px;font-weight:700;
+    width:16px;height:16px;border-radius:50%;
+    align-items:center;justify-content:center;
+  ">0</span>
+</button>
   <div class="content">
 
     <div class="panel on" id="panel-overview">
@@ -142,7 +214,39 @@ body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);width:10
 </div>
 
 </div><!-- /wrap -->
+<div id="panelReports" style="display:none;">
 
+  <!-- FILTER ROW -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+    <button class="rpt-filter-btn active" onclick="filterReports('pending',this)">⏳ Pending</button>
+    <button class="rpt-filter-btn" onclick="filterReports('actioned',this)">✅ Actioned</button>
+    <button class="rpt-filter-btn" onclick="filterReports('dismissed',this)">🗑️ Dismissed</button>
+    <button class="rpt-filter-btn" onclick="filterReports('all',this)">📋 All</button>
+  </div>
+
+  <!-- STATS ROW -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+    <div style="background:#FEF2F2;border-radius:12px;padding:12px;text-align:center;">
+      <div style="font-size:22px;font-weight:700;color:#DC2626;" id="statPending">—</div>
+      <div style="font-size:11px;color:#8A96A8;">Pending</div>
+    </div>
+    <div style="background:#F0FDF4;border-radius:12px;padding:12px;text-align:center;">
+      <div style="font-size:22px;font-weight:700;color:#16A34A;" id="statActioned">—</div>
+      <div style="font-size:11px;color:#8A96A8;">Actioned</div>
+    </div>
+    <div style="background:#F5F0E8;border-radius:12px;padding:12px;text-align:center;">
+      <div style="font-size:22px;font-weight:700;color:#C4622D;" id="statTotal">—</div>
+      <div style="font-size:11px;color:#8A96A8;">Total</div>
+    </div>
+  </div>
+
+  <!-- REPORTS LIST -->
+  <div id="reportsList">
+    <div style="text-align:center;padding:40px;color:#8A96A8;">Loading reports…</div>
+  </div>
+
+</div>
+  
 <script>
 let me=null,allUsers=[]
 const COLS=['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6']
@@ -305,5 +409,186 @@ function toast(msg){const old=document.querySelector('.toast');if(old)old.remove
 
 init()
 </script>
+  script id="admin-reports-js">
+
+var currentReportFilter = 'pending';
+
+// Call this in your existing admin init / switchAdminTab function
+async function loadReports() {
+  var list = document.getElementById('reportsList');
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:#8A96A8;">Loading…</div>';
+
+  // Load stats
+  var allRes = await sb.from('post_reports').select('status');
+  if (allRes.data) {
+    var pending = allRes.data.filter(function(r){return r.status==='pending';}).length;
+    var actioned = allRes.data.filter(function(r){return r.status==='actioned';}).length;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statActioned').textContent = actioned;
+    document.getElementById('statTotal').textContent = allRes.data.length;
+
+    // Badge on tab
+    var badge = document.getElementById('reportsBadge');
+    if (pending > 0) {
+      badge.textContent = pending > 9 ? '9+' : pending;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // Load filtered list with post + user data
+  var query = sb.from('post_reports')
+    .select('*, posts(id,content,user_id,report_count,is_hidden,users(full_name,avatar_url))')
+    .order('created_at', { ascending: false });
+
+  if (currentReportFilter !== 'all') {
+    query = query.eq('status', currentReportFilter);
+  }
+  query = query.limit(50);
+
+  var res = await query;
+  if (!res.data || !res.data.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:#8A96A8;">No ' + currentReportFilter + ' reports</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < res.data.length; i++) {
+    html += renderReportCard(res.data[i]);
+  }
+  list.innerHTML = html;
+}
+
+function renderReportCard(r) {
+  var post = r.posts || {};
+  var postUser = post.users || {};
+  var isDone = r.status === 'actioned' || r.status === 'dismissed';
+
+  var reasonLabels = {
+    spam:'🗑️ Spam', fake_news:'📰 Fake News', harassment:'😡 Harassment',
+    scam:'💸 Scam', inappropriate:'🔞 Inappropriate', violence:'⚠️ Violence',
+    hate_speech:'🚫 Hate Speech', other:'❓ Other'
+  };
+
+  var timeAgoStr = '';
+  if (r.created_at) {
+    var diff = Math.floor((Date.now() - new Date(r.created_at).getTime()) / 1000);
+    timeAgoStr = diff < 60 ? 'just now' : diff < 3600 ? Math.floor(diff/60)+'m ago' : diff < 86400 ? Math.floor(diff/3600)+'h ago' : Math.floor(diff/86400)+'d ago';
+  }
+
+  var statusClass = 'status-' + r.status;
+  var actionsHtml = '';
+
+  if (!isDone) {
+    actionsHtml = '<div class="rc-actions">'
+      + '<button class="rc-action-btn btn-dismiss" onclick="adminAction(\'' + r.id + '\',\'dismiss\')">🗑️ Dismiss</button>'
+      + '<button class="rc-action-btn btn-remove" onclick="adminAction(\'' + r.id + '\',\'remove_post\')">🗑 Remove Post</button>'
+      + '<button class="rc-action-btn btn-warn" onclick="adminAction(\'' + r.id + '\',\'warn_user\')">⚠️ Warn User</button>'
+      + '<button class="rc-action-btn btn-ban" onclick="adminAction(\'' + r.id + '\',\'ban_user\')">🔨 Ban</button>'
+      + '</div>';
+  } else {
+    var doneLabel = r.status === 'dismissed' ? '🗑️ Dismissed' : '✅ Actioned';
+    actionsHtml = '<div class="rc-actions"><div class="rc-action-btn btn-done">' + doneLabel + '</div></div>';
+    if (r.admin_note) {
+      actionsHtml += '<div class="rc-admin-note">📝 Admin note: ' + r.admin_note + '</div>';
+    }
+  }
+
+  return '<div class="report-card ' + statusClass + '">'
+    + '<div class="rc-header">'
+    + '<span class="rc-reason-badge ' + (r.reason||'other') + '">' + (reasonLabels[r.reason] || '❓ Other') + '</span>'
+    + '<div class="rc-meta">Reported by user</div>'
+    + '<div class="rc-time">' + timeAgoStr + '</div>'
+    + '</div>'
+    + '<div class="rc-post-preview">'
+    + '<div class="rc-post-author">Post by: ' + (postUser.full_name || 'Unknown') + (post.is_hidden ? ' · <span style="color:#DC2626">🚫 Hidden</span>' : '') + '</div>'
+    + '<div class="rc-post-content">' + truncateAdmin(post.content || 'Post content unavailable', 100) + '</div>'
+    + (post.report_count > 1 ? '<div class="rc-post-count">🚨 ' + post.report_count + ' total reports on this post</div>' : '')
+    + '</div>'
+    + (r.details ? '<div class="rc-details">"' + r.details + '"</div>' : '')
+    + actionsHtml
+    + '</div>';
+}
+
+function truncateAdmin(str, n) {
+  if (!str) return '';
+  return str.length > n ? str.slice(0, n) + '…' : str;
+}
+
+function filterReports(filter, el) {
+  currentReportFilter = filter;
+  document.querySelectorAll('.rpt-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  loadReports();
+}
+
+async function adminAction(reportId, action) {
+  var confirmMsgs = {
+    dismiss: 'Dismiss this report?',
+    remove_post: 'Remove this post? This hides it from the feed.',
+    warn_user: 'Send a warning to the post author?',
+    ban_user: 'BAN this user? This hides all their posts.'
+  };
+
+  if (!confirm(confirmMsgs[action] || 'Confirm action?')) return;
+
+  var note = null;
+  if (action === 'warn_user' || action === 'ban_user') {
+    note = prompt('Add an admin note (optional):');
+  }
+
+  try {
+    var session = await getSession();
+    await sb.rpc('admin_action_report', {
+      p_report_id: reportId,
+      p_action: action,
+      p_admin_id: session.user.id,
+      p_note: note
+    });
+    showAdminToast('✅ Action applied: ' + action.replace('_', ' '));
+    loadReports();
+  } catch(e) {
+    showAdminToast('Error: ' + (e.message || 'Try again'));
+  }
+}
+
+function showAdminToast(msg) {
+  var t = document.getElementById('toast') || document.getElementById('adminToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'adminToast';
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);' +
+      'background:#1A2332;color:#fff;padding:10px 20px;border-radius:20px;' +
+      'font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:9999;white-space:nowrap;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(function() { t.style.opacity = '0'; }, 3000);
+}
+
+// Add 'reports' case to your existing switchAdminTab function:
+// case 'reports': loadReports(); break;
+// Or call loadReports() directly when the tab is clicked.
+
+// Also load the reports badge count on admin init:
+// Add this to your existing admin init():
+// loadReportsBadge();
+async function loadReportsBadge() {
+  var res = await sb.from('post_reports')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pending');
+  var count = res.count || 0;
+  var badge = document.getElementById('reportsBadge');
+  if (badge && count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'flex';
+  }
+}
+
+setTimeout(loadReportsBadge, 1000);
+ </script>
 </body>
 </html>
