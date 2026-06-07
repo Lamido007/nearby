@@ -498,3 +498,26 @@ async function safeGetCurrentUser() {
   }
   return data
 }
+function showPageError(containerId, retryFn) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML =
+    '<div style="text-align:center;padding:40px 20px;">' +
+    '<div style="font-size:48px;margin-bottom:16px;">📡</div>' +
+    '<p style="color:#1A2332;font-family:DM Sans,sans-serif;font-size:16px;font-weight:600;margin-bottom:8px;">Couldn\'t load content</p>' +
+    '<p style="color:#666;font-family:DM Sans,sans-serif;font-size:14px;margin-bottom:24px;">Check your connection and try again</p>' +
+    '<button onclick="' + (retryFn || 'location.reload()') + '" ' +
+    'style="background:#C4622D;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Try Again</button>' +
+    '</div>';
+}
+
+function showLoadingState(containerId, message) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  var msg = message || 'Loading...';
+  container.innerHTML =
+    '<div style="text-align:center;padding:40px 20px;">' +
+    '<div style="width:32px;height:32px;border:3px solid #F5F0E8;border-top:3px solid #C4622D;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>' +
+    '<p style="color:#666;font-family:DM Sans,sans-serif;font-size:14px;">' + msg + '</p>' +
+    '</div>';
+}
