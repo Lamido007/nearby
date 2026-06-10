@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nearby — Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--cream:#F5F0E8;--tc:#C4622D;--navy:#1A2332;--sage:#7A9E7E;--amber:#E8A838;--mid:#4A5568;--light:#8A96A8;--white:#FDFAF4;--green:#38A169;--red:#E53E3E}
+body{font-family:'DM Sans',sans-serif;background:#EEE9DF;color:var(--navy);max-width:480px;margin:0 auto;min-height:100vh}
+.topnav{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--white);position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(0,0,0,.07)}
+.nav-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--navy)}
+.nav-title span{color:var(--tc);font-style:italic}
+.mark-all{font-size:12px;font-weight:600;color:var(--tc);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:6px 10px;border-radius:8px}
+.notifs{padding:8px 0 80px}
+.notif-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--white);border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;transition:background .15s;position:relative}
+.notif-item.unread{background:rgba(196,98,45,.04)}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc);border-radius:0 2px 2px 0}
+.notif-item:hover{background:var(--cream)}
+.notif-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.notif-body{flex:1;min-width:0}
+.notif-msg{font-size:14px;color:var(--navy);line-height:1.5;margin-bottom:4px}
+.notif-msg.unread-txt{font-weight:600}
+.notif-time{font-size:12px;color:var(--light)}
+.icon-welcome{background:rgba(122,158,126,.15)}
+.icon-badge{background:rgba(212,175,55,.15)}
+.icon-message{background:rgba(26,35,50,.08)}
+.icon-alert{background:rgba(229,62,62,.1)}
+.icon-announcement{background:rgba(196,98,45,.1)}
+.icon-like{background:rgba(196,98,45,.1)}
+.empty{text-align:center;padding:60px 20px}
+.empty .emoji{font-size:48px;margin-bottom:16px}
+.empty h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.empty p{font-size:14px;color:var(--mid);line-height:1.6}
+.sk-notif{display:flex;gap:12px;padding:14px 16px;background:var(--white);border-bottom:1px solid rgba(0,0,0,.05);animation:shimmer 1.5s ease infinite}
+.sk-icon{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.07);flex-shrink:0}
+.sk-body{flex:1}
+.sk-line{height:12px;border-radius:100px;background:rgba(0,0,0,.07);margin-bottom:6px}
+.sk-line.w80{width:80%}.sk-line.w50{width:50%}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+/* ERROR BOX */
+.err-box{text-align:center;padding:40px 20px}
+.err-icon{font-size:44px;margin-bottom:14px}
+.err-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px;font-family:'DM Sans',sans-serif}
+.err-sub{font-size:13px;color:var(--light);margin-bottom:20px;line-height:1.5;font-family:'DM Sans',sans-serif}
+.err-btn{background:var(--tc);color:white;border:none;border-radius:100px;padding:11px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--white);border-top:1px solid rgba(0,0,0,.08);display:flex;padding:10px 0 16px;z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:'DM Sans',sans-serif;text-decoration:none}
+.bni-i{font-size:22px}.bni-l{font-size:10px;font-weight:600;color:var(--light)}
+.bni.on .bni-l{color:var(--tc)}
+</style>
+</head>
+<body>
+<div class="topnav">
+  <div class="nav-title">Notifi<span>cations</span></div>
+  <button class="mark-all" onclick="markAllRead()">Mark all read</button>
+</div>
+
+<div class="notifs" id="notifs">
+  <div class="sk-notif"><div class="sk-icon"></div><div class="sk-body"><div class="sk-line w80"></div><div class="sk-line w50"></div></div></div>
+  <div class="sk-notif"><div class="sk-icon"></div><div class="sk-body"><div class="sk-line w80"></div><div class="sk-line w50"></div></div></div>
+  <div class="sk-notif"><div class="sk-icon"></div><div class="sk-body"><div class="sk-line w80"></div><div class="sk-line w50"></div></div></div>
+</div>
+
+<div class="bnav">
+  <a href="nearby-feed.html" class="bni"><div class="bni-i">🏡</div><div class="bni-l">Home</div></a>
+  <a href="nearby-arrivals.html" class="bni"><div class="bni-i">🆕</div><div class="bni-l">Arrivals</div></a>
+  <a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+  <a href="nearby-profile.html" class="bni"><div class="bni-i">👤</div><div class="bni-l">Profile</div></a>
+</div>
+
+<script>
+var me = null;
+
+var TYPE_ICONS = {
+  welcome: ['👋','icon-welcome'],
+  badge: ['🏆','icon-badge'],
+  message: ['💬','icon-message'],
+  alert: ['🔔','icon-alert'],
+  announcement: ['📢','icon-announcement'],
+  like: ['❤️','icon-like'],
+  comment: ['💬','icon-message'],
+  default: ['📱','icon-announcement']
+};
+
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── ERROR BOUNDARY ── */
+function showNotifsError() {
+  document.getElementById('notifs').innerHTML =
+    '<div class="err-box">'
+    + '<div class="err-icon">📡</div>'
+    + '<div class="err-title">Couldn\'t load notifications</div>'
+    + '<div class="err-sub">Check your connection and try again.</div>'
+    + '<button class="err-btn" onclick="loadNotifications()">Try Again</button>'
+    + '</div>';
+}
+
+async function init() {
+  try {
+    var sess = await getSession();
+    if (!sess) { window.location.href = 'nearby-auth.html'; return; }
+    me = await getCurrentUser();
+    if (!me) { window.location.href = 'nearby-onboarding.html'; return; }
+    await loadNotifications();
+    try {
+      subscribeToNotifications(me.id, function(payload) {
+        if (payload.new) prependNotif(payload.new);
+      });
+    } catch(e) {}
+  } catch(e) {
+    showNotifsError();
+  }
+}
+
+async function loadNotifications() {
+  /* restore skeletons while reloading */
+  document.getElementById('notifs').innerHTML =
+    '<div class="sk-notif"><div class="sk-icon"></div><div class="sk-body"><div class="sk-line w80"></div><div class="sk-line w50"></div></div></div>'
+    + '<div class="sk-notif"><div class="sk-icon"></div><div class="sk-body"><div class="sk-line w80"></div><div class="sk-line w50"></div></div></div>';
+
+  try {
+    var res = await sb.from('notifications')
+      .select('*')
+      .eq('user_id', me.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    var container = document.getElementById('notifs');
+
+    /* ── ERROR BOUNDARY: DB error ── */
+    if (res.error) { showNotifsError(); return; }
+
+    var notifs = res.data || [];
+
+    if (!notifs.length) {
+      container.innerHTML =
+        '<div class="empty"><div class="emoji">🔔</div><h3>No notifications yet</h3>'
+        + '<p>When neighbors interact with your posts or welcome you, it\'ll show up here.</p></div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < notifs.length; i++) html += buildNotifItem(notifs[i]);
+    container.innerHTML = html;
+
+    setTimeout(function() { markAllRead(); }, 2000);
+
+  } catch(e) {
+    /* ── ERROR BOUNDARY: network failure ── */
+    showNotifsError();
+  }
+}
+
+function buildNotifItem(n) {
+  var typeData = TYPE_ICONS[n.type] || TYPE_ICONS.default;
+  var icon = typeData[0];
+  var cls = typeData[1];
+  var isUnread = !n.is_read;
+  var msg = n.message || '';
+  var fromId = n.from_user_id || '';
+  return '<div class="notif-item' + (isUnread ? ' unread' : '') + '" id="n-' + n.id + '" onclick="handleNotifClick(\'' + n.id + '\',\'' + n.type + '\',\'' + fromId + '\')">'
+    + '<div class="notif-icon ' + cls + '">' + icon + '</div>'
+    + '<div class="notif-body">'
+    + '<div class="notif-msg' + (isUnread ? ' unread-txt' : '') + '">' + esc(msg) + '</div>'
+    + '<div class="notif-time">' + timeAgo(n.created_at) + '</div>'
+    + '</div></div>';
+}
+
+function prependNotif(n) {
+  var container = document.getElementById('notifs');
+  var empty = container.querySelector('.empty');
+  if (empty) container.innerHTML = '';
+  var div = document.createElement('div');
+  div.innerHTML = buildNotifItem(n);
+  container.insertBefore(div.firstChild, container.firstChild);
+}
+
+async function handleNotifClick(notifId, type, fromUserId) {
+  try {
+    await sb.from('notifications').update({ is_read: true }).eq('id', notifId);
+  } catch(e) {}
+  var el = document.getElementById('n-' + notifId);
+  if (el) { el.classList.remove('unread'); el.style.background = ''; }
+  if (type === 'message' && fromUserId) {
+    window.location.href = 'nearby-messages.html?user=' + fromUserId;
+  } else if (type === 'badge') {
+    window.location.href = 'nearby-profile.html';
+  }
+}
+
+async function markAllRead() {
+  if (!me) return;
+  try {
+    await sb.from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', me.id)
+      .eq('is_read', false);
+    document.querySelectorAll('.notif-item.unread').forEach(function(el) {
+      el.classList.remove('unread');
+      el.style.background = '';
+      var txt = el.querySelector('.notif-msg');
+      if (txt) txt.classList.remove('unread-txt');
+    });
+  } catch(e) {}
+  /* silent fail — marking read is non-critical */
+}
+
+init();
+</script>
+<script src="nearby-push.js"></script>
+</body>
+</html>
