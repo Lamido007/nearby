@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
+<title>Nearby — Messages</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4}
+html,body{width:100%;height:100%;background:#EEE9DF}
+body{font-family:"DM Sans",sans-serif;color:var(--n);max-width:480px;margin:0 auto;min-height:100dvh;-webkit-font-smoothing:antialiased}
+
+/* TOP NAV */
+.topnav{background:var(--w);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(0,0,0,.07)}
+.nav-title{font-family:"Playfair Display",serif;font-size:20px;font-weight:900;color:var(--n)}
+.nav-title span{color:var(--t)}
+.back-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:4px 8px;-webkit-tap-highlight-color:transparent;text-decoration:none;color:var(--n)}
+
+/* CONVERSATION LIST */
+.conv-list{padding:0 0 90px}
+.conv-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--w);border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.conv-item:active{background:var(--c)}
+.conv-item.unread{background:rgba(196,98,45,.04)}
+.conv-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;flex-shrink:0;position:relative;overflow:hidden}
+.conv-av img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.conv-body{flex:1;min-width:0}
+.conv-name{font-size:15px;font-weight:700;color:var(--n);margin-bottom:3px}
+.conv-preview{font-size:13px;color:var(--l);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-preview.unread-txt{color:var(--n);font-weight:600}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.conv-time{font-size:11px;color:var(--l)}
+.conv-badge{background:var(--t);color:white;border-radius:100px;font-size:10px;font-weight:700;padding:2px 7px;min-width:18px;text-align:center}
+
+/* SKELETONS */
+.sk-conv{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--w);border-bottom:1px solid rgba(0,0,0,.05);animation:shimmer 1.5s ease infinite}
+.sk-av{width:50px;height:50px;border-radius:50%;background:rgba(0,0,0,.07);flex-shrink:0}
+.sk-body{flex:1}
+.sk-line{height:12px;border-radius:100px;background:rgba(0,0,0,.07);margin-bottom:6px}
+.sk-line.w70{width:70%}.sk-line.w50{width:50%}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px}
+.empty-icon{font-size:52px;margin-bottom:16px}
+.empty-title{font-size:18px;font-weight:700;color:var(--n);margin-bottom:8px}
+.empty-sub{font-size:14px;color:var(--m);line-height:1.6}
+
+/* ERROR BOX */
+.err-box{text-align:center;padding:40px 20px}
+.err-icon{font-size:44px;margin-bottom:14px}
+.err-title{font-size:15px;font-weight:700;color:var(--n);margin-bottom:6px}
+.err-sub{font-size:13px;color:var(--l);margin-bottom:20px;line-height:1.5}
+.err-btn{background:var(--t);color:white;border:none;border-radius:100px;padding:11px 24px;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+
+/* CHAT VIEW */
+.chat-view{display:none;position:fixed;inset:0;background:#EEE9DF;z-index:200;max-width:480px;margin:0 auto;flex-direction:column}
+.chat-view.open{display:flex}
+.chat-topnav{background:var(--w);padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(0,0,0,.07);flex-shrink:0}
+.chat-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;flex-shrink:0;position:relative;overflow:hidden}
+.chat-av img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.chat-info{flex:1;min-width:0}
+.chat-name{font-size:15px;font-weight:700;color:var(--n)}
+.chat-status{font-size:12px;color:var(--l)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:10px}
+.msg-row{display:flex;flex-direction:column}
+.msg-row.mine{align-items:flex-end}
+.msg-row.theirs{align-items:flex-start}
+.msg-bubble{max-width:78%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-break:break-word}
+.msg-row.mine .msg-bubble{background:var(--n);color:white;border-bottom-right-radius:4px}
+.msg-row.theirs .msg-bubble{background:var(--w);color:var(--n);border-bottom-left-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.msg-time{font-size:10px;color:var(--l);margin-top:4px;padding:0 4px}
+.msg-date-divider{text-align:center;font-size:11px;color:var(--l);font-weight:600;padding:8px 0;letter-spacing:.5px}
+
+/* CHAT INPUT */
+.chat-input-bar{background:var(--w);padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom));border-top:1px solid rgba(0,0,0,.07);display:flex;align-items:flex-end;gap:8px;flex-shrink:0}
+.chat-textarea{flex:1;border:2px solid rgba(0,0,0,.1);border-radius:22px;padding:10px 14px;font-family:"DM Sans",sans-serif;font-size:14px;color:var(--n);outline:none;resize:none;max-height:100px;-webkit-appearance:none;background:var(--c)}
+.chat-textarea:focus{border-color:var(--t)}
+.send-btn{width:42px;height:42px;border-radius:50%;background:var(--t);color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.send-btn:disabled{opacity:.5}
+
+/* CHAT LOADING */
+.chat-loading{text-align:center;padding:30px 20px;color:var(--l);font-size:13px}
+.chat-err{text-align:center;padding:30px 20px}
+.chat-err p{font-size:13px;color:var(--l);margin-bottom:12px}
+.chat-err button{background:var(--t);color:white;border:none;border-radius:100px;padding:8px 20px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--n);display:flex;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:"DM Sans",sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.bni-i{font-size:20px}.bni-l{font-size:10px;font-weight:600;color:rgba(255,255,255,.5)}
+.bni.on .bni-l{color:#E07A4A}
+</style>
+</head>
+<body>
+
+<!-- CONVERSATION LIST VIEW -->
+<div class="topnav">
+  <a href="nearby-feed.html" class="back-btn">←</a>
+  <div class="nav-title">Mes<span>sages</span></div>
+  <div style="width:38px"></div>
+</div>
+
+<div class="conv-list" id="convList">
+  <div class="sk-conv"><div class="sk-av"></div><div class="sk-body"><div class="sk-line w70"></div><div class="sk-line w50"></div></div></div>
+  <div class="sk-conv"><div class="sk-av"></div><div class="sk-body"><div class="sk-line w70"></div><div class="sk-line w50"></div></div></div>
+  <div class="sk-conv"><div class="sk-av"></div><div class="sk-body"><div class="sk-line w70"></div><div class="sk-line w50"></div></div></div>
+</div>
+
+<!-- CHAT VIEW (slides in over list) -->
+<div class="chat-view" id="chatView">
+  <div class="chat-topnav">
+    <button class="back-btn" onclick="closeChat()">←</button>
+    <div class="chat-av" id="chatAv">?</div>
+    <div class="chat-info">
+      <div class="chat-name" id="chatName">—</div>
+      <div class="chat-status" id="chatStatus">Nearby neighbor</div>
+    </div>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-loading">Loading messages...</div>
+  </div>
+  <div class="chat-input-bar">
+    <textarea class="chat-textarea" id="msgInput" rows="1" placeholder="Type a message..." oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<div class="bnav">
+  <a href="nearby-feed.html" class="bni"><div class="bni-i">🏡</div><div class="bni-l">Home</div></a>
+  <a href="nearby-search.html" class="bni"><div class="bni-i">🔍</div><div class="bni-l">Search</div></a>
+  <a href="nearby-light.html" class="bni"><div class="bni-i">⚡</div><div class="bni-l">Light</div></a>
+  <a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+  <a href="nearby-profile.html" class="bni"><div class="bni-i">👤</div><div class="bni-l">Profile</div></a>
+</div>
+
+<script>
+var me = null;
+var activeConvId = null;
+var activeOtherUser = null;
+var msgChannel = null;
+var COLORS = ['#C4622D','#7A9E7E','#1A2332','#E8A838','#4C5FD5','#9B59B6'];
+
+function hashStr(s) { var h = 0; for (var i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i); return h; }
+function getColor(s) { return COLORS[Math.abs(hashStr(s || 'x')) % COLORS.length]; }
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
+
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 2500);
+}
+
+/* ── ERROR BOUNDARY: conversations list ── */
+function showConvError() {
+  document.getElementById('convList').innerHTML =
+    '<div class="err-box">'
+    + '<div class="err-icon">📡</div>'
+    + '<div class="err-title">Couldn\'t load messages</div>'
+    + '<div class="err-sub">Check your connection and try again.</div>'
+    + '<button class="err-btn" onclick="loadConversations()">Try Again</button>'
+    + '</div>';
+}
+
+/* ── ERROR BOUNDARY: chat messages ── */
+function showChatError() {
+  document.getElementById('chatMessages').innerHTML =
+    '<div class="chat-err">'
+    + '<p>Couldn\'t load messages</p>'
+    + '<button onclick="loadMessages(activeConvId)">Retry</button>'
+    + '</div>';
+}
+
+async function init() {
+  try {
+    var sess = await getSession();
+    if (!sess) { window.location.href = 'nearby-auth.html'; return; }
+    me = await getCurrentUser();
+    if (!me) { window.location.href = 'nearby-auth.html'; return; }
+
+    /* check if opened from notification with ?user=UUID */
+    var params = new URLSearchParams(window.location.search);
+    var targetUser = params.get('user');
+    if (targetUser) {
+      await openChatWithUser(targetUser);
+    }
+
+    await loadConversations();
+  } catch(e) {
+    showConvError();
+  }
+}
+
+async function loadConversations() {
+  document.getElementById('convList').innerHTML =
+    '<div class="sk-conv"><div class="sk-av"></div><div class="sk-body"><div class="sk-line w70"></div><div class="sk-line w50"></div></div></div>'
+    + '<div class="sk-conv"><div class="sk-av"></div><div class="sk-body"><div class="sk-line w70"></div><div class="sk-line w50"></div></div></div>';
+
+  try {
+    var res = await sb.from('conversations')
+      .select('*, p1:users!conversations_participant_1_fkey(id,full_name,avatar_url,neighborhood), p2:users!conversations_participant_2_fkey(id,full_name,avatar_url,neighborhood)')
+      .or('participant_1.eq.' + me.id + ',participant_2.eq.' + me.id)
+      .order('last_message_at', { ascending: false })
+      .limit(50);
+
+    /* ── ERROR BOUNDARY ── */
+    if (res.error) { showConvError(); return; }
+
+    var convs = res.data || [];
+    if (!convs.length) {
+      document.getElementById('convList').innerHTML =
+        '<div class="empty">'
+        + '<div class="empty-icon">💬</div>'
+        + '<div class="empty-title">No messages yet</div>'
+        + '<div class="empty-sub">Start a conversation by visiting a neighbor\'s profile and tapping Message.</div>'
+        + '</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < convs.length; i++) {
+      html += buildConvItem(convs[i]);
+    }
+    document.getElementById('convList').innerHTML = html;
+
+  } catch(e) {
+    /* ── ERROR BOUNDARY: network failure ── */
+    showConvError();
+  }
+}
+
+function buildConvItem(conv) {
+  var other = conv.participant_1 === me.id ? conv.p2 : conv.p1;
+  if (!other) return '';
+  var myField = conv.participant_1 === me.id ? 'unread_count_1' : 'unread_count_2';
+  var unread = conv[myField] || 0;
+  var color = getColor(other.id);
+  var avH = other.avatar_url
+    ? '<img src="' + other.avatar_url + '" onerror="this.style.display=\'none\'">'
+    : getInitials(other.full_name || 'N');
+  var preview = conv.last_message ? esc(conv.last_message.slice(0, 60)) : 'Say hello!';
+  var time = conv.last_message_at ? timeAgo(conv.last_message_at) : '';
+
+  return '<div class="conv-item' + (unread > 0 ? ' unread' : '') + '" onclick="openChat(\'' + conv.id + '\',\'' + other.id + '\')">'
+    + '<div class="conv-av" style="background:' + color + '">' + avH + '</div>'
+    + '<div class="conv-body">'
+    + '<div class="conv-name">' + esc(other.full_name || 'Neighbor') + '</div>'
+    + '<div class="conv-preview' + (unread > 0 ? ' unread-txt' : '') + '">' + preview + '</div>'
+    + '</div>'
+    + '<div class="conv-meta">'
+    + '<div class="conv-time">' + time + '</div>'
+    + (unread > 0 ? '<div class="conv-badge">' + unread + '</div>' : '')
+    + '</div>'
+    + '</div>';
+}
+
+async function openChatWithUser(userId) {
+  try {
+    /* get or create conversation via DB function */
+    var res = await sb.rpc('get_or_create_conversation', { user_a: me.id, user_b: userId });
+    if (res.error) { showToast('Could not open chat'); return; }
+    var convId = res.data;
+
+    /* fetch other user info */
+    var uRes = await sb.from('users').select('id,full_name,avatar_url,neighborhood').eq('id', userId).single();
+    if (uRes.error || !uRes.data) { showToast('User not found'); return; }
+
+    activeOtherUser = uRes.data;
+    openChat(convId, userId);
+  } catch(e) {
+    showToast('Could not open chat');
+  }
+}
+
+async function openChat(convId, otherUserId) {
+  activeConvId = convId;
+
+  /* fetch other user if not already loaded */
+  if (!activeOtherUser || activeOtherUser.id !== otherUserId) {
+    try {
+      var uRes = await sb.from('users').select('id,full_name,avatar_url,neighborhood').eq('id', otherUserId).single();
+      activeOtherUser = (uRes.data) ? uRes.data : { id: otherUserId, full_name: 'Neighbor' };
+    } catch(e) {
+      activeOtherUser = { id: otherUserId, full_name: 'Neighbor' };
+    }
+  }
+
+  /* set chat header */
+  var color = getColor(activeOtherUser.id);
+  var chatAv = document.getElementById('chatAv');
+  chatAv.style.background = color;
+  if (activeOtherUser.avatar_url) {
+    chatAv.innerHTML = '<img src="' + activeOtherUser.avatar_url + '" onerror="this.parentNode.textContent=\'' + getInitials(activeOtherUser.full_name || 'N') + '\'">';
+  } else {
+    chatAv.textContent = getInitials(activeOtherUser.full_name || 'N');
+  }
+  document.getElementById('chatName').textContent = activeOtherUser.full_name || 'Neighbor';
+  document.getElementById('chatStatus').textContent = activeOtherUser.neighborhood || 'Nearby neighbor';
+
+  /* show chat view */
+  document.getElementById('chatView').classList.add('open');
+  document.getElementById('chatMessages').innerHTML = '<div class="chat-loading">Loading...</div>';
+
+  await loadMessages(convId);
+  subscribeToMessages(convId);
+  markConvRead(convId);
+}
+
+function closeChat() {
+  document.getElementById('chatView').classList.remove('open');
+  document.getElementById('msgInput').value = '';
+  activeConvId = null;
+  activeOtherUser = null;
+  if (msgChannel) { try { sb.removeChannel(msgChannel); } catch(e) {} msgChannel = null; }
+  loadConversations();
+}
+
+async function loadMessages(convId) {
+  try {
+    var res = await sb.from('messages')
+      .select('*')
+      .eq('conversation_id', convId)
+      .order('created_at', { ascending: true })
+      .limit(100);
+
+    /* ── ERROR BOUNDARY ── */
+    if (res.error) { showChatError(); return; }
+
+    var msgs = res.data || [];
+    renderMessages(msgs);
+
+  } catch(e) {
+    showChatError();
+  }
+}
+
+function renderMessages(msgs) {
+  var container = document.getElementById('chatMessages');
+  if (!msgs.length) {
+    container.innerHTML = '<div class="chat-loading" style="color:var(--l)">No messages yet. Say hello!</div>';
+    return;
+  }
+
+  var html = '';
+  var lastDate = '';
+  for (var i = 0; i < msgs.length; i++) {
+    var m = msgs[i];
+    var msgDate = new Date(m.created_at).toDateString();
+    if (msgDate !== lastDate) {
+      html += '<div class="msg-date-divider">' + formatDate(m.created_at) + '</div>';
+      lastDate = msgDate;
+    }
+    var isMine = m.sender_id === me.id;
+    html += '<div class="msg-row ' + (isMine ? 'mine' : 'theirs') + '">'
+      + '<div class="msg-bubble">' + esc(m.content) + '</div>'
+      + '<div class="msg-time">' + timeAgo(m.created_at) + '</div>'
+      + '</div>';
+  }
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+function formatDate(ts) {
+  var d = new Date(ts);
+  var today = new Date();
+  var yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return 'Today';
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
+}
+
+async function sendMessage() {
+  var txt = document.getElementById('msgInput').value.trim();
+  if (!txt || !activeConvId || !me) return;
+
+  var btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  document.getElementById('msgInput').value = '';
+  document.getElementById('msgInput').style.height = 'auto';
+
+  try {
+    var res = await sb.from('messages').insert({
+      conversation_id: activeConvId,
+      sender_id: me.id,
+      content: txt
+    });
+
+    /* ── ERROR BOUNDARY ── */
+    if (res.error) {
+      showToast('Message not sent. Try again.');
+      document.getElementById('msgInput').value = txt;
+      btn.disabled = false;
+      return;
+    }
+
+    /* send notification to other user */
+    try {
+      await sb.from('notifications').insert({
+        user_id: activeOtherUser.id,
+        type: 'message',
+        message: (me.full_name || 'Someone') + ' sent you a message',
+        from_user_id: me.id,
+        link: 'nearby-messages.html?user=' + me.id,
+        is_read: false
+      });
+    } catch(e) {}
+
+  } catch(e) {
+    /* ── ERROR BOUNDARY: network failure ── */
+    showToast('No connection. Message not sent.');
+    document.getElementById('msgInput').value = txt;
+  }
+
+  btn.disabled = false;
+}
+
+function subscribeToMessages(convId) {
+  if (msgChannel) { try { sb.removeChannel(msgChannel); } catch(e) {} }
+  try {
+    msgChannel = sb.channel('msgs-' + convId)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: 'conversation_id=eq.' + convId },
+        function(payload) {
+          if (payload.new) appendMessage(payload.new);
+        })
+      .subscribe();
+  } catch(e) {}
+}
+
+function appendMessage(msg) {
+  var container = document.getElementById('chatMessages');
+  var isMine = msg.sender_id === me.id;
+  var div = document.createElement('div');
+  div.className = 'msg-row ' + (isMine ? 'mine' : 'theirs');
+  div.innerHTML = '<div class="msg-bubble">' + esc(msg.content) + '</div>'
+    + '<div class="msg-time">' + timeAgo(msg.created_at) + '</div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+async function markConvRead(convId) {
+  if (!me) return;
+  try {
+    var field = {};
+    /* we don't know which participant we are without querying, so update both safely */
+    await sb.from('conversations').update({ unread_count_1: 0 })
+      .eq('id', convId).eq('participant_1', me.id);
+    await sb.from('conversations').update({ unread_count_2: 0 })
+      .eq('id', convId).eq('participant_2', me.id);
+  } catch(e) {}
+}
+
+/* handle Enter key to send */
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById('msgInput');
+  if (input) {
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
+});
+
+init();
+</script>
+<script src="nearby-push.js"></script>
+</body>
+</html>
