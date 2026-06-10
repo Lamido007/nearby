@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Jobs Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8; --terracotta: #C4622D; --navy: #1A2332;
+    --sage: #7A9E7E; --amber: #E8A838; --mid: #4A5568; --light: #8A96A8;
+    --white: #FDFAF4; --gold: #D4AF37; --red: #E53E3E; --green: #38A169;
+    --whatsapp: #25D366;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: #EEE9DF; color: var(--navy); max-width: 480px; margin: 0 auto; min-height: 100vh; }
+  .topnav { background: var(--white); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid rgba(0,0,0,0.07); }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .logo span { color: var(--terracotta); }
+  .nav-icons { display: flex; gap: 8px; }
+  .nav-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--cream); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; text-decoration: none; }
+  .hero { background: linear-gradient(135deg, var(--navy), #2C3E6B); padding: 22px 20px 20px; position: relative; overflow: hidden; }
+  .hero::after { content: ''; position: absolute; bottom: -40px; right: -40px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(232,168,56,0.15), transparent 70%); border-radius: 50%; }
+  .hero-tag { display: inline-block; background: rgba(122,158,126,0.25); color: #9EC4A2; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; color: white; line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .hero-title em { color: var(--amber); font-style: italic; }
+  .hero-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 16px; }
+  .search-bar { display: flex; gap: 8px; align-items: center; background: white; border-radius: 14px; padding: 10px 14px; position: relative; z-index: 2; }
+  .search-bar input { flex: 1; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--navy); background: transparent; }
+  .search-bar input::placeholder { color: var(--light); }
+  .search-btn { background: var(--terracotta); color: white; border: none; border-radius: 10px; padding: 7px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .chips-row { display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px; background: var(--white); scrollbar-width: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .chips-row::-webkit-scrollbar { display: none; }
+  .chip { flex-shrink: 0; padding: 6px 14px; border-radius: 100px; border: 2px solid rgba(0,0,0,0.1); background: transparent; font-size: 12px; font-weight: 600; color: var(--mid); cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .chip.on { background: var(--navy); border-color: var(--navy); color: white; }
+  .stats-strip { display: flex; background: var(--white); padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 10px; }
+  .strip-stat { flex: 1; text-align: center; }
+  .strip-stat:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.07); }
+  .strip-num { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); }
+  .strip-label { font-size: 10px; color: var(--light); margin-top: 2px; }
+  .jobs-loading { padding: 10px; }
+  .skeleton-job { background: var(--white); border-radius: 18px; margin: 0 10px 12px; padding: 16px; animation: shimmer 1.5s ease infinite; }
+  .sk-line { height: 12px; border-radius: 100px; background: rgba(0,0,0,0.07); margin-bottom: 8px; }
+  .sk-line.w80 { width: 80%; } .sk-line.w60 { width: 60%; } .sk-line.w40 { width: 40%; }
+  .sk-row { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+  .sk-box { width: 52px; height: 52px; border-radius: 14px; background: rgba(0,0,0,0.07); flex-shrink: 0; }
+  .sk-meta { flex: 1; }
+  @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: var(--mid); line-height: 1.6; margin-bottom: 24px; }
+  .empty-state button { padding: 12px 28px; border-radius: 100px; background: var(--terracotta); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .err-box { text-align: center; padding: 40px 20px; background: var(--white); border-radius: 18px; margin: 10px; }
+  .err-icon { font-size: 44px; margin-bottom: 14px; }
+  .err-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; font-family: 'DM Sans', sans-serif; }
+  .err-sub { font-size: 13px; color: var(--light); margin-bottom: 20px; line-height: 1.5; font-family: 'DM Sans', sans-serif; }
+  .err-btn { background: var(--terracotta); color: white; border: none; border-radius: 100px; padding: 11px 24px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .job-card { background: var(--white); border-radius: 18px; margin: 0 10px 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); overflow: hidden; transition: transform 0.15s; }
+  .job-card:active { transform: scale(0.98); }
+  .job-card.featured { border: 2px solid rgba(232,168,56,0.4); box-shadow: 0 4px 20px rgba(232,168,56,0.15); }
+  .featured-strip { background: linear-gradient(90deg, var(--amber), var(--gold)); padding: 5px 16px; font-size: 10px; font-weight: 700; color: var(--navy); letter-spacing: 0.5px; text-transform: uppercase; }
+  .job-inner { padding: 16px; }
+  .job-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .biz-logo { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: white; flex-shrink: 0; }
+  .job-info { flex: 1; min-width: 0; }
+  .job-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .biz-name { font-size: 13px; color: var(--mid); margin-bottom: 4px; }
+  .job-loc { font-size: 12px; color: var(--light); }
+  .save-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--light); flex-shrink: 0; padding: 4px; }
+  .save-btn.saved { color: var(--terracotta); }
+  .job-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .job-tag { padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+  .tag-type { background: rgba(122,158,126,0.12); color: var(--sage); }
+  .tag-pay { background: rgba(56,161,105,0.1); color: var(--green); }
+  .tag-urgent { background: rgba(229,62,62,0.1); color: var(--red); }
+  .tag-remote { background: rgba(41,128,185,0.1); color: #2980B9; }
+  .tag-new { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+  .job-desc { font-size: 13px; color: var(--mid); line-height: 1.6; margin-bottom: 12px; }
+  .job-details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--cream); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+  .jd-label { font-size: 10px; font-weight: 700; color: var(--light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .jd-val { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .job-actions { display: flex; gap: 8px; }
+  .btn-apply { flex: 1; padding: 11px; border-radius: 100px; background: var(--navy); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-apply.applied { background: var(--sage); cursor: default; }
+  .btn-wa { padding: 11px 14px; border-radius: 100px; background: rgba(37,211,102,0.12); color: var(--whatsapp); border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .post-cta { background: linear-gradient(135deg, var(--navy), #2C3E6B); border-radius: 18px; margin: 0 10px 12px; padding: 20px; display: flex; gap: 14px; align-items: flex-start; }
+  .post-cta-icon { font-size: 32px; flex-shrink: 0; }
+  .post-cta-title { font-size: 16px; font-weight: 700; color: white; margin-bottom: 6px; }
+  .post-cta-sub { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.5; margin-bottom: 14px; }
+  .post-cta-btn { display: inline-block; padding: 10px 20px; border-radius: 100px; background: var(--terracotta); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .fab { position: fixed; bottom: 80px; right: 20px; width: 52px; height: 52px; border-radius: 50%; background: var(--terracotta); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 6px 20px rgba(196,98,45,0.4); display: flex; align-items: center; justify-content: center; }
+  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 150; }
+  .sheet-overlay.open { display: block; }
+  .sheet { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-radius: 24px 24px 0 0; padding: 20px 20px 40px; box-shadow: 0 -8px 40px rgba(0,0,0,0.15); z-index: 200; max-height: 90vh; overflow-y: auto; }
+  .sheet.open { display: block; }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 16px; }
+  .sheet-title { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .sheet-sub { font-size: 13px; color: var(--light); margin-bottom: 20px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .field input, .field textarea, .field select { width: 100%; padding: 12px 14px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; background: white; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--navy); outline: none; resize: none; appearance: none; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--terracotta); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .submit-btn { width: 100%; padding: 14px; border-radius: 14px; background: var(--terracotta); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+  .submit-btn:disabled { opacity: 0.6; cursor: default; }
+  .form-alert { padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; display: none; }
+  .form-alert.error { background: rgba(229,62,62,0.1); color: var(--red); display: block; }
+  .form-alert.success { background: rgba(56,161,105,0.1); color: var(--green); display: block; }
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-top: 1px solid rgba(0,0,0,0.08); display: flex; padding: 10px 0 16px; }
+  .bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0; border: none; background: none; font-family: 'DM Sans', sans-serif; text-decoration: none; }
+  .bnav-icon { font-size: 22px; }
+  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
+  .bnav-item.active .bnav-label { color: var(--terracotta); }
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--navy); color: white; padding: 10px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; z-index: 999; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+  .list { padding-bottom: 100px; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="logo">Near<span>by</span> <span style="font-family:'DM Sans';font-size:14px;font-weight:600;color:var(--mid);">Jobs</span></div>
+  <div class="nav-icons">
+    <a href="nearby-notifications.html" class="nav-icon">🔔</a>
+    <a href="nearby-feed.html" class="nav-icon">🏡</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-tag">💼 Local Jobs Board</div>
+  <div class="hero-title">Work <em>close</em> to home.</div>
+  <div class="hero-sub" id="hero-sub">Loading jobs in your neighborhood...</div>
+  <div class="search-bar">
+    <span style="font-size:16px;color:var(--light)">🔍</span>
+    <input type="text" id="searchIn" placeholder="Search jobs, skills, businesses..." oninput="filterJobs()" />
+    <button class="search-btn" onclick="filterJobs()">Search</button>
+  </div>
+</div>
+
+<div class="chips-row">
+  <button class="chip on" onclick="setChip(this,'all')">🏡 All</button>
+  <button class="chip" onclick="setChip(this,'full-time')">💼 Full-time</button>
+  <button class="chip" onclick="setChip(this,'part-time')">⏰ Part-time</button>
+  <button class="chip" onclick="setChip(this,'freelance')">🎯 Freelance</button>
+  <button class="chip" onclick="setChip(this,'remote')">💻 Remote</button>
+  <button class="chip" onclick="setChip(this,'internship')">🎓 Internship</button>
+</div>
+
+<div class="stats-strip">
+  <div class="strip-stat"><div class="strip-num" id="stat-jobs">—</div><div class="strip-label">Active Jobs</div></div>
+  <div class="strip-stat"><div class="strip-num" id="stat-neighborhood">—</div><div class="strip-label">Your Area</div></div>
+  <div class="strip-stat"><div class="strip-num" id="stat-new">—</div><div class="strip-label">Posted Today</div></div>
+</div>
+
+<div class="list">
+  <div id="jobs-loading" class="jobs-loading">
+    <div class="skeleton-job"><div class="sk-row"><div class="sk-box"></div><div class="sk-meta"><div class="sk-line w80"></div><div class="sk-line w60"></div></div></div><div class="sk-line w80"></div><div class="sk-line w60"></div></div>
+    <div class="skeleton-job"><div class="sk-row"><div class="sk-box"></div><div class="sk-meta"><div class="sk-line w60"></div><div class="sk-line w40"></div></div></div><div class="sk-line w80"></div></div>
+  </div>
+  <div id="jobs-container"></div>
+  <div class="empty-state" id="empty-state" style="display:none">
+    <div class="emoji">💼</div>
+    <h3>No jobs yet in your area</h3>
+    <p>Be the first to post a local job and reach qualified neighbors who already live nearby.</p>
+    <button onclick="openSheet()">Post the First Job</button>
+  </div>
+  <div class="post-cta" id="post-cta" style="display:none">
+    <div class="post-cta-icon">🏪</div>
+    <div>
+      <div class="post-cta-title">Own a business?</div>
+      <div class="post-cta-sub">Post a job and reach qualified candidates who already live in your neighborhood. Fast, local, trusted.</div>
+      <button class="post-cta-btn" onclick="openSheet()">Post a Job Free →</button>
+    </div>
+  </div>
+</div>
+
+<button class="fab" onclick="openSheet()">+</button>
+<div class="sheet-overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Post a Job 💼</div>
+  <div class="sheet-sub">Reach local candidates in your neighborhood</div>
+  <div id="form-alert" class="form-alert"></div>
+  <div class="field"><label>Job Title *</label><input type="text" id="jTitle" placeholder="e.g. Sales Assistant, Chef, Driver..." /></div>
+  <div class="field"><label>Business / Your Name *</label><input type="text" id="jBusiness" placeholder="Your business or your name" /></div>
+  <div class="field-row">
+    <div class="field"><label>Job Type</label><select id="jType"><option value="part-time">Part-time</option><option value="full-time">Full-time</option><option value="freelance">Freelance / Gig</option><option value="remote">Remote</option><option value="internship">Internship</option></select></div>
+    <div class="field"><label>Pay / Salary</label><input type="text" id="jPay" placeholder="e.g. N80k/mo" /></div>
+  </div>
+  <div class="field"><label>Neighborhood / Location *</label><input type="text" id="jNeighborhood" placeholder="Where is this job?" /></div>
+  <div class="field"><label>Job Description *</label><textarea rows="4" id="jDesc" placeholder="Describe the role, requirements, what you offer..."></textarea></div>
+  <div class="field"><label>Contact / Apply Via *</label><input type="text" id="jContact" placeholder="WhatsApp number or email" /></div>
+  <div class="field"><label>Closing Date <span style="color:var(--light);font-weight:400">(optional)</span></label><input type="date" id="jExpiry" /></div>
+  <button class="submit-btn" id="submitBtn" onclick="submitJob()">Post Job to Nearby</button>
+</div>
+
+<div class="bottom-nav">
+  <a href="nearby-feed.html" class="bnav-item"><div class="bnav-icon">🏡</div><div class="bnav-label">Home</div></a>
+  <a href="nearby-arrivals.html" class="bnav-item"><div class="bnav-icon">🆕</div><div class="bnav-label">Arrivals</div></a>
+  <button class="bnav-item active"><div class="bnav-icon">💼</div><div class="bnav-label">Jobs</div></button>
+  <a href="nearby-profile.html" class="bnav-item"><div class="bnav-icon">👤</div><div class="bnav-label">Profile</div></a>
+</div>
+
+<script>
+var currentUser = null;
+var allJobs = [];
+var currentFilter = 'all';
+var COLORS = ['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6','#E53E3E','#2ECC71'];
+
+function getColor(str) {
+  if (!str) return COLORS[0];
+  var h = 0;
+  for (var i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+  return COLORS[Math.abs(h) % COLORS.length];
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function showToast(msg) {
+  var old = document.querySelector('.toast');
+  if (old) old.remove();
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; }, 2500);
+  setTimeout(function() { if (t.parentNode) t.remove(); }, 3000);
+}
+
+/* ── ERROR BOUNDARY ── */
+function showJobsError() {
+  document.getElementById('jobs-loading').style.display = 'none';
+  document.getElementById('jobs-container').innerHTML =
+    '<div class="err-box">'
+    + '<div class="err-icon">📡</div>'
+    + '<div class="err-title">Couldn\'t load jobs</div>'
+    + '<div class="err-sub">Check your connection and try again.</div>'
+    + '<button class="err-btn" onclick="retryLoad()">Try Again</button>'
+    + '</div>';
+}
+
+function retryLoad() {
+  document.getElementById('jobs-container').innerHTML = '';
+  document.getElementById('jobs-loading').style.display = 'block';
+  loadJobsData(currentUser ? (currentUser.neighborhood || 'Lagos') : 'Lagos');
+}
+
+async function init() {
+  var session = await getSession();
+  if (!session) { window.location.href = 'nearby-auth.html'; return; }
+  currentUser = await getCurrentUser();
+  var neighborhood = (currentUser && currentUser.neighborhood) ? currentUser.neighborhood : 'Lagos';
+  document.getElementById('hero-sub').textContent = 'Jobs in ' + neighborhood + ' and nearby areas';
+  document.getElementById('stat-neighborhood').textContent = neighborhood.split(' ')[0];
+  if (currentUser && currentUser.neighborhood) {
+    document.getElementById('jNeighborhood').value = currentUser.neighborhood;
+  }
+  await loadJobsData(neighborhood);
+}
+
+async function loadJobsData(neighborhood) {
+  try {
+    var city = (currentUser && currentUser.city) ? currentUser.city : 'Lagos';
+    var res = await sb.from('jobs')
+      .select('*, users(id, full_name, avatar_url, badge_level)')
+      .eq('is_active', true)
+      .or('neighborhood.eq.' + neighborhood + ',city.eq.' + city)
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(30);
+
+    document.getElementById('jobs-loading').style.display = 'none';
+
+    /* ── ERROR BOUNDARY: DB error ── */
+    if (res.error) { showJobsError(); return; }
+
+    allJobs = res.data || [];
+    document.getElementById('stat-jobs').textContent = allJobs.length;
+    var today = new Date().toDateString();
+    var newToday = allJobs.filter(function(j) { return new Date(j.created_at).toDateString() === today; }).length;
+    document.getElementById('stat-new').textContent = newToday;
+    renderJobs(allJobs);
+    if (allJobs.length > 0) document.getElementById('post-cta').style.display = 'flex';
+
+  } catch(e) {
+    /* ── ERROR BOUNDARY: network failure ── */
+    showJobsError();
+  }
+}
+
+function renderJobs(jobs) {
+  var container = document.getElementById('jobs-container');
+  var empty = document.getElementById('empty-state');
+  var filtered = currentFilter === 'all' ? jobs : jobs.filter(function(j) { return j.job_type === currentFilter; });
+  var search = document.getElementById('searchIn').value.toLowerCase();
+  var searched = search
+    ? filtered.filter(function(j) {
+        var name = (j.users && j.users.full_name) ? j.users.full_name : '';
+        return (j.title + j.description + j.neighborhood + name).toLowerCase().indexOf(search) > -1;
+      })
+    : filtered;
+  if (searched.length === 0) { container.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  var html = '';
+  for (var i = 0; i < searched.length; i++) html += renderJobCard(searched[i]);
+  container.innerHTML = html;
+}
+
+function renderJobCard(job) {
+  var poster = job.users || {};
+  var bizName = poster.full_name || 'Local Business';
+  var color = getColor(job.id);
+  var time = timeAgo(job.created_at);
+  var isNew = (Date.now() - new Date(job.created_at)) < 86400000 * 2;
+  var applied = false;
+  try { applied = (JSON.parse(localStorage.getItem('applied_jobs') || '[]')).indexOf(job.id) > -1; } catch(e) {}
+
+  var tags = '';
+  if (job.job_type) tags += '<span class="job-tag tag-type">💼 ' + job.job_type + '</span>';
+  if (job.pay) tags += '<span class="job-tag tag-pay">💰 ' + escHtml(job.pay) + '</span>';
+  if (job.is_urgent) tags += '<span class="job-tag tag-urgent">🔥 Urgent</span>';
+  if (job.job_type === 'remote') tags += '<span class="job-tag tag-remote">💻 Remote</span>';
+  if (isNew) tags += '<span class="job-tag tag-new">✨ New</span>';
+
+  var contact = job.contact_info || '';
+  var isWA = /^\+?[\d\s\-]+$/.test(contact) && contact.replace(/\D/g,'').length >= 7;
+  var applyAction = isWA
+    ? 'onclick="applyWhatsApp(\'' + contact.replace(/\D/g,'') + '\',\'' + escHtml(job.title) + '\')"'
+    : 'onclick="applyJob(\'' + job.id + '\',this)"';
+
+  return '<div class="job-card' + (job.is_featured ? ' featured' : '') + '" id="job-' + job.id + '">'
+    + (job.is_featured ? '<div class="featured-strip">⭐ Featured Job</div>' : '')
+    + '<div class="job-inner">'
+    + '<div class="job-top">'
+    + '<div class="biz-logo" style="background:' + color + '">' + getInitials(bizName) + '</div>'
+    + '<div class="job-info"><div class="job-title">' + escHtml(job.title) + '</div>'
+    + '<div class="biz-name">' + escHtml(bizName) + '</div>'
+    + '<div class="job-loc">📍 ' + escHtml(job.neighborhood || 'Nearby') + ' · ' + time + '</div></div>'
+    + '<button class="save-btn" onclick="toggleSave(this,\'' + job.id + '\')">🤍</button>'
+    + '</div>'
+    + '<div class="job-tags">' + tags + '</div>'
+    + '<div class="job-desc">' + escHtml((job.description || '').slice(0,150)) + ((job.description||'').length > 150 ? '...' : '') + '</div>'
+    + (job.requirements ? '<div class="job-details"><div><div class="jd-label">Requirements</div><div class="jd-val" style="font-size:12px">' + escHtml(job.requirements.slice(0,60)) + '</div></div><div><div class="jd-label">Applicants</div><div class="jd-val">' + (job.applicants_count || 0) + '</div></div></div>' : '')
+    + '<div class="job-actions">'
+    + '<button class="btn-apply' + (applied ? ' applied' : '') + '" id="apply-' + job.id + '" ' + applyAction + '>' + (applied ? '✓ Applied!' : 'Apply Now →') + '</button>'
+    + '<button class="btn-wa" onclick="shareJobWA(\'' + escHtml(job.title) + '\',\'' + escHtml(job.pay||'Competitive') + '\',\'' + escHtml(job.neighborhood||'') + '\')">📲 Share</button>'
+    + '</div></div></div>';
+}
+
+function applyWhatsApp(phone, title) {
+  var msg = encodeURIComponent('Hi! I saw your job posting for *' + title + '* on Nearby and I\'d like to apply. Could you share more details?');
+  window.open('https://wa.me/' + phone + '?text=' + msg, '_blank');
+  showToast('📲 Opening WhatsApp to apply!');
+}
+
+async function applyJob(jobId, btn) {
+  if (!currentUser) return;
+  btn.disabled = true;
+  btn.textContent = 'Applying...';
+  try {
+    var res = await sb.from('job_applications').insert({ job_id: jobId, user_id: currentUser.id });
+    if (res.error && res.error.code === '23505') {
+      btn.textContent = '✓ Applied!'; btn.classList.add('applied');
+    } else if (res.error) {
+      btn.textContent = 'Apply Now →'; btn.disabled = false;
+      showToast('Could not apply. Try again.');
+    } else {
+      btn.textContent = '✓ Applied!'; btn.classList.add('applied');
+      try {
+        var saved = JSON.parse(localStorage.getItem('applied_jobs') || '[]');
+        saved.push(jobId);
+        localStorage.setItem('applied_jobs', JSON.stringify(saved));
+      } catch(e) {}
+      showToast('Application sent! Good luck');
+    }
+  } catch(e) {
+    /* ── ERROR BOUNDARY ── */
+    btn.textContent = 'Apply Now →'; btn.disabled = false;
+    showToast('No connection. Try again.');
+  }
+}
+
+function shareJobWA(title, pay, neighborhood) {
+  var msg = encodeURIComponent('Job Alert on Nearby!\n\n' + title + '\n📍 ' + neighborhood + '\n💰 ' + pay + '\n\nFind it on the Nearby app.');
+  window.open('https://wa.me/?text=' + msg, '_blank');
+}
+
+function toggleSave(btn, jobId) {
+  btn.classList.toggle('saved');
+  btn.textContent = btn.classList.contains('saved') ? '❤️' : '🤍';
+  if (btn.classList.contains('saved')) showToast('Job saved!');
+}
+
+function setChip(el, filter) {
+  document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('on'); });
+  el.classList.add('on');
+  currentFilter = filter;
+  renderJobs(allJobs);
+}
+
+function filterJobs() { renderJobs(allJobs); }
+
+function openSheet() { document.getElementById('sheet').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
+function closeSheet() { document.getElementById('sheet').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); document.getElementById('form-alert').className = 'form-alert'; }
+
+async function submitJob() {
+  var title = document.getElementById('jTitle').value.trim();
+  var business = document.getElementById('jBusiness').value.trim();
+  var desc = document.getElementById('jDesc').value.trim();
+  var contact = document.getElementById('jContact').value.trim();
+  var neighborhood = document.getElementById('jNeighborhood').value.trim();
+  var pay = document.getElementById('jPay').value.trim();
+  var jobType = document.getElementById('jType').value;
+  var expiry = document.getElementById('jExpiry').value;
+  var alertEl = document.getElementById('form-alert');
+
+  if (!title) { alertEl.textContent = 'Please enter a job title.'; alertEl.className = 'form-alert error'; return; }
+  if (!business) { alertEl.textContent = 'Please enter your business name.'; alertEl.className = 'form-alert error'; return; }
+  if (!desc) { alertEl.textContent = 'Please write a job description.'; alertEl.className = 'form-alert error'; return; }
+  if (!contact) { alertEl.textContent = 'Please add a contact method.'; alertEl.className = 'form-alert error'; return; }
+  if (!neighborhood) { alertEl.textContent = 'Please enter a location.'; alertEl.className = 'form-alert error'; return; }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Posting...';
+
+  try {
+    var res = await sb.from('jobs').insert({
+      user_id: currentUser.id,
+      title: title,
+      description: desc,
+      job_type: jobType,
+      pay: pay,
+      neighborhood: neighborhood,
+      city: (currentUser && currentUser.city) ? currentUser.city : 'Lagos',
+      requirements: business,
+      contact_info: contact,
+      expires_at: expiry ? new Date(expiry).toISOString() : null,
+      is_active: true
+    }).select();
+
+    /* ── ERROR BOUNDARY: insert failure ── */
+    if (res.error) {
+      alertEl.textContent = res.error.message;
+      alertEl.className = 'form-alert error';
+      btn.disabled = false; btn.textContent = 'Post Job to Nearby';
+      return;
+    }
+
+    closeSheet();
+    showToast('Job posted! Neighbors can now see it.');
+    if (res.data && res.data[0]) {
+      res.data[0].users = currentUser;
+      allJobs.unshift(res.data[0]);
+      document.getElementById('stat-jobs').textContent = allJobs.length;
+      renderJobs(allJobs);
+    }
+    btn.disabled = false; btn.textContent = 'Post Job to Nearby';
+    var fields = ['jTitle','jBusiness','jDesc','jContact','jPay','jExpiry'];
+    for (var i = 0; i < fields.length; i++) document.getElementById(fields[i]).value = '';
+
+  } catch(e) {
+    /* ── ERROR BOUNDARY: network failure ── */
+    alertEl.textContent = 'No connection. Check your network and try again.';
+    alertEl.className = 'form-alert error';
+    btn.disabled = false; btn.textContent = 'Post Job to Nearby';
+  }
+}
+
+init();
+</script>
+<script src="nearby-distance.js"></script>
+<script src="nearby-push.js"></script>
+</body>
+</html>
