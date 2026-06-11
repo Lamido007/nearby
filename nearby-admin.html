@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Nearby Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4;--r:#E53E3E;--g:#38A169}
+html{width:100%;background:#EEE9DF}
+body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);width:100%;min-height:100dvh}
+.wrap{width:100%;max-width:480px;margin:0 auto;min-height:100dvh}
+#denied{display:none;text-align:center;padding:80px 20px}
+#denied .icon{font-size:64px;margin-bottom:20px}
+#denied h2{font-family:"Playfair Display",serif;font-size:28px;font-weight:900;margin-bottom:12px}
+#denied p{font-size:15px;color:var(--m);margin-bottom:24px;line-height:1.6}
+#denied a{display:inline-block;padding:12px 28px;background:var(--n);color:white;border-radius:100px;text-decoration:none;font-weight:700}
+#adminMain{display:none}
+.topnav{background:var(--n);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-family:"Playfair Display",serif;font-size:20px;font-weight:900;color:white}
+.logo span{color:var(--t)}
+.atag{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.aav{width:36px;height:36px;border-radius:50%;background:var(--t);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;cursor:pointer}
+.tabs{display:flex;overflow-x:auto;background:var(--w);border-bottom:2px solid rgba(0,0,0,.07);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:12px 14px;border:none;background:none;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;color:var(--l);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab.on{color:var(--n);border-bottom-color:var(--t)}
+.content{padding:14px 14px 80px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-card{background:var(--w);border-radius:16px;padding:16px;text-align:center}
+.stat-num{font-family:"Playfair Display",serif;font-size:30px;font-weight:900;color:var(--n);margin-bottom:4px}
+.stat-label{font-size:12px;color:var(--l);font-weight:600}
+.stat-card.red .stat-num{color:var(--r)}
+.stat-card.green .stat-num{color:var(--g)}
+.stat-card.amber .stat-num{color:var(--a)}
+.sec-title{font-size:14px;font-weight:700;color:var(--n);margin:14px 0 10px}
+.user-row{background:var(--w);border-radius:14px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.uav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;flex-shrink:0}
+.uinfo{flex:1;min-width:0}
+.uname{font-size:13px;font-weight:700;color:var(--n);margin-bottom:2px}
+.usub{font-size:11px;color:var(--l)}
+.uacts{display:flex;gap:6px;flex-shrink:0}
+.pill{padding:5px 10px;border-radius:100px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:"DM Sans",sans-serif}
+.pill-ban{background:rgba(229,62,62,.1);color:var(--r)}
+.pill-ok{background:rgba(56,161,105,.1);color:var(--g)}
+.pill-badge{background:rgba(212,175,55,.1);color:#8B6914}
+.post-row{background:var(--w);border-radius:14px;padding:12px;margin-bottom:8px}
+.pmeta{font-size:11px;color:var(--l);margin-bottom:6px;display:flex;justify-content:space-between}
+.ptext{font-size:13px;color:var(--m);line-height:1.5;margin-bottom:10px}
+.pacts{display:flex;gap:8px}
+.pill-rm{background:rgba(229,62,62,.1);color:var(--r);padding:6px 12px;border-radius:100px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:"DM Sans",sans-serif}
+.announce-box{background:var(--w);border-radius:16px;padding:16px;margin-bottom:16px}
+.announce-box textarea{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:12px;padding:12px;font-family:"DM Sans",sans-serif;font-size:14px;color:var(--n);resize:none;outline:none;margin-bottom:10px}
+.announce-box textarea:focus{border-color:var(--t)}
+.announce-box select{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:12px;padding:10px 12px;font-family:"DM Sans",sans-serif;font-size:14px;color:var(--n);outline:none;appearance:none;background:white;margin-bottom:10px}
+.send-btn{width:100%;padding:12px;border-radius:12px;background:var(--t);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.lmsg{text-align:center;padding:30px;color:var(--l);font-size:13px}
+.panel{display:none}.panel.on{display:block}
+.nb-row{display:flex;align-items:center;justify-content:space-between;background:var(--w);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:999;white-space:nowrap;pointer-events:none}
+.usearch{width:100%;padding:11px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;font-family:"DM Sans",sans-serif;font-size:14px;outline:none;margin-bottom:12px;background:var(--w)}
+.usearch:focus{border-color:var(--t)}
+/* ERROR BOX */
+.err-box{text-align:center;padding:40px 20px}
+.err-icon{font-size:44px;margin-bottom:14px}
+.err-title{font-size:15px;font-weight:700;color:var(--n);margin-bottom:6px;font-family:"DM Sans",sans-serif}
+.err-sub{font-size:13px;color:var(--l);margin-bottom:20px;line-height:1.5}
+.err-btn{background:var(--t);color:white;border:none;border-radius:100px;padding:11px 24px;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+/* REPORTS */
+.rpt-filter-btn{background:var(--c);border:none;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--m);cursor:pointer;font-family:"DM Sans",sans-serif}
+.rpt-filter-btn.active{background:var(--n);color:white}
+.report-card{background:var(--w);border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid rgba(0,0,0,.07);border-left:4px solid #EF4444}
+.report-card.status-dismissed{border-left-color:#D1D5DB;opacity:.7}
+.report-card.status-actioned{border-left-color:#22C55E}
+.rc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.rc-reason-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;background:#FEE2E2;color:#DC2626;flex-shrink:0}
+.rc-reason-badge.spam{background:#FEF3E8;color:#C4622D}
+.rc-reason-badge.fake_news{background:#FFF8E1;color:#B8860B}
+.rc-meta{flex:1;font-size:12px;color:var(--l)}
+.rc-time{font-size:11px;color:var(--l);flex-shrink:0}
+.rc-post-preview{background:var(--c);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--n);margin-bottom:10px;border-left:3px solid rgba(196,98,45,.3)}
+.rc-post-author{font-size:11px;color:var(--l);margin-bottom:4px}
+.rc-post-content{font-size:13px;color:var(--n)}
+.rc-post-count{font-size:11px;color:#DC2626;font-weight:600;margin-top:4px}
+.rc-details{font-size:12px;color:var(--m);font-style:italic;margin-bottom:10px;padding:8px 10px;background:rgba(0,0,0,.04);border-radius:8px}
+.rc-actions{display:flex;gap:6px;flex-wrap:wrap}
+.rc-action-btn{flex:1;min-width:0;border:none;border-radius:10px;padding:9px 6px;font-size:12px;font-weight:700;cursor:pointer;font-family:"DM Sans",sans-serif;text-align:center}
+.btn-dismiss{background:var(--c);color:var(--m)}
+.btn-remove{background:#FEE2E2;color:#DC2626}
+.btn-warn{background:#FFF8E1;color:#B8860B}
+.btn-ban{background:var(--n);color:white}
+.btn-done{background:#F0FDF4;color:#16A34A;cursor:default}
+/* CONFIRM MODAL */
+.confirm-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;align-items:flex-end;justify-content:center}
+.confirm-ov.open{display:flex}
+.confirm-sheet{background:var(--w);width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:24px 20px 36px}
+.confirm-sheet h3{font-size:16px;font-weight:700;color:var(--n);margin-bottom:8px}
+.confirm-sheet p{font-size:13px;color:var(--m);margin-bottom:20px;line-height:1.5}
+.confirm-btns{display:flex;flex-direction:column;gap:10px}
+.confirm-yes{padding:13px;border-radius:12px;background:var(--r);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.confirm-no{padding:13px;border-radius:12px;background:var(--c);color:var(--n);border:none;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="denied">
+  <div class="icon">🔒</div>
+  <h2>Admin Only</h2>
+  <p>This area is restricted to Nearby administrators only.</p>
+  <a href="nearby-feed.html">Back to Nearby</a>
+</div>
+
+<div id="adminMain">
+  <div class="topnav">
+    <div><div class="logo">Near<span>by</span></div><div class="atag">Admin Dashboard</div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="aav" id="aav">A</div>
+      <a href="nearby-feed.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:13px">App</a>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="show('overview',this)">📊 Overview</button>
+    <button class="tab" onclick="show('users',this)">👥 Users</button>
+    <button class="tab" onclick="show('posts',this)">💬 Posts</button>
+    <button class="tab" onclick="show('reports',this)">🚩 Reports</button>
+    <button class="tab" onclick="show('broadcast',this)">📢 Broadcast</button>
+  </div>
+
+  <div class="content">
+
+    <div class="panel on" id="panel-overview">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="s-users">—</div><div class="stat-label">Total Users</div></div>
+        <div class="stat-card green"><div class="stat-num" id="s-posts">—</div><div class="stat-label">Total Posts</div></div>
+        <div class="stat-card amber"><div class="stat-num" id="s-jobs">—</div><div class="stat-label">Active Jobs</div></div>
+        <div class="stat-card red"><div class="stat-num" id="s-reports">—</div><div class="stat-label">Pending Reports</div></div>
+      </div>
+      <div class="sec-title">🕐 Recent Signups</div>
+      <div id="recent-signups"><div class="lmsg">Loading...</div></div>
+      <div class="sec-title">📍 Top Neighborhoods</div>
+      <div id="top-nbs"><div class="lmsg">Loading...</div></div>
+    </div>
+
+    <div class="panel" id="panel-users">
+      <div class="sec-title">👥 All Users</div>
+      <input class="usearch" type="text" id="usearch" placeholder="🔍 Search name or email..." oninput="filterUsers()"/>
+      <div id="users-list"><div class="lmsg">Loading...</div></div>
+    </div>
+
+    <div class="panel" id="panel-posts">
+      <div class="sec-title">💬 Recent Posts</div>
+      <div id="posts-list"><div class="lmsg">Loading...</div></div>
+    </div>
+
+    <div class="panel" id="panel-reports">
+      <div class="sec-title">🚩 Flagged Content</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="rpt-filter-btn active" onclick="filterReports('pending',this)">Pending</button>
+        <button class="rpt-filter-btn" onclick="filterReports('actioned',this)">Actioned</button>
+        <button class="rpt-filter-btn" onclick="filterReports('dismissed',this)">Dismissed</button>
+        <button class="rpt-filter-btn" onclick="filterReports('all',this)">All</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div style="background:#FEF2F2;border-radius:12px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:700;color:#DC2626" id="statPending">—</div><div style="font-size:11px;color:var(--l)">Pending</div></div>
+        <div style="background:#F0FDF4;border-radius:12px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:700;color:#16A34A" id="statActioned">—</div><div style="font-size:11px;color:var(--l)">Actioned</div></div>
+        <div style="background:var(--c);border-radius:12px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--t)" id="statTotal">—</div><div style="font-size:11px;color:var(--l)">Total</div></div>
+      </div>
+      <div id="reports-list"><div class="lmsg">Loading...</div></div>
+    </div>
+
+    <div class="panel" id="panel-broadcast">
+      <div class="sec-title">📢 Send Announcement</div>
+      <div class="announce-box">
+        <select id="bc-type">
+          <option value="announcement">📢 General Announcement</option>
+          <option value="alert">🔔 Safety Alert</option>
+          <option value="badge">🏆 Badge Update</option>
+        </select>
+        <textarea id="bc-text" rows="5" placeholder="Write your message to all users..."></textarea>
+        <button class="send-btn" onclick="sendBroadcast()">📢 Send to All Users</button>
+      </div>
+      <div class="sec-title">🏆 Ambassador Approvals</div>
+      <div id="amb-list"><div class="lmsg">Loading...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONFIRM MODAL (replaces confirm() which is blocked on Android Chrome) -->
+<div class="confirm-ov" id="confirmOv">
+  <div class="confirm-sheet">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmMsg">This action cannot be undone.</p>
+    <div class="confirm-btns">
+      <button class="confirm-yes" id="confirmYes">Confirm</button>
+      <button class="confirm-no" onclick="closeConfirm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+var me = null;
+var allUsers = [];
+var currentReportFilter = 'pending';
+var pendingConfirmFn = null;
+
+var COLS = ['#C4622D','#7A9E7E','#1A2332','#E8A838','#2980B9','#9B59B6'];
+function gc(s) { if (!s) return COLS[0]; var h = 0; for (var i = 0; i < s.length; i++) h = s.charCodeAt(i) + ((h << 5) - h); return COLS[Math.abs(h) % COLS.length]; }
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function gi(n) { if (!n) return '?'; var p = n.trim().split(' '); return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : n.slice(0,2).toUpperCase(); }
+function ta(ts) { if (!ts) return ''; var d = Math.floor((Date.now() - new Date(ts)) / 1000); if (d < 60) return 'just now'; if (d < 3600) return Math.floor(d/60) + 'm ago'; if (d < 86400) return Math.floor(d/3600) + 'h ago'; return Math.floor(d/86400) + 'd ago'; }
+function truncAdmin(str, n) { if (!str) return ''; return str.length > n ? str.slice(0, n) + '...' : str; }
+
+/* ── CONFIRM MODAL (replaces blocked confirm() on Android) ── */
+function showConfirm(title, msg, onYes) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  pendingConfirmFn = onYes;
+  document.getElementById('confirmOv').classList.add('open');
+  document.getElementById('confirmYes').onclick = function() { closeConfirm(); if (pendingConfirmFn) pendingConfirmFn(); };
+}
+function closeConfirm() { document.getElementById('confirmOv').classList.remove('open'); pendingConfirmFn = null; }
+
+function toast(msg) {
+  var old = document.querySelector('.toast'); if (old) old.remove();
+  var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity .4s'; }, 2500);
+  setTimeout(function() { if (t.parentNode) t.remove(); }, 3000);
+}
+
+/* ── ERROR BOUNDARY helpers ── */
+function showSectionError(containerId, retryFn) {
+  document.getElementById(containerId).innerHTML =
+    '<div class="err-box">'
+    + '<div class="err-icon">📡</div>'
+    + '<div class="err-title">Couldn\'t load data</div>'
+    + '<div class="err-sub">Check your connection and try again.</div>'
+    + '<button class="err-btn" onclick="' + retryFn + '">Try Again</button>'
+    + '</div>';
+}
+
+async function init() {
+  try {
+    var sess = await sb.auth.getSession();
+    if (!sess.data.session) { window.location.href = 'nearby-auth.html'; return; }
+    var res = await sb.from('users').select('*').eq('id', sess.data.session.user.id).single();
+    if (!res.data || !res.data.is_admin) { document.getElementById('denied').style.display = 'block'; return; }
+    me = res.data;
+    document.getElementById('adminMain').style.display = 'block';
+    document.getElementById('aav').textContent = gi(me.full_name);
+    await loadOverview();
+    await loadUsers();
+    await loadPosts();
+    await loadReports();
+    await loadAmb();
+  } catch(e) {
+    /* ── ERROR BOUNDARY: init failure ── */
+    document.getElementById('denied').style.display = 'block';
+    document.getElementById('denied').querySelector('p').textContent = 'Could not connect. Check your network and try again.';
+  }
+}
+
+async function loadOverview() {
+  try {
+    var results = await Promise.all([
+      sb.from('users').select('*', { count:'exact', head:true }),
+      sb.from('posts').select('*', { count:'exact', head:true }),
+      sb.from('jobs').select('*', { count:'exact', head:true }).eq('is_active', true),
+      sb.from('post_reports').select('*', { count:'exact', head:true }).eq('status', 'pending')
+    ]);
+    document.getElementById('s-users').textContent = results[0].count || 0;
+    document.getElementById('s-posts').textContent = results[1].count || 0;
+    document.getElementById('s-jobs').textContent = results[2].count || 0;
+    document.getElementById('s-reports').textContent = results[3].count || 0;
+  } catch(e) {}
+
+  try {
+    var recent = await sb.from('users').select('id,full_name,email,neighborhood,badge_level,created_at').order('created_at', { ascending: false }).limit(5);
+    if (recent.error) { showSectionError('recent-signups', 'loadOverview()'); }
+    else {
+      var users = recent.data || [];
+      document.getElementById('recent-signups').innerHTML = users.length ? users.map(function(u) {
+        return '<div class="user-row"><div class="uav" style="background:' + gc(u.id) + '">' + gi(u.full_name) + '</div>'
+          + '<div class="uinfo"><div class="uname">' + esc(u.full_name || 'Unknown') + '</div>'
+          + '<div class="usub">' + esc(u.email || '') + ' · ' + esc(u.neighborhood || 'No area') + ' · ' + ta(u.created_at) + '</div></div></div>';
+      }).join('') : '<div class="lmsg">No users yet</div>';
+    }
+  } catch(e) { showSectionError('recent-signups', 'loadOverview()'); }
+
+  try {
+    var nbRes = await sb.from('users').select('neighborhood').not('neighborhood', 'is', null);
+    if (!nbRes.error && nbRes.data) {
+      var counts = {};
+      nbRes.data.forEach(function(u) { if (u.neighborhood) counts[u.neighborhood] = (counts[u.neighborhood] || 0) + 1; });
+      var sorted = Object.keys(counts).map(function(k) { return [k, counts[k]]; }).sort(function(a,b) { return b[1]-a[1]; }).slice(0,6);
+      document.getElementById('top-nbs').innerHTML = sorted.length ? sorted.map(function(item) {
+        return '<div class="nb-row"><div style="font-size:14px;font-weight:600;color:var(--n)">📍 ' + esc(item[0]) + '</div><div style="font-size:13px;font-weight:700;color:var(--t)">' + item[1] + ' users</div></div>';
+      }).join('') : '<div class="lmsg">No data yet</div>';
+    }
+  } catch(e) {}
+}
+
+async function loadUsers() {
+  try {
+    var res = await sb.from('users').select('id,full_name,email,neighborhood,badge_level,rep_points,is_banned,is_admin,created_at').order('created_at', { ascending: false }).limit(50);
+    /* ── ERROR BOUNDARY ── */
+    if (res.error) { showSectionError('users-list', 'loadUsers()'); return; }
+    allUsers = res.data || [];
+    renderUsers(allUsers);
+  } catch(e) { showSectionError('users-list', 'loadUsers()'); }
+}
+
+function renderUsers(users) {
+  document.getElementById('users-list').innerHTML = users.length ? users.map(function(u) {
+    return '<div class="user-row" id="ur-' + u.id + '">'
+      + '<div class="uav" style="background:' + gc(u.id) + '">' + gi(u.full_name) + '</div>'
+      + '<div class="uinfo"><div class="uname">' + esc(u.full_name || 'Unknown') + (u.is_admin ? ' <span style="font-size:10px;background:rgba(196,98,45,.2);color:var(--t);padding:2px 6px;border-radius:100px;font-weight:700">Admin</span>' : '') + '</div>'
+      + '<div class="usub">' + esc(u.email || '') + ' · ' + esc(u.neighborhood || 'No area') + ' · ⭐' + (u.rep_points || 0) + '</div></div>'
+      + '<div class="uacts">'
+      + (u.is_banned
+        ? '<button class="pill pill-ok" onclick="unban(\'' + u.id + '\')">Unban</button>'
+        : '<button class="pill pill-ban" onclick="ban(\'' + u.id + '\')">Ban</button>')
+      + '<button class="pill pill-badge" onclick="upgrade(\'' + u.id + '\',' + (u.badge_level || 1) + ')">⭐</button>'
+      + '</div></div>';
+  }).join('') : '<div class="lmsg">No users found</div>';
+}
+
+function filterUsers() {
+  var q = document.getElementById('usearch').value.toLowerCase();
+  renderUsers(allUsers.filter(function(u) {
+    return (u.full_name||'').toLowerCase().indexOf(q) > -1
+      || (u.email||'').toLowerCase().indexOf(q) > -1
+      || (u.neighborhood||'').toLowerCase().indexOf(q) > -1;
+  }));
+}
+
+function ban(uid) {
+  showConfirm('Ban this user?', 'Their posts will be hidden and they cannot interact.', async function() {
+    try {
+      await sb.from('users').update({ is_banned: true }).eq('id', uid);
+      toast('User banned.');
+      loadUsers();
+    } catch(e) { toast('Could not ban user. Try again.'); }
+  });
+}
+
+function unban(uid) {
+  showConfirm('Unban this user?', 'They will regain full access to Nearby.', async function() {
+    try {
+      await sb.from('users').update({ is_banned: false }).eq('id', uid);
+      toast('User unbanned.');
+      loadUsers();
+    } catch(e) { toast('Could not unban. Try again.'); }
+  });
+}
+
+function upgrade(uid, lvl) {
+  var next = Math.min(4, lvl + 1);
+  var names = { 1:'Neighbor', 2:'Community Star', 3:'Ambassador', 4:'Legend' };
+  showConfirm('Upgrade badge?', 'Upgrade this user to ' + names[next] + '?', async function() {
+    try {
+      await sb.from('users').update({ badge_level: next, ambassador_approved: true }).eq('id', uid);
+      await sb.from('notifications').insert({ user_id: uid, type: 'badge', message: 'Your badge has been upgraded to ' + names[next] + '!', is_read: false });
+      toast('Upgraded to ' + names[next]);
+      loadUsers();
+    } catch(e) { toast('Could not upgrade. Try again.'); }
+  });
+}
+
+async function loadPosts() {
+  try {
+    var res = await sb.from('posts').select('*,users(full_name)').order('created_at', { ascending: false }).limit(30);
+    /* ── ERROR BOUNDARY ── */
+    if (res.error) { showSectionError('posts-list', 'loadPosts()'); return; }
+    var posts = res.data || [];
+    document.getElementById('posts-list').innerHTML = posts.length ? posts.map(function(p) {
+      var uname = (p.users && p.users.full_name) ? p.users.full_name : 'Unknown';
+      return '<div class="post-row" id="pr-' + p.id + '">'
+        + '<div class="pmeta"><span>👤 ' + esc(uname) + ' · ' + esc(p.neighborhood || '?') + '</span><span>' + ta(p.created_at) + '</span></div>'
+        + '<div class="ptext">' + esc((p.content || '').slice(0, 120)) + '</div>'
+        + '<div class="pacts">'
+        + '<button class="pill-ok" style="padding:6px 12px;border-radius:100px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif" onclick="clearPost(\'' + p.id + '\')">Clear</button>'
+        + '<button class="pill-rm" onclick="rmPost(\'' + p.id + '\')">Remove</button>'
+        + '</div></div>';
+    }).join('') : '<div class="lmsg">No posts yet</div>';
+  } catch(e) { showSectionError('posts-list', 'loadPosts()'); }
+}
+
+function clearPost(id) {
+  showConfirm('Clear this post?', 'This will unflag the post.', async function() {
+    try { await sb.from('posts').update({ is_hidden: false, report_count: 0 }).eq('id', id); loadPosts(); toast('Post cleared.'); }
+    catch(e) { toast('Could not clear post.'); }
+  });
+}
+
+function rmPost(id) {
+  showConfirm('Remove this post?', 'This will hide the post from all users.', async function() {
+    try { await sb.from('posts').update({ is_hidden: true }).eq('id', id); var el = document.getElementById('pr-' + id); if (el) el.style.display = 'none'; toast('Post removed.'); }
+    catch(e) { toast('Could not remove post.'); }
+  });
+}
+
+async function loadReports() {
+  try {
+    var allRes = await sb.from('post_reports').select('status');
+    if (!allRes.error && allRes.data) {
+      var pending = allRes.data.filter(function(r) { return r.status === 'pending'; }).length;
+      var actioned = allRes.data.filter(function(r) { return r.status === 'actioned'; }).length;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('statActioned').textContent = actioned;
+      document.getElementById('statTotal').textContent = allRes.data.length;
+      document.getElementById('s-reports').textContent = pending;
+    }
+  } catch(e) {}
+
+  try {
+    var q = sb.from('post_reports')
+      .select('*, posts(id,content,user_id,report_count,is_hidden,users(full_name))')
+      .order('created_at', { ascending: false });
+    if (currentReportFilter !== 'all') q = q.eq('status', currentReportFilter);
+    q = q.limit(50);
+    var res = await q;
+
+    /* ── ERROR BOUNDARY ── */
+    if (res.error) { showSectionError('reports-list', 'loadReports()'); return; }
+
+    var reports = res.data || [];
+    if (!reports.length) {
+      document.getElementById('reports-list').innerHTML = '<div class="lmsg">No ' + currentReportFilter + ' reports.</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < reports.length; i++) html += buildReportCard(reports[i]);
+    document.getElementById('reports-list').innerHTML = html;
+  } catch(e) { showSectionError('reports-list', 'loadReports()'); }
+}
+
+function buildReportCard(r) {
+  var post = r.posts || {};
+  var postUser = post.users || {};
+  var isDone = r.status === 'actioned' || r.status === 'dismissed';
+  var labels = { spam:'Spam', fake_news:'Fake News', harassment:'Harassment', scam:'Scam', inappropriate:'Inappropriate', violence:'Violence', hate_speech:'Hate Speech', other:'Other' };
+  var statusClass = 'status-' + (r.status || 'pending');
+  var actionsHtml = isDone
+    ? '<div class="rc-actions"><div class="rc-action-btn btn-done">' + (r.status === 'dismissed' ? 'Dismissed' : 'Actioned') + '</div></div>'
+    : '<div class="rc-actions">'
+      + '<button class="rc-action-btn btn-dismiss" onclick="doReportAction(\'' + r.id + '\',\'dismiss\')">Dismiss</button>'
+      + '<button class="rc-action-btn btn-remove" onclick="doReportAction(\'' + r.id + '\',\'remove_post\')">Remove Post</button>'
+      + '<button class="rc-action-btn btn-warn" onclick="doReportAction(\'' + r.id + '\',\'warn_user\')">Warn</button>'
+      + '<button class="rc-action-btn btn-ban" onclick="doReportAction(\'' + r.id + '\',\'ban_user\')">Ban</button>'
+      + '</div>';
+  return '<div class="report-card ' + statusClass + '">'
+    + '<div class="rc-header"><span class="rc-reason-badge ' + (r.reason || 'other') + '">' + (labels[r.reason] || 'Other') + '</span>'
+    + '<div class="rc-meta">Report</div><div class="rc-time">' + ta(r.created_at) + '</div></div>'
+    + '<div class="rc-post-preview">'
+    + '<div class="rc-post-author">By: ' + esc(postUser.full_name || 'Unknown') + (post.is_hidden ? ' · Hidden' : '') + '</div>'
+    + '<div class="rc-post-content">' + esc(truncAdmin(post.content || 'Post unavailable', 100)) + '</div>'
+    + (post.report_count > 1 ? '<div class="rc-post-count">' + post.report_count + ' total reports</div>' : '')
+    + '</div>'
+    + (r.details ? '<div class="rc-details">"' + esc(r.details) + '"</div>' : '')
+    + actionsHtml + '</div>';
+}
+
+function filterReports(filter, el) {
+  currentReportFilter = filter;
+  document.querySelectorAll('.rpt-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  loadReports();
+}
+
+function doReportAction(reportId, action) {
+  var msgs = { dismiss: 'Dismiss this report?', remove_post: 'Remove this post?', warn_user: 'Warn the post author?', ban_user: 'Ban this user?' };
+  showConfirm(msgs[action] || 'Confirm?', 'This action will be recorded.', async function() {
+    try {
+      var sess = await sb.auth.getSession();
+      await sb.rpc('admin_action_report', {
+        p_report_id: reportId,
+        p_action: action,
+        p_admin_id: sess.data.session.user.id,
+        p_note: null
+      });
+      toast('Action applied: ' + action.replace(/_/g, ' '));
+      loadReports();
+    } catch(e) {
+      /* ── ERROR BOUNDARY ── */
+      toast('Could not apply action. Try again.');
+    }
+  });
+}
+
+async function sendBroadcast() {
+  var txt = document.getElementById('bc-text').value.trim();
+  var type = document.getElementById('bc-type').value;
+  if (!txt) { toast('Write a message first.'); return; }
+  try {
+    var res = await sb.from('users').select('id').eq('is_banned', false);
+    /* ── ERROR BOUNDARY ── */
+    if (res.error) { toast('Could not fetch users. Try again.'); return; }
+    var users = res.data || [];
+    if (!users.length) { toast('No users found.'); return; }
+    var inserts = users.map(function(u) { return { user_id: u.id, type: type, message: txt, from_user_id: me.id, is_read: false }; });
+    var ins = await sb.from('notifications').insert(inserts);
+    if (ins.error) { toast('Failed: ' + ins.error.message); return; }
+    document.getElementById('bc-text').value = '';
+    toast('Sent to ' + users.length + ' users!');
+  } catch(e) { toast('No connection. Could not send.'); }
+}
+
+async function loadAmb() {
+  try {
+    var res = await sb.from('users').select('id,full_name,neighborhood,rep_points,badge_level').gte('rep_points', 400).eq('ambassador_approved', false).order('rep_points', { ascending: false });
+    if (res.error) { document.getElementById('amb-list').innerHTML = '<div class="lmsg">Could not load candidates.</div>'; return; }
+    var users = res.data || [];
+    document.getElementById('amb-list').innerHTML = users.length ? users.map(function(u) {
+      return '<div class="user-row"><div class="uav" style="background:' + gc(u.id) + '">' + gi(u.full_name) + '</div>'
+        + '<div class="uinfo"><div class="uname">' + esc(u.full_name) + '</div><div class="usub">📍 ' + esc(u.neighborhood || '?') + ' · ⭐ ' + u.rep_points + ' pts</div></div>'
+        + '<button class="pill pill-badge" onclick="approveAmb(\'' + u.id + '\')">Approve</button></div>';
+    }).join('') : '<div class="lmsg">No ambassador candidates yet.</div>';
+  } catch(e) { document.getElementById('amb-list').innerHTML = '<div class="lmsg">Could not load.</div>'; }
+}
+
+function approveAmb(uid) {
+  showConfirm('Approve Ambassador?', 'This user will be promoted to Community Ambassador.', async function() {
+    try {
+      await sb.from('users').update({ badge_level: 3, ambassador_approved: true }).eq('id', uid);
+      await sb.from('notifications').insert({ user_id: uid, type: 'badge', message: 'Congratulations! You are now a Community Ambassador!', is_read: false });
+      toast('Ambassador approved!'); loadAmb();
+    } catch(e) { toast('Could not approve. Try again.'); }
+  });
+}
+
+function show(name, btn) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('on'); });
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('on'); });
+  document.getElementById('panel-' + name).classList.add('on');
+  btn.classList.add('on');
+}
+
+init();
+</script>
+</body>
+</html>
