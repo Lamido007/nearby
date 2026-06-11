@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Search — Nearby</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --cream:#F5F0E8;--warm-white:#FDFAF4;--terracotta:#C4622D;
+  --terracotta-light:#E07A4A;--navy:#1A2332;--sage:#7A9E7E;
+  --amber:#E8A838;--gold:#D4AF37;--mid:#4A5568;--light:#8A96A8;
+}
+body{background:var(--cream);font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:80px;}
+.top-bar{background:var(--navy);padding:14px 16px 12px;position:sticky;top:0;z-index:100;}
+.top-bar-inner{display:flex;align-items:center;gap:12px;max-width:480px;margin:0 auto;}
+.back-btn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px;line-height:1;}
+.search-wrap{flex:1;position:relative;}
+.search-input{width:100%;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;padding:10px 16px 10px 40px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;}
+.search-input::placeholder{color:rgba(255,255,255,0.5);}
+.search-input:focus{border-color:var(--terracotta-light);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.6;}
+.tabs{background:var(--warm-white);border-bottom:1px solid rgba(0,0,0,0.07);position:sticky;top:60px;z-index:99;}
+.tabs-inner{display:flex;max-width:480px;margin:0 auto;}
+.tab{flex:1;padding:11px 6px;text-align:center;font-size:13px;font-weight:600;color:var(--light);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;}
+.tab.active{color:var(--terracotta);border-bottom-color:var(--terracotta);}
+.content{max-width:480px;margin:0 auto;padding:0 16px;}
+.section-label{font-size:11px;font-weight:700;color:var(--light);letter-spacing:.08em;text-transform:uppercase;margin:20px 0 10px;}
+.trend-chip{display:inline-flex;align-items:center;gap:6px;background:var(--warm-white);border:1px solid rgba(0,0,0,0.08);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;margin:0 8px 8px 0;}
+.trend-chip:active{background:var(--terracotta);color:#fff;}
+.result-card{background:var(--warm-white);border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid rgba(0,0,0,0.07);cursor:pointer;display:flex;align-items:flex-start;gap:12px;}
+.result-card:active{transform:scale(0.98);}
+.result-avatar{width:44px;height:44px;border-radius:12px;background:var(--terracotta);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;flex-shrink:0;overflow:hidden;}
+.result-avatar img{width:100%;height:100%;object-fit:cover;}
+.result-body{flex:1;min-width:0;}
+.result-title{font-weight:700;font-size:14px;color:var(--navy);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.result-sub{font-size:12px;color:var(--light);}
+.result-meta{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;}
+.result-tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:8px;}
+.tag-post{background:#FEF3E8;color:#C4622D;}
+.tag-user{background:#E8F4EE;color:#3A7D5A;}
+.tag-job{background:#EEF2FF;color:#4C5FD5;}
+.dist-badge{font-size:11px;color:var(--light);}
+.empty{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:48px;margin-bottom:16px;}
+.empty-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+.empty-sub{font-size:14px;color:var(--light);}
+.loading{text-align:center;padding:40px;color:var(--light);font-size:14px;}
+.spinner{display:inline-block;width:24px;height:24px;border:3px solid rgba(196,98,45,.2);border-top-color:var(--terracotta);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* ERROR BOX */
+.err-box{text-align:center;padding:40px 20px;}
+.err-icon{font-size:44px;margin-bottom:14px;}
+.err-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px;font-family:'DM Sans',sans-serif;}
+.err-sub{font-size:13px;color:var(--light);margin-bottom:20px;line-height:1.5;}
+.err-btn{background:var(--terracotta);color:white;border:none;border-radius:100px;padding:11px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--navy);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px;color:rgba(255,255,255,0.5);font-size:10px;font-weight:600;cursor:pointer;text-decoration:none;gap:3px;}
+.nav-item.active{color:var(--terracotta-light);}
+.nav-icon{font-size:20px;line-height:1;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="search" placeholder="Search people, posts, jobs..." autofocus autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab active" onclick="switchTab('all',this)">All</button>
+    <button class="tab" onclick="switchTab('posts',this)">Posts</button>
+    <button class="tab" onclick="switchTab('people',this)">People</button>
+    <button class="tab" onclick="switchTab('jobs',this)">Jobs</button>
+  </div>
+</div>
+
+<div class="content">
+  <div id="defaultView">
+    <div class="section-label">Trending in your area</div>
+    <div id="trendingChips"></div>
+    <div class="section-label">Recent searches</div>
+    <div id="recentSearches"></div>
+  </div>
+  <div id="resultsView" style="display:none;"><div id="resultsList"></div></div>
+  <div id="loadingView" style="display:none;" class="loading"><div class="spinner"></div><br>Searching...</div>
+  <div id="emptyView" style="display:none;" class="empty">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">No results found</div>
+    <div class="empty-sub" id="emptySubText">Try a different keyword</div>
+  </div>
+  <div id="errorView" style="display:none;" class="err-box">
+    <div class="err-icon">📡</div>
+    <div class="err-title">Search failed</div>
+    <div class="err-sub">Check your connection and try again.</div>
+    <button class="err-btn" onclick="retrySearch()">Try Again</button>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="nearby-feed.html"><span class="nav-icon">🏠</span>Home</a>
+  <a class="nav-item active" href="nearby-search.html"><span class="nav-icon">🔍</span>Search</a>
+  <a class="nav-item" href="nearby-jobs.html"><span class="nav-icon">💼</span>Jobs</a>
+  <a class="nav-item" href="nearby-messages.html"><span class="nav-icon">💬</span>Messages</a>
+  <a class="nav-item" href="nearby-profile.html"><span class="nav-icon">👤</span>Profile</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+var currentTab = 'all';
+var searchTimer = null;
+var currentUser = null;
+var userLat = null;
+var userLng = null;
+var lastQuery = '';
+
+function showDefault() {
+  document.getElementById('defaultView').style.display = 'block';
+  document.getElementById('resultsView').style.display = 'none';
+  document.getElementById('loadingView').style.display = 'none';
+  document.getElementById('emptyView').style.display = 'none';
+  document.getElementById('errorView').style.display = 'none';
+}
+function showLoading() {
+  document.getElementById('defaultView').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'none';
+  document.getElementById('loadingView').style.display = 'block';
+  document.getElementById('emptyView').style.display = 'none';
+  document.getElementById('errorView').style.display = 'none';
+}
+function showResults(html) {
+  document.getElementById('defaultView').style.display = 'none';
+  document.getElementById('loadingView').style.display = 'none';
+  document.getElementById('emptyView').style.display = 'none';
+  document.getElementById('errorView').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('resultsList').innerHTML = html;
+}
+function showEmpty(q) {
+  document.getElementById('defaultView').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'none';
+  document.getElementById('loadingView').style.display = 'none';
+  document.getElementById('errorView').style.display = 'none';
+  document.getElementById('emptyView').style.display = 'block';
+  document.getElementById('emptySubText').textContent = 'No results for "' + q + '"';
+}
+/* ── ERROR BOUNDARY: show error view ── */
+function showError() {
+  document.getElementById('defaultView').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'none';
+  document.getElementById('loadingView').style.display = 'none';
+  document.getElementById('emptyView').style.display = 'none';
+  document.getElementById('errorView').style.display = 'block';
+}
+function retrySearch() {
+  if (lastQuery) runSearch(lastQuery);
+  else showDefault();
+}
+
+async function init() {
+  try {
+    var session = await getSession();
+    if (!session) { window.location.href = 'nearby-auth.html'; return; }
+    currentUser = await getCurrentUser();
+    try {
+      var distEnabled = localStorage.getItem('nearby_distance_enabled');
+      if (distEnabled === 'true') {
+        userLat = parseFloat(localStorage.getItem('nearby_user_lat') || '0');
+        userLng = parseFloat(localStorage.getItem('nearby_user_lng') || '0');
+      }
+    } catch(e) {}
+    loadTrending();
+    loadRecentSearches();
+    document.getElementById('searchInput').addEventListener('input', function() {
+      clearTimeout(searchTimer);
+      var q = this.value.trim();
+      if (!q) { showDefault(); return; }
+      var self = this;
+      searchTimer = setTimeout(function() { runSearch(self.value.trim()); }, 350);
+    });
+    document.getElementById('searchInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { clearTimeout(searchTimer); runSearch(this.value.trim()); }
+    });
+  } catch(e) {
+    /* ── ERROR BOUNDARY: init failure ── */
+    showError();
+  }
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var q = document.getElementById('searchInput').value.trim();
+  if (q) runSearch(q);
+}
+
+function loadTrending() {
+  var trends = ['Electricity','Generator','Security Alert','Jobs Available','New Restaurant','Free WiFi','Water Supply','Traffic'];
+  var html = '';
+  for (var i = 0; i < trends.length; i++) {
+    html += '<span class="trend-chip" onclick="setSearch(\'' + trends[i] + '\')"><span>🔥</span>' + trends[i] + '</span>';
+  }
+  document.getElementById('trendingChips').innerHTML = html;
+}
+
+function loadRecentSearches() {
+  try {
+    var recent = JSON.parse(localStorage.getItem('nearby_recent_searches') || '[]');
+    if (!recent.length) {
+      document.getElementById('recentSearches').innerHTML = '<p style="color:var(--light);font-size:13px;padding:8px 0;">No recent searches</p>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < recent.length; i++) {
+      html += '<span class="trend-chip" onclick="setSearch(\'' + recent[i] + '\')"><span>🕐</span>' + recent[i] + '</span>';
+    }
+    document.getElementById('recentSearches').innerHTML = html;
+  } catch(e) {}
+}
+
+function setSearch(q) {
+  document.getElementById('searchInput').value = q;
+  runSearch(q);
+}
+
+function saveSearch(q) {
+  try {
+    var recent = JSON.parse(localStorage.getItem('nearby_recent_searches') || '[]');
+    recent = recent.filter(function(r) { return r !== q; });
+    recent.unshift(q);
+    if (recent.length > 6) recent = recent.slice(0, 6);
+    localStorage.setItem('nearby_recent_searches', JSON.stringify(recent));
+  } catch(e) {}
+}
+
+async function runSearch(q) {
+  if (!q) { showDefault(); return; }
+  showLoading();
+  saveSearch(q);
+  lastQuery = q;
+
+  var results = [];
+  var tab = currentTab;
+
+  try {
+    if (tab === 'all' || tab === 'posts') {
+      var pRes = await sb.from('posts')
+        .select('id,content,post_type,neighborhood,created_at,latitude,longitude,user_id,users(full_name,avatar_url)')
+        .ilike('content', '%' + q + '%')
+        .order('created_at', { ascending: false })
+        .limit(tab === 'posts' ? 20 : 5);
+      /* ── ERROR BOUNDARY: check individual query errors ── */
+      if (!pRes.error && pRes.data) {
+        for (var i = 0; i < pRes.data.length; i++) {
+          pRes.data[i]._type = 'post';
+          results.push(pRes.data[i]);
+        }
+      }
+    }
+
+    if (tab === 'all' || tab === 'people') {
+      var uRes = await sb.from('users')
+        .select('id,full_name,avatar_url,occupation,neighborhood,badge_level,latitude,longitude')
+        .or('full_name.ilike.%' + q + '%,occupation.ilike.%' + q + '%,neighborhood.ilike.%' + q + '%')
+        .limit(tab === 'people' ? 20 : 5);
+      if (!uRes.error && uRes.data) {
+        for (var j = 0; j < uRes.data.length; j++) {
+          uRes.data[j]._type = 'user';
+          results.push(uRes.data[j]);
+        }
+      }
+    }
+
+    if (tab === 'all' || tab === 'jobs') {
+      var jRes = await sb.from('jobs')
+        .select('id,title,description,job_type,pay,neighborhood,is_urgent,latitude,longitude')
+        .or('title.ilike.%' + q + '%,description.ilike.%' + q + '%,neighborhood.ilike.%' + q + '%')
+        .eq('is_active', true)
+        .limit(tab === 'jobs' ? 20 : 5);
+      if (!jRes.error && jRes.data) {
+        for (var k = 0; k < jRes.data.length; k++) {
+          jRes.data[k]._type = 'job';
+          results.push(jRes.data[k]);
+        }
+      }
+    }
+
+    if (!results.length) { showEmpty(q); return; }
+
+    var html = '<div class="section-label">' + results.length + ' result' + (results.length !== 1 ? 's' : '') + ' for "' + q + '"</div>';
+    for (var r = 0; r < results.length; r++) html += renderResult(results[r]);
+    showResults(html);
+
+  } catch(e) {
+    /* ── ERROR BOUNDARY: network failure ── */
+    showError();
+  }
+}
+
+function renderResult(item) {
+  var distHtml = '';
+  if (userLat && userLng && item.latitude && item.longitude) {
+    var d = calcDistance(userLat, userLng, item.latitude, item.longitude);
+    distHtml = '<span class="dist-badge">📍 ' + formatDist(d) + '</span>';
+  }
+
+  if (item._type === 'post') {
+    var user = item.users || {};
+    var avatar = user.avatar_url
+      ? '<img src="' + user.avatar_url + '" onerror="this.style.display=\'none\'">'
+      : getInitials(user.full_name || 'U');
+    var tag = item.post_type === 'event' ? '<span class="result-tag" style="background:#FFF8E1;color:#B8860B">Event</span>'
+            : item.post_type === 'alert' ? '<span class="result-tag" style="background:#FEE2E2;color:#DC2626">Alert</span>'
+            : '<span class="result-tag tag-post">Post</span>';
+    return '<div class="result-card" onclick="window.location.href=\'nearby-feed.html\'">'
+      + '<div class="result-avatar">' + avatar + '</div>'
+      + '<div class="result-body">'
+      + '<div class="result-title">' + esc(user.full_name || 'Unknown') + '</div>'
+      + '<div class="result-sub">' + esc(truncate(item.content, 60)) + '</div>'
+      + '<div class="result-meta">' + tag + '<span style="font-size:11px;color:var(--light)">📍' + esc(item.neighborhood || '') + '</span>' + distHtml + '</div>'
+      + '</div></div>';
+  }
+
+  if (item._type === 'user') {
+    var badge = item.badge_level === 4 ? '👑' : item.badge_level === 3 ? '🏆' : item.badge_level === 2 ? '⭐' : '🏡';
+    var av2 = item.avatar_url
+      ? '<img src="' + item.avatar_url + '" onerror="this.style.display=\'none\'">'
+      : getInitials(item.full_name || 'U');
+    return '<div class="result-card" onclick="window.location.href=\'nearby-profile.html?id=' + item.id + '\'">'
+      + '<div class="result-avatar" style="background:var(--sage)">' + av2 + '</div>'
+      + '<div class="result-body">'
+      + '<div class="result-title">' + badge + ' ' + esc(item.full_name || 'Unknown') + '</div>'
+      + '<div class="result-sub">' + esc(item.occupation || 'Nearby member') + '</div>'
+      + '<div class="result-meta"><span class="result-tag tag-user">Person</span><span style="font-size:11px;color:var(--light)">📍' + esc(item.neighborhood || '') + '</span>' + distHtml + '</div>'
+      + '</div></div>';
+  }
+
+  if (item._type === 'job') {
+    var urgentBadge = item.is_urgent ? '<span class="result-tag" style="background:#FEE2E2;color:#DC2626">Urgent</span>' : '';
+    return '<div class="result-card" onclick="window.location.href=\'nearby-jobs.html\'">'
+      + '<div class="result-avatar" style="background:#4C5FD5;font-size:22px">💼</div>'
+      + '<div class="result-body">'
+      + '<div class="result-title">' + esc(item.title || 'Job') + '</div>'
+      + '<div class="result-sub">' + esc(item.pay || 'Negotiable') + ' · ' + esc(item.job_type || '') + '</div>'
+      + '<div class="result-meta"><span class="result-tag tag-job">Job</span>' + urgentBadge + '<span style="font-size:11px;color:var(--light)">📍' + esc(item.neighborhood || '') + '</span>' + distHtml + '</div>'
+      + '</div></div>';
+  }
+  return '';
+}
+
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function truncate(str, n) { if (!str) return ''; return str.length > n ? str.slice(0, n) + '...' : str; }
+function calcDistance(lat1, lng1, lat2, lng2) {
+  var R = 6371;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLng = (lng2 - lng1) * Math.PI / 180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function formatDist(km) { if (km < 1) return Math.round(km * 1000) + 'm away'; return km.toFixed(1) + 'km away'; }
+
+init();
+</script>
+</body>
+</html>
