@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
+<title>Nearby Market</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4;--r:#E53E3E;--g:#38A169}
+html{width:100%;background:#EEE9DF}
+body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);max-width:480px;margin:0 auto;min-height:100dvh;-webkit-font-smoothing:antialiased}
+
+/* HEADER */
+.hero{background:linear-gradient(135deg,var(--n) 0%,#2C3E6B 100%);padding:20px 16px 24px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(232,168,56,.2),transparent 70%);border-radius:50%}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.back-btn{background:none;border:none;color:rgba(255,255,255,.7);font-size:22px;cursor:pointer;padding:4px;-webkit-tap-highlight-color:transparent}
+.hero-title{font-family:"Playfair Display",serif;font-size:22px;font-weight:900;color:white}
+.hero-title span{color:var(--a)}
+.post-btn{background:var(--t);color:white;border:none;border-radius:100px;padding:8px 16px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:16px}
+
+/* SEARCH */
+.search-bar{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:10px 14px}
+.search-bar input{flex:1;background:none;border:none;outline:none;color:white;font-family:"DM Sans",sans-serif;font-size:14px}
+.search-bar input::placeholder{color:rgba(255,255,255,.45)}
+
+/* FILTER CHIPS */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:var(--w);scrollbar-width:none;border-bottom:1px solid rgba(0,0,0,.06)}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:6px 14px;border-radius:100px;border:2px solid rgba(0,0,0,.1);background:transparent;font-size:12px;font-weight:600;color:var(--m);cursor:pointer;font-family:"DM Sans",sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.chip.on{background:var(--n);border-color:var(--n);color:white}
+
+/* STATS */
+.stats{display:flex;background:var(--w);padding:10px 16px;border-bottom:1px solid rgba(0,0,0,.06);gap:16px;margin-bottom:10px}
+.stat{font-size:12px;color:var(--l);font-weight:600}
+.stat b{color:var(--n)}
+
+/* LISTING CARDS */
+.list{padding:0 12px 100px}
+.listing-card{background:var(--w);border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);-webkit-tap-highlight-color:transparent}
+.listing-card:active{transform:scale(.98)}
+.listing-img{width:100%;height:180px;object-fit:cover;display:block;background:var(--c)}
+.listing-img-placeholder{width:100%;height:140px;background:linear-gradient(135deg,var(--c),#E8E3DB);display:flex;align-items:center;justify-content:center;font-size:40px}
+.listing-body{padding:14px}
+.listing-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.listing-title{font-size:15px;font-weight:700;color:var(--n);flex:1;padding-right:8px}
+.price-badge{font-size:15px;font-weight:700;color:var(--t);white-space:nowrap}
+.price-free{color:var(--g)}
+.price-swap{color:var(--a)}
+.listing-desc{font-size:13px;color:var(--m);line-height:1.5;margin-bottom:10px}
+.listing-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.meta-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:8px}
+.tag-condition-new{background:rgba(56,161,105,.1);color:var(--g)}
+.tag-condition-used{background:rgba(74,85,104,.1);color:var(--m)}
+.tag-swap{background:rgba(232,168,56,.15);color:#B07D10}
+.tag-free{background:rgba(56,161,105,.12);color:var(--g)}
+.tag-sold{background:rgba(229,62,62,.1);color:var(--r)}
+.listing-seller{display:flex;align-items:center;gap:8px;padding-top:10px;border-top:1px solid rgba(0,0,0,.06)}
+.seller-av{width:28px;height:28px;border-radius:50%;background:var(--t);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;overflow:hidden;position:relative}
+.seller-av img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.seller-info{flex:1;min-width:0}
+.seller-name{font-size:12px;font-weight:600;color:var(--n)}
+.seller-loc{font-size:11px;color:var(--l)}
+.listing-actions{display:flex;gap:8px;margin-top:10px}
+.btn-contact{flex:1;padding:10px;border-radius:100px;background:var(--n);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.btn-wa{padding:10px 14px;border-radius:100px;background:rgba(37,211,102,.12);color:#25D366;border:none;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-sold{flex:1;padding:10px;border-radius:100px;background:var(--c);color:var(--l);border:none;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+
+/* SKELETON */
+.sk-card{background:var(--w);border-radius:16px;margin-bottom:12px;overflow:hidden;animation:shimmer 1.5s ease infinite}
+.sk-img{height:140px;background:rgba(0,0,0,.07)}
+.sk-body{padding:14px}
+.sk-line{height:12px;border-radius:100px;background:rgba(0,0,0,.07);margin-bottom:8px}
+.sk-line.w8{width:80%}.sk-line.w5{width:50%}.sk-line.w3{width:30%}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px}
+.empty-icon{font-size:48px;margin-bottom:14px}
+.empty-title{font-size:17px;font-weight:700;color:var(--n);margin-bottom:8px}
+.empty-sub{font-size:13px;color:var(--m);line-height:1.6;margin-bottom:20px}
+.empty-btn{padding:12px 28px;border-radius:100px;background:var(--t);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+
+/* ERROR */
+.err-box{text-align:center;padding:40px 20px;background:var(--w);border-radius:16px;margin:12px}
+.err-icon{font-size:40px;margin-bottom:12px}
+.err-title{font-size:15px;font-weight:700;color:var(--n);margin-bottom:6px}
+.err-sub{font-size:13px;color:var(--l);margin-bottom:18px}
+.err-btn{background:var(--t);color:white;border:none;border-radius:100px;padding:10px 22px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+
+/* POST SHEET */
+.sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200}
+.sov.open{display:block}
+.sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--w);border-radius:24px 24px 0 0;padding:20px 20px 40px;box-shadow:0 -8px 40px rgba(0,0,0,.2);z-index:201;max-height:92dvh;overflow-y:auto;transition:transform .35s cubic-bezier(.32,.72,0,1)}
+.sheet.open{transform:translateX(-50%) translateY(0)}
+.sh{width:40px;height:4px;background:rgba(0,0,0,.1);border-radius:100px;margin:0 auto 18px}
+.sheet-title{font-size:18px;font-weight:700;color:var(--n);margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--n);margin-bottom:5px}
+.field input,.field textarea,.field select{width:100%;padding:12px 14px;border:2px solid rgba(0,0,0,.1);border-radius:12px;background:white;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--n);outline:none;resize:none;-webkit-appearance:none;appearance:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--t)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toggle-row{display:flex;gap:10px;margin-bottom:14px}
+.toggle-btn{flex:1;padding:10px;border-radius:12px;border:2px solid rgba(0,0,0,.1);background:white;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;color:var(--m);cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.toggle-btn.on{border-color:var(--t);color:var(--t);background:rgba(196,98,45,.06)}
+.img-upload-btn{width:100%;padding:12px;border-radius:12px;border:2px dashed rgba(0,0,0,.15);background:var(--c);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;color:var(--m);cursor:pointer;text-align:center;margin-bottom:14px}
+.img-preview{width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:14px;display:none}
+.submit-btn{width:100%;padding:14px;border-radius:14px;background:var(--t);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
+.submit-btn:disabled{opacity:.6}
+.form-err{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;background:rgba(229,62,62,.1);color:var(--r);display:none}
+.form-err.show{display:block}
+
+/* TOAST */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--n);display:flex;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:"DM Sans",sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.bni-i{font-size:20px}.bni-l{font-size:10px;font-weight:600;color:rgba(255,255,255,.5)}
+.bni.on .bni-l{color:#E07A4A}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-top">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="hero-title">Nearby <span>Market</span></div>
+    <button class="post-btn" onclick="openSheet()">+ Sell</button>
+  </div>
+  <div class="hero-sub" id="heroSub">Buy, sell and swap in your neighborhood</div>
+  <div class="search-bar">
+    <span style="font-size:16px;opacity:.6">🔍</span>
+    <input type="text" id="searchIn" placeholder="Search items..." oninput="filterListings()"/>
+  </div>
+</div>
+
+<div class="chips">
+  <button class="chip on" onclick="setChip(this,'all')">🏪 All</button>
+  <button class="chip" onclick="setChip(this,'for_sale')">💰 For Sale</button>
+  <button class="chip" onclick="setChip(this,'free')">🎁 Free</button>
+  <button class="chip" onclick="setChip(this,'swap')">🔄 Swap</button>
+  <button class="chip" onclick="setChip(this,'electronics')">📱 Electronics</button>
+  <button class="chip" onclick="setChip(this,'furniture')">🪑 Furniture</button>
+  <button class="chip" onclick="setChip(this,'clothing')">👕 Clothing</button>
+  <button class="chip" onclick="setChip(this,'food')">🍱 Food</button>
+</div>
+
+<div class="stats" id="statsBar">
+  <div class="stat"><b id="statCount">—</b> items</div>
+  <div class="stat"><b id="statHood">—</b></div>
+</div>
+
+<div class="list" id="listContainer">
+  <div class="sk-card"><div class="sk-img"></div><div class="sk-body"><div class="sk-line w8"></div><div class="sk-line w5"></div><div class="sk-line w3"></div></div></div>
+  <div class="sk-card"><div class="sk-img"></div><div class="sk-body"><div class="sk-line w8"></div><div class="sk-line w5"></div></div></div>
+  <div class="sk-card"><div class="sk-img"></div><div class="sk-body"><div class="sk-line w5"></div><div class="sk-line w8"></div></div></div>
+</div>
+
+<!-- POST SHEET -->
+<div class="sov" id="sov" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sh"></div>
+  <div class="sheet-title">📦 List an Item</div>
+  <div class="form-err" id="formErr"></div>
+  <div class="field"><label>Item Title *</label><input type="text" id="fTitle" maxlength="100" placeholder="e.g. Samsung TV, Sofa, Blender..."/></div>
+  <div class="field"><label>Description</label><textarea id="fDesc" rows="3" maxlength="500" placeholder="Describe the item, size, color, any defects..."></textarea></div>
+  <div class="field-row">
+    <div class="field"><label>Category</label>
+      <select id="fCat">
+        <option value="general">General</option>
+        <option value="electronics">Electronics</option>
+        <option value="furniture">Furniture</option>
+        <option value="clothing">Clothing</option>
+        <option value="food">Food</option>
+        <option value="appliances">Appliances</option>
+        <option value="books">Books</option>
+        <option value="vehicles">Vehicles</option>
+        <option value="services">Services</option>
+      </select>
+    </div>
+    <div class="field"><label>Condition</label>
+      <select id="fCond">
+        <option value="used">Used</option>
+        <option value="new">New</option>
+        <option value="fairly_used">Fairly Used</option>
+        <option value="refurbished">Refurbished</option>
+      </select>
+    </div>
+  </div>
+  <div class="field"><label>Listing Type *</label></div>
+  <div class="toggle-row">
+    <button class="toggle-btn on" id="tSale" onclick="setType('sale')">💰 For Sale</button>
+    <button class="toggle-btn" id="tFree" onclick="setType('free')">🎁 Free</button>
+    <button class="toggle-btn" id="tSwap" onclick="setType('swap')">🔄 Swap</button>
+  </div>
+  <div class="field" id="priceField"><label>Price (₦) *</label><input type="number" id="fPrice" placeholder="e.g. 15000" min="0"/></div>
+  <div class="field"><label>Your WhatsApp Number *</label><input type="tel" id="fPhone" maxlength="15" placeholder="e.g. 08012345678"/></div>
+  <button class="img-upload-btn" onclick="document.getElementById('imgIn').click()">📷 Add Photo (optional)</button>
+  <input type="file" id="imgIn" accept="image/*" style="display:none" onchange="prevImg(this)"/>
+  <img id="imgPrev" class="img-preview" alt=""/>
+  <button class="submit-btn" id="submitBtn" onclick="submitListing()">List Item on Market →</button>
+</div>
+
+<div class="bnav">
+  <a href="nearby-feed.html" class="bni"><div class="bni-i">🏡</div><div class="bni-l">Home</div></a>
+  <a href="nearby-search.html" class="bni"><div class="bni-i">🔍</div><div class="bni-l">Search</div></a>
+  <a href="nearby-market.html" class="bni on"><div class="bni-i">🏪</div><div class="bni-l">Market</div></a>
+  <a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+  <a href="nearby-profile.html" class="bni"><div class="bni-i">👤</div><div class="bni-l">Profile</div></a>
+</div>
+
+<script>
+var me = null;
+var allListings = [];
+var currentFilter = 'all';
+var listingType = 'sale';
+var imgFile = null;
+var COLS = ['#C4622D','#7A9E7E','#1A2332','#E8A838','#4C5FD5','#9B59B6'];
+
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function sanitize(s,n){if(!s)return '';var c=String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,'').replace(/javascript\s*:/gi,'').replace(/<[^>]*>/g,'').trim();return n&&c.length>n?c.slice(0,n):c;}
+function gc(s){if(!s)return COLS[0];var h=0;for(var i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i);return COLS[Math.abs(h)%COLS.length];}
+function gi(n){if(!n)return '?';var p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase();}
+function timeAgo(ts){if(!ts)return '';var d=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(d<60)return 'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago';}
+
+function showToast(msg){var old=document.querySelector('.toast');if(old)old.remove();var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2500);setTimeout(function(){if(t.parentNode)t.remove();},3000);}
+
+function showError(){
+  document.getElementById('listContainer').innerHTML=
+    '<div class="err-box"><div class="err-icon">📡</div><div class="err-title">Couldn\'t load listings</div><div class="err-sub">Check your connection and try again.</div><button class="err-btn" onclick="loadListings()">Try Again</button></div>';
+}
+
+async function init(){
+  try{
+    var sess=await getSession();
+    if(!sess){window.location.href='nearby-auth.html';return;}
+    me=await getCurrentUser();
+    if(!me){window.location.href='nearby-auth.html';return;}
+    document.getElementById('heroSub').textContent='What\'s available in '+( me.neighborhood||'your neighborhood');
+    document.getElementById('statHood').textContent=me.neighborhood||'Your area';
+    if(me.neighborhood)document.getElementById('fTitle').placeholder='e.g. Samsung TV, Sofa, Blender...';
+    await loadListings();
+  }catch(e){showError();}
+}
+
+async function loadListings(){
+  document.getElementById('listContainer').innerHTML=
+    '<div class="sk-card"><div class="sk-img"></div><div class="sk-body"><div class="sk-line w8"></div><div class="sk-line w5"></div><div class="sk-line w3"></div></div></div>'
+    +'<div class="sk-card"><div class="sk-img"></div><div class="sk-body"><div class="sk-line w8"></div><div class="sk-line w5"></div></div></div>';
+  try{
+    var res=await sb.from('market_listings')
+      .select('*,users(id,full_name,avatar_url,neighborhood)')
+      .eq('is_active',true)
+      .eq('neighborhood',me.neighborhood||'')
+      .order('created_at',{ascending:false})
+      .limit(50);
+    if(res.error){showError();return;}
+    allListings=res.data||[];
+    document.getElementById('statCount').textContent=allListings.length;
+    renderListings(allListings);
+  }catch(e){showError();}
+}
+
+function renderListings(items){
+  var container=document.getElementById('listContainer');
+  var filtered=currentFilter==='all'?items:items.filter(function(l){
+    if(currentFilter==='free')return l.is_free;
+    if(currentFilter==='swap')return l.is_swap;
+    if(currentFilter==='for_sale')return !l.is_free&&!l.is_swap;
+    return l.category===currentFilter;
+  });
+  var search=document.getElementById('searchIn').value.toLowerCase();
+  var results=search?filtered.filter(function(l){return((l.title||'')+(l.description||'')).toLowerCase().indexOf(search)>-1;}):filtered;
+
+  if(!results.length){
+    container.innerHTML='<div class="empty"><div class="empty-icon">🏪</div><div class="empty-title">Nothing listed yet</div><div class="empty-sub">Be the first to list something for sale, free, or swap in your neighborhood.</div><button class="empty-btn" onclick="openSheet()">List Something</button></div>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<results.length;i++)html+=buildCard(results[i]);
+  container.innerHTML=html;
+}
+
+function buildCard(l){
+  var seller=l.users||{};
+  var color=gc(l.user_id||'x');
+  var avH=seller.avatar_url?'<img src="'+seller.avatar_url+'" onerror="this.style.display=\'none\'">':(gi(seller.full_name||'?'));
+  var priceHtml=l.is_free?'<span class="price-badge price-free">FREE</span>':l.is_swap?'<span class="price-badge price-swap">SWAP</span>':'<span class="price-badge">&#x20A6;'+Number(l.price||0).toLocaleString()+'</span>';
+  var tags='';
+  if(l.is_sold)tags+='<span class="meta-tag tag-sold">SOLD</span>';
+  else if(l.is_free)tags+='<span class="meta-tag tag-free">Free</span>';
+  else if(l.is_swap)tags+='<span class="meta-tag tag-swap">Swap</span>';
+  if(l.condition==='new')tags+='<span class="meta-tag tag-condition-new">New</span>';
+  else if(l.condition)tags+='<span class="meta-tag tag-condition-used">'+esc(l.condition.replace('_',' '))+'</span>';
+
+  var imgHtml=l.image_url
+    ?'<img class="listing-img" src="'+esc(l.image_url)+'" alt="'+esc(l.title)+'" onerror="this.style.display=\'none\'">'
+    :'<div class="listing-img-placeholder">📦</div>';
+
+  var isOwn=me&&me.id===l.user_id;
+  var actionsHtml=l.is_sold
+    ?'<div class="listing-actions"><button class="btn-sold" disabled>✓ Sold</button></div>'
+    :isOwn
+      ?'<div class="listing-actions"><button class="btn-contact" onclick="markSold(\''+l.id+'\')">Mark as Sold</button><button class="btn-wa" onclick="shareWA(\''+esc(l.title)+'\',\''+esc(l.price?'N'+l.price:'Free')+'\')">📤 Share</button></div>'
+      :'<div class="listing-actions"><button class="btn-contact" onclick="contactSeller(\''+esc(l.title)+'\','+(l.phone?'\''+l.phone+'\'':'null')+')">💬 Contact</button><button class="btn-wa" onclick="shareWA(\''+esc(l.title)+'\',\''+esc(l.price?'N'+l.price:'Free')+'\')">📤 Share</button></div>';
+
+  return '<div class="listing-card">'
+    +imgHtml
+    +'<div class="listing-body">'
+    +'<div class="listing-top"><div class="listing-title">'+esc(l.title)+'</div>'+priceHtml+'</div>'
+    +(l.description?'<div class="listing-desc">'+esc(l.description.slice(0,100))+(l.description.length>100?'...':'')+'</div>':'')
+    +'<div class="listing-meta">'+tags+'<span style="font-size:11px;color:var(--l)">'+timeAgo(l.created_at)+'</span></div>'
+    +'<div class="listing-seller"><div class="seller-av" style="background:'+color+'">'+avH+'</div>'
+    +'<div class="seller-info"><div class="seller-name">'+esc(seller.full_name||'Neighbor')+'</div><div class="seller-loc">📍 '+esc(seller.neighborhood||l.neighborhood||'Nearby')+'</div></div></div>'
+    +actionsHtml
+    +'</div></div>';
+}
+
+function setChip(el,filter){
+  currentFilter=filter;
+  document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});
+  el.classList.add('on');
+  renderListings(allListings);
+}
+
+function filterListings(){renderListings(allListings);}
+
+function setType(type){
+  listingType=type;
+  document.getElementById('tSale').classList.remove('on');
+  document.getElementById('tFree').classList.remove('on');
+  document.getElementById('tSwap').classList.remove('on');
+  document.getElementById('t'+type.charAt(0).toUpperCase()+type.slice(1)).classList.add('on');
+  document.getElementById('priceField').style.display=type==='sale'?'block':'none';
+}
+
+function openSheet(){document.getElementById('sheet').classList.add('open');document.getElementById('sov').classList.add('open');}
+function closeSheet(){document.getElementById('sheet').classList.remove('open');document.getElementById('sov').classList.remove('open');}
+
+function prevImg(input){
+  var file=input.files[0];if(!file)return;
+  imgFile=file;
+  var reader=new FileReader();
+  reader.onload=function(e){var prev=document.getElementById('imgPrev');prev.src=e.target.result;prev.style.display='block';};
+  reader.readAsDataURL(file);
+}
+
+async function submitListing(){
+  var title=sanitize(document.getElementById('fTitle').value,100);
+  var desc=sanitize(document.getElementById('fDesc').value,500);
+  var phone=sanitize(document.getElementById('fPhone').value,15);
+  var price=document.getElementById('fPrice').value;
+  var cat=document.getElementById('fCat').value;
+  var cond=document.getElementById('fCond').value;
+  var errEl=document.getElementById('formErr');
+  errEl.className='form-err';
+
+  if(!title){errEl.textContent='Please enter a title.';errEl.className='form-err show';return;}
+  if(!phone){errEl.textContent='Please add your WhatsApp number.';errEl.className='form-err show';return;}
+  if(listingType==='sale'&&(!price||isNaN(price)||Number(price)<0)){errEl.textContent='Please enter a valid price.';errEl.className='form-err show';return;}
+
+  var btn=document.getElementById('submitBtn');
+  btn.disabled=true;btn.textContent='Listing...';
+
+  var imgUrl=null;
+  if(imgFile){
+    try{
+      var ext=(imgFile.name.split('.').pop()||'jpg').toLowerCase();
+      var path='market/'+me.id+'/'+Date.now()+'.'+ext;
+      var up=await sb.storage.from('post-images').upload(path,imgFile,{upsert:true});
+      if(!up.error)imgUrl=sb.storage.from('post-images').getPublicUrl(path).data.publicUrl;
+    }catch(e){}
+  }
+
+  try{
+    var res=await sb.from('market_listings').insert({
+      user_id:me.id,
+      title:title,
+      description:desc||null,
+      price:listingType==='sale'?Number(price):null,
+      is_free:listingType==='free',
+      is_swap:listingType==='swap',
+      category:cat,
+      condition:cond,
+      neighborhood:me.neighborhood||'General',
+      phone:phone,
+      image_url:imgUrl,
+      is_sold:false,
+      is_active:true
+    }).select();
+
+    if(res.error){errEl.textContent=res.error.message;errEl.className='form-err show';btn.disabled=false;btn.textContent='List Item on Market';return;}
+
+    closeSheet();
+    showToast('Item listed! Neighbors can now see it.');
+    if(res.data&&res.data[0]){res.data[0].users=me;allListings.unshift(res.data[0]);document.getElementById('statCount').textContent=allListings.length;renderListings(allListings);}
+    btn.disabled=false;btn.textContent='List Item on Market';
+    ['fTitle','fDesc','fPhone','fPrice'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('imgPrev').style.display='none';
+    imgFile=null;setType('sale');
+    try{await addRepPoints(me.id,5);}catch(e){}
+
+  }catch(e){
+    errEl.textContent='No connection. Try again.';errEl.className='form-err show';
+    btn.disabled=false;btn.textContent='List Item on Market';
+  }
+}
+
+function contactSeller(title,phone){
+  if(phone){
+    var msg=encodeURIComponent('Hi! I saw your listing for *'+title+'* on Nearby Market. Is it still available?');
+    window.open('https://wa.me/'+phone.replace(/\D/g,'')+' ?text='+msg,'_blank');
+  }else{
+    showToast('Contact info not available');
+  }
+}
+
+function shareWA(title,price){
+  var msg=encodeURIComponent(title+' - '+price+'\n\nListed on Nearby Market - nearby-navy.vercel.app');
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+async function markSold(listingId){
+  try{
+    var res=await sb.from('market_listings').update({is_sold:true}).eq('id',listingId);
+    if(res.error){showToast('Could not update. Try again.');return;}
+    showToast('Marked as sold!');
+    for(var i=0;i<allListings.length;i++){if(allListings[i].id===listingId){allListings[i].is_sold=true;break;}}
+    renderListings(allListings);
+  }catch(e){showToast('No connection. Try again.');}
+}
+
+init();
+</script>
+<script src="nearby-push.js"></script>
+</body>
+</html>
