@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A2332"/>
+<title>Security Alert — Nearby</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c:#F5F0E8;--t:#C4622D;--n:#1A2332;--s:#7A9E7E;--a:#E8A838;--m:#4A5568;--l:#8A96A8;--w:#FDFAF4;--r:#DC2626;--g:#16A34A}
+html{width:100%;background:#EEE9DF}
+body{font-family:"DM Sans",sans-serif;background:#EEE9DF;color:var(--n);max-width:480px;margin:0 auto;min-height:100dvh}
+
+.hero{background:linear-gradient(135deg,#7F1D1D 0%,#DC2626 100%);padding:20px 16px 28px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%);border-radius:50%}
+.hero-top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.back-btn{background:rgba(255,255,255,.15);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.hero-title{font-family:"Playfair Display",serif;font-size:22px;font-weight:900;color:white;flex:1}
+.pulse-icon{width:48px;height:48px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;animation:alertpulse 1.5s ease-in-out infinite}
+@keyframes alertpulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,.4)}50%{transform:scale(1.05);box-shadow:0 0 0 8px rgba(255,255,255,0)}}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.7);line-height:1.5}
+.hero-hood{font-size:14px;font-weight:700;color:white;margin-top:6px;display:flex;align-items:center;gap:6px}
+
+.content{padding:16px 14px 100px}
+
+.alert-types{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px}
+.alert-type-btn{background:var(--w);border-radius:14px;padding:14px 8px;text-align:center;border:2px solid rgba(0,0,0,.07);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .2s}
+.alert-type-btn:active{transform:scale(.96)}
+.alert-type-btn.selected{border-color:var(--r);background:#FEF2F2}
+.at-icon{font-size:26px;margin-bottom:6px}
+.at-label{font-size:11px;font-weight:700;color:var(--n)}
+.at-sub{font-size:10px;color:var(--l);margin-top:2px}
+
+.compose-card{background:var(--w);border-radius:18px;padding:18px;margin-bottom:16px}
+.compose-label{font-size:12px;font-weight:700;color:var(--n);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.compose-input{width:100%;border:2px solid rgba(0,0,0,.1);border-radius:14px;padding:12px 14px;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--n);resize:none;outline:none;min-height:100px;-webkit-appearance:none}
+.compose-input:focus{border-color:var(--r)}
+.char-count{font-size:11px;color:var(--l);text-align:right;margin-top:6px}
+
+.reach-card{background:var(--w);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;border:1.5px solid rgba(0,0,0,.07)}
+.reach-icon{font-size:28px;flex-shrink:0}
+.reach-body{flex:1}
+.reach-title{font-size:14px;font-weight:700;color:var(--n)}
+.reach-sub{font-size:12px;color:var(--l);margin-top:2px}
+.reach-count{font-family:"Playfair Display",serif;font-size:24px;font-weight:900;color:var(--r);flex-shrink:0}
+
+.quick-btns{display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;scrollbar-width:none;padding-bottom:2px}
+.quick-btns::-webkit-scrollbar{display:none}
+.quick-btn{flex-shrink:0;padding:7px 14px;border-radius:100px;border:2px solid rgba(220,38,38,.2);background:rgba(220,38,38,.06);font-size:12px;font-weight:600;color:var(--r);cursor:pointer;font-family:"DM Sans",sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.quick-btn:active{background:rgba(220,38,38,.12)}
+
+.send-btn{width:100%;padding:16px;border-radius:16px;background:var(--r);color:white;border:none;font-family:"DM Sans",sans-serif;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent;box-shadow:0 6px 20px rgba(220,38,38,.4)}
+.send-btn:disabled{opacity:.6;cursor:default;box-shadow:none}
+
+.wa-btn{width:100%;padding:14px;border-radius:16px;background:#25D366;color:white;border:none;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;-webkit-tap-highlight-color:transparent}
+
+.history-section{margin-top:24px}
+.sec-title{font-size:13px;font-weight:700;color:var(--n);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.alert-card{background:var(--w);border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid var(--r)}
+.alert-card.theft{border-left-color:#DC2626}
+.alert-card.fire{border-left-color:#EA580C}
+.alert-card.medical{border-left-color:#2563EB}
+.alert-card.suspicious{border-left-color:#7C3AED}
+.alert-card.flood{border-left-color:#0891B2}
+.alert-card.general{border-left-color:#DC2626}
+.ac-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.ac-type{font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px;background:#FEF2F2;color:var(--r)}
+.ac-time{font-size:11px;color:var(--l)}
+.ac-msg{font-size:13px;color:var(--m);line-height:1.5;margin-bottom:8px}
+.ac-sender{font-size:12px;color:var(--l);display:flex;align-items:center;gap:5px}
+
+.sk-card{background:var(--w);border-radius:14px;padding:14px;margin-bottom:10px;animation:shimmer 1.5s ease infinite}
+.sk-line{height:12px;border-radius:100px;background:rgba(0,0,0,.07);margin-bottom:8px}
+.sk-line.w8{width:80%}.sk-line.w6{width:60%}.sk-line.w4{width:40%}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+
+.err-box{text-align:center;padding:30px 16px;color:var(--l);font-size:13px}
+
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--n);color:white;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--n);display:flex;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:100}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;font-family:"DM Sans",sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.bni-i{font-size:20px}.bni-l{font-size:10px;font-weight:600;color:rgba(255,255,255,.5)}
+.bni.on .bni-l{color:#E07A4A}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-top">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="hero-title">Security Alert</div>
+    <div class="pulse-icon">🚨</div>
+  </div>
+  <div class="hero-sub">Send an instant alert to all neighbors in your area. Use responsibly.</div>
+  <div class="hero-hood" id="heroHood">📍 Loading your neighborhood...</div>
+</div>
+
+<div class="content">
+
+  <div class="reach-card">
+    <div class="reach-icon">👥</div>
+    <div class="reach-body">
+      <div class="reach-title">Alert will reach</div>
+      <div class="reach-sub" id="reachSub">All neighbors in your area</div>
+    </div>
+    <div class="reach-count" id="reachCount">—</div>
+  </div>
+
+  <div class="compose-card">
+    <div class="compose-label">Alert Type</div>
+    <div class="alert-types" id="alertTypes">
+      <div class="alert-type-btn selected" onclick="selectType(this,'theft')"><div class="at-icon">🔒</div><div class="at-label">Theft</div><div class="at-sub">Robbery / Break-in</div></div>
+      <div class="alert-type-btn" onclick="selectType(this,'fire')"><div class="at-icon">🔥</div><div class="at-label">Fire</div><div class="at-sub">Fire outbreak</div></div>
+      <div class="alert-type-btn" onclick="selectType(this,'medical')"><div class="at-icon">🏥</div><div class="at-label">Medical</div><div class="at-sub">Emergency</div></div>
+      <div class="alert-type-btn" onclick="selectType(this,'suspicious')"><div class="at-icon">👁️</div><div class="at-label">Suspicious</div><div class="at-sub">Suspicious activity</div></div>
+      <div class="alert-type-btn" onclick="selectType(this,'flood')"><div class="at-icon">🌊</div><div class="at-label">Flood</div><div class="at-sub">Flooding / Water</div></div>
+      <div class="alert-type-btn" onclick="selectType(this,'general')"><div class="at-icon">⚠️</div><div class="at-label">General</div><div class="at-sub">Other emergency</div></div>
+    </div>
+
+    <div class="compose-label" style="margin-top:4px">Your Message</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="setQuick('Armed robbery in progress on the main road')">🔒 Armed robbery</button>
+      <button class="quick-btn" onclick="setQuick('Fire outbreak near the market — evacuate now')">🔥 Fire outbreak</button>
+      <button class="quick-btn" onclick="setQuick('Suspicious individuals seen around the area — stay alert')">👁️ Suspicious activity</button>
+      <button class="quick-btn" onclick="setQuick('Medical emergency — need help immediately')">🏥 Medical emergency</button>
+      <button class="quick-btn" onclick="setQuick('Flooding on the street — avoid this route')">🌊 Flooding alert</button>
+    </div>
+    <textarea class="compose-input" id="alertMsg" maxlength="280" placeholder="Describe what's happening and where exactly..." oninput="updateCount()"></textarea>
+    <div class="char-count"><span id="charCount">0</span>/280</div>
+  </div>
+
+  <button class="send-btn" id="sendBtn" onclick="sendAlert()">🚨 Send Alert to Neighbors</button>
+  <button class="wa-btn" onclick="shareWA()">📲 Also Share on WhatsApp</button>
+
+  <div class="history-section">
+    <div class="sec-title">🕐 Recent Alerts in Your Area</div>
+    <div id="historyList">
+      <div class="sk-card"><div class="sk-line w8"></div><div class="sk-line w6"></div><div class="sk-line w4"></div></div>
+      <div class="sk-card"><div class="sk-line w6"></div><div class="sk-line w8"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="bnav">
+  <a href="nearby-feed.html" class="bni"><div class="bni-i">🏡</div><div class="bni-l">Home</div></a>
+  <a href="nearby-search.html" class="bni"><div class="bni-i">🔍</div><div class="bni-l">Search</div></a>
+  <a href="nearby-light.html" class="bni"><div class="bni-i">⚡</div><div class="bni-l">Light</div></a>
+  <a href="nearby-jobs.html" class="bni"><div class="bni-i">💼</div><div class="bni-l">Jobs</div></a>
+  <a href="nearby-profile.html" class="bni"><div class="bni-i">👤</div><div class="bni-l">Profile</div></a>
+</div>
+
+<script>
+var me = null;
+var selectedType = 'theft';
+var neighborCount = 0;
+
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function sanitize(s,n){if(!s)return '';var c=String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,'').replace(/javascript\s*:/gi,'').replace(/<[^>]*>/g,'').trim();return n&&c.length>n?c.slice(0,n):c;}
+function timeAgo(ts){if(!ts)return '';var d=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(d<60)return 'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago';}
+
+function showToast(msg){var old=document.querySelector('.toast');if(old)old.remove();var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2500);setTimeout(function(){if(t.parentNode)t.remove();},3000);}
+
+function selectType(el, type){
+  selectedType=type;
+  document.querySelectorAll('.alert-type-btn').forEach(function(b){b.classList.remove('selected');});
+  el.classList.add('selected');
+}
+
+function setQuick(msg){
+  document.getElementById('alertMsg').value=msg;
+  updateCount();
+  document.getElementById('alertMsg').focus();
+}
+
+function updateCount(){
+  var len=document.getElementById('alertMsg').value.length;
+  document.getElementById('charCount').textContent=len;
+}
+
+async function init(){
+  try{
+    var sess=await getSession();
+    if(!sess){window.location.href='nearby-auth.html';return;}
+    me=await getCurrentUser();
+    if(!me){window.location.href='nearby-auth.html';return;}
+    document.getElementById('heroHood').textContent='📍 '+(me.neighborhood||'Your neighborhood');
+    document.getElementById('reachSub').textContent='Neighbors in '+(me.neighborhood||'your area');
+    await loadNeighborCount();
+    await loadHistory();
+  }catch(e){
+    showToast('Connection error. Please reload.');
+  }
+}
+
+async function loadNeighborCount(){
+  try{
+    var res=await sb.from('users').select('id',{count:'exact',head:true}).eq('neighborhood',me.neighborhood||'').neq('id',me.id);
+    neighborCount=res.count||0;
+    document.getElementById('reachCount').textContent=neighborCount;
+  }catch(e){document.getElementById('reachCount').textContent='?';}
+}
+
+async function sendAlert(){
+  var msg=sanitize(document.getElementById('alertMsg').value,280);
+  if(!msg){showToast('Write your alert message first');return;}
+  if(msg.length<10){showToast('Please describe what is happening in more detail');return;}
+
+  var btn=document.getElementById('sendBtn');
+  btn.disabled=true;btn.textContent='Sending alert...';
+
+  try{
+    var res=await sb.rpc('send_security_alert',{
+      p_user_id:me.id,
+      p_neighborhood:me.neighborhood||'General',
+      p_message:msg,
+      p_alert_type:selectedType
+    });
+    if(res.error){showToast('Could not send alert: '+res.error.message);btn.disabled=false;btn.textContent='🚨 Send Alert to Neighbors';return;}
+    showToast('🚨 Alert sent to '+neighborCount+' neighbors!');
+    document.getElementById('alertMsg').value='';
+    updateCount();
+    setTimeout(function(){loadHistory();},1000);
+    try{await addRepPoints(me.id,5);}catch(e){}
+  }catch(e){
+    showToast('No connection. Alert not sent.');
+  }
+  btn.disabled=false;btn.textContent='🚨 Send Alert to Neighbors';
+}
+
+function shareWA(){
+  var msg=document.getElementById('alertMsg').value.trim();
+  var hood=me?me.neighborhood:'my neighborhood';
+  var text=msg
+    ?'🚨 SECURITY ALERT — '+hood+'\n\n'+msg+'\n\n— Sent via Nearby app'
+    :'🚨 SECURITY ALERT in '+hood+' — Stay alert! Shared via Nearby app.';
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+}
+
+async function loadHistory(){
+  try{
+    var res=await sb.from('posts_with_users')
+      .select('id,content,created_at,full_name,user_neighborhood')
+      .eq('post_type','alert')
+      .eq('neighborhood',me?me.neighborhood:'')
+      .order('created_at',{ascending:false})
+      .limit(10);
+
+    var container=document.getElementById('historyList');
+    if(res.error||!res.data||!res.data.length){
+      container.innerHTML='<div class="err-box">No recent alerts in your area. Stay safe!</div>';
+      return;
+    }
+    var typeIcons={theft:'🔒',fire:'🔥',medical:'🏥',suspicious:'👁️',flood:'🌊',general:'⚠️'};
+    var html='';
+    for(var i=0;i<res.data.length;i++){
+      var a=res.data[i];
+      var content=a.content||'';
+      var detectedType='general';
+      if(content.toLowerCase().indexOf('theft')>-1||content.toLowerCase().indexOf('robbery')>-1)detectedType='theft';
+      else if(content.toLowerCase().indexOf('fire')>-1)detectedType='fire';
+      else if(content.toLowerCase().indexOf('medical')>-1||content.toLowerCase().indexOf('emergency')>-1)detectedType='medical';
+      else if(content.toLowerCase().indexOf('suspicious')>-1)detectedType='suspicious';
+      else if(content.toLowerCase().indexOf('flood')>-1)detectedType='flood';
+      html+='<div class="alert-card '+detectedType+'">'
+        +'<div class="ac-top"><span class="ac-type">'+(typeIcons[detectedType]||'⚠️')+' '+detectedType.charAt(0).toUpperCase()+detectedType.slice(1)+'</span><span class="ac-time">'+timeAgo(a.created_at)+'</span></div>'
+        +'<div class="ac-msg">'+esc(content)+'</div>'
+        +'<div class="ac-sender">👤 '+esc(a.full_name||'Neighbor')+'</div>'
+        +'</div>';
+    }
+    container.innerHTML=html;
+  }catch(e){
+    document.getElementById('historyList').innerHTML='<div class="err-box">Could not load alert history.</div>';
+  }
+}
+
+init();
+</script>
+<script src="nearby-push.js"></script>
+</body>
+</html>
