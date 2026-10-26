@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nearby — Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8; --terracotta: #C4622D; --navy: #1A2332;
+    --sage: #7A9E7E; --amber: #E8A838; --mid: #4A5568;
+    --light: #8A96A8; --white: #FDFAF4; --green: #38A169; --red: #E53E3E;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: #EEE9DF; color: var(--navy); max-width: 480px; margin: 0 auto; }
+
+  /* TOP NAV */
+  .topnav { background: var(--white); padding: 14px 16px 10px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.07); }
+  .topnav-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .logo span { color: var(--terracotta); }
+  .nav-icons { display: flex; gap: 8px; }
+  .nav-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--cream); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; position: relative; }
+  .notif-dot { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; background: var(--terracotta); border-radius: 50%; border: 2px solid var(--white); }
+  .loc-bar { font-size: 13px; color: var(--mid); display: flex; align-items: center; gap: 5px; }
+  .loc-bar span { color: var(--navy); font-weight: 600; }
+
+  /* FILTER TABS */
+  .filter-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px; background: var(--white); scrollbar-width: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .ftab { flex-shrink: 0; padding: 6px 14px; border-radius: 100px; border: 2px solid rgba(0,0,0,0.1); background: transparent; font-size: 12px; font-weight: 600; color: var(--mid); cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .ftab.on { background: var(--navy); border-color: var(--navy); color: white; }
+
+  /* FEED */
+  .feed { padding: 10px 10px 100px; }
+
+  /* ARRIVALS STRIP */
+  .sec-label { font-size: 11px; font-weight: 700; color: var(--terracotta); letter-spacing: 1px; text-transform: uppercase; padding: 4px 6px 8px; }
+  .arrivals-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; scrollbar-width: none; }
+  .arrivals-strip::-webkit-scrollbar { display: none; }
+  .arrival-chip { flex-shrink: 0; background: var(--white); border-radius: 14px; padding: 12px 10px; text-align: center; width: 86px; border: 2px solid rgba(196,98,45,0.15); cursor: pointer; transition: border-color 0.2s; }
+  .arrival-chip:hover { border-color: var(--terracotta); }
+  .arr-av { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; margin: 0 auto 6px; position: relative; }
+  .new-ring { position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--terracotta); }
+  .arr-name { font-size: 11px; font-weight: 600; color: var(--navy); }
+  .arr-time { font-size: 10px; color: var(--light); margin-top: 1px; }
+
+  /* CARD */
+  .card { background: var(--white); border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+  /* CLICKABLE CARD HEADER */
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .card-av-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: white; flex-shrink: 0; border: none; cursor: pointer; transition: opacity 0.2s; }
+  .card-av-btn:hover { opacity: 0.85; }
+  .card-meta { flex: 1; cursor: pointer; }
+  .card-meta:hover .card-name { color: var(--terracotta); }
+  .card-name { font-size: 14px; font-weight: 700; color: var(--navy); transition: color 0.2s; }
+  .card-detail { font-size: 12px; color: var(--light); margin-top: 1px; }
+  .card-more { background: none; border: none; font-size: 20px; color: var(--light); cursor: pointer; padding: 4px; }
+
+  /* VIEW PROFILE BADGE on tap */
+  .profile-quick {
+    display: none; position: absolute; background: var(--navy); color: white;
+    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px;
+    white-space: nowrap; z-index: 10; pointer-events: none;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+  .type-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+  .badge-job { background: rgba(122,158,126,0.15); color: var(--sage); }
+  .badge-event { background: rgba(232,168,56,0.15); color: #B07D10; }
+  .badge-alert { background: rgba(229,62,62,0.1); color: var(--red); }
+  .badge-social { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+  .badge-new { background: rgba(196,98,45,0.1); color: var(--terracotta); }
+
+  .card-text { font-size: 14px; color: var(--mid); line-height: 1.6; margin-bottom: 10px; }
+
+  .job-details { background: var(--cream); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+  .job-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .job-item { font-size: 12px; color: var(--mid); }
+  .job-item b { color: var(--navy); display: block; font-size: 13px; }
+
+  /* CARD ACTIONS */
+  .card-actions { display: flex; align-items: center; gap: 4px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); }
+  .action-btn { display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 100px; border: none; background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; color: var(--light); transition: background 0.15s; }
+  .action-btn:hover { background: var(--cream); color: var(--navy); }
+  .action-btn.liked { color: var(--terracotta); }
+  .action-spacer { flex: 1; }
+  .apply-btn { padding: 8px 16px; border-radius: 100px; background: var(--navy); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .apply-btn:active { background: var(--terracotta); }
+
+  /* PRIVATE MESSAGE BUTTON */
+  .msg-btn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 100px; border: 2px solid rgba(26,35,50,0.12); background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: var(--navy); transition: all 0.2s; }
+  .msg-btn:hover { background: var(--navy); color: white; border-color: var(--navy); }
+
+  /* NEW ARRIVAL FULL CARD */
+  .arrival-card { background: linear-gradient(135deg, var(--navy), #243044); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+  .afc-tag { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .afc-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; cursor: pointer; }
+  .afc-name { font-size: 16px; font-weight: 700; color: white; }
+  .afc-name:hover { color: var(--amber); }
+  .afc-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .afc-text { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 12px; }
+  .afc-actions { display: flex; gap: 8px; }
+  .afc-btn { flex: 1; padding: 10px; border-radius: 100px; text-align: center; font-size: 13px; font-weight: 700; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .afc-primary { background: var(--terracotta); color: white; }
+  .afc-secondary { background: rgba(255,255,255,0.1); color: white; }
+
+  /* PROFILE PREVIEW SHEET */
+  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+  .sheet-overlay.open { display: block; }
+  .profile-sheet {
+    display: none; position: fixed; bottom: 0; left: 50%;
+    transform: translateX(-50%); width: 100%; max-width: 480px;
+    background: var(--white); border-radius: 24px 24px 0 0;
+    padding: 20px 20px 44px; z-index: 101;
+  }
+  .profile-sheet.open { display: block; }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 16px; }
+  .ps-av { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: white; margin: 0 auto 12px; position: relative; }
+  .ps-crown { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 16px; }
+  .ps-name { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; text-align: center; color: var(--navy); margin-bottom: 4px; }
+  .ps-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(212,175,55,0.15); color: #8A6200; padding: 3px 12px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+  .ps-loc { font-size: 13px; color: var(--light); text-align: center; margin-bottom: 10px; }
+  .ps-bio { font-size: 14px; color: var(--mid); line-height: 1.6; text-align: center; margin-bottom: 16px; padding: 0 8px; }
+  .ps-stats { display: flex; border-top: 1px solid rgba(0,0,0,0.06); border-bottom: 1px solid rgba(0,0,0,0.06); padding: 12px 0; margin-bottom: 16px; }
+  .ps-stat { flex: 1; text-align: center; }
+  .ps-stat:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.06); }
+  .ps-num { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); }
+  .ps-label { font-size: 10px; color: var(--light); margin-top: 2px; }
+  .ps-actions { display: flex; gap: 10px; }
+  .ps-msg-btn { flex: 2; padding: 13px; border-radius: 12px; background: var(--navy); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .ps-msg-btn:active { background: var(--terracotta); }
+  .ps-view-btn { flex: 1; padding: 13px; border-radius: 12px; background: transparent; color: var(--navy); border: 2px solid rgba(0,0,0,0.12); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* COMPOSER */
+  .fab { position: fixed; bottom: 80px; right: 20px; width: 52px; height: 52px; border-radius: 50%; background: var(--terracotta); color: white; border: none; font-size: 22px; cursor: pointer; box-shadow: 0 6px 20px rgba(196,98,45,0.4); display: flex; align-items: center; justify-content: center; z-index: 50; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-top: 1px solid rgba(0,0,0,0.08); display: flex; padding: 10px 0 16px; }
+  .bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif; }
+  .bnav-icon { font-size: 22px; }
+  .bnav-label { font-size: 10px; font-weight: 600; color: var(--light); }
+  .bnav-item.active .bnav-label { color: var(--terracotta); }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="topnav-row">
+    <div class="logo">Near<span>by</span></div>
+    <div class="nav-icons">
+      <button class="nav-icon" onclick="showToast('Search')">🔍</button>
+      <button class="nav-icon" onclick="window.location.href='nearby-messages.html'">💬</button>
+      <button class="nav-icon" onclick="window.location.href='nearby-notifications.html'">
+        🔔<div class="notif-dot"></div>
+      </button>
+    </div>
+  </div>
+  <div class="loc-bar">📍 <span>Green Point, Cape Town</span> &nbsp;·&nbsp; 24 online</div>
+</div>
+
+<!-- FILTER TABS -->
+<div class="filter-tabs">
+  <button class="ftab on" onclick="setTab(this)">🏡 All</button>
+  <button class="ftab" onclick="setTab(this)">🆕 Arrivals</button>
+  <button class="ftab" onclick="setTab(this)">💼 Jobs</button>
+  <button class="ftab" onclick="setTab(this)">🎉 Events</button>
+  <button class="ftab" onclick="setTab(this)">🔔 Alerts</button>
+</div>
+
+<div class="feed">
+
+  <!-- ARRIVALS STRIP -->
+  <div class="sec-label">👋 New in your area</div>
+  <div class="arrivals-strip">
+    <div class="arrival-chip" onclick="openProfile('Marcus','M','var(--terracotta)','Newcomer · Green Point','Graphic designer, love hiking and coffee ☕','2 days ago',false)">
+      <div class="arr-av" style="background:var(--terracotta);">M<div class="new-ring"></div></div>
+      <div class="arr-name">Marcus</div><div class="arr-time">2 days</div>
+    </div>
+    <div class="arrival-chip" onclick="openProfile('Amara','A','var(--sage)','Resident · Bo-Kaap','Artist and community builder 🎨','Member 8mo',true)">
+      <div class="arr-av" style="background:var(--sage);">A<div class="new-ring"></div></div>
+      <div class="arr-name">Amara</div><div class="arr-time">4 days</div>
+    </div>
+    <div class="arrival-chip" onclick="openProfile('Kofi','K','var(--amber)','Newcomer · Sea Point','Chef from Accra, love football ⚽','1 week ago',false)">
+      <div class="arr-av" style="background:var(--amber);color:var(--navy);">K<div class="new-ring"></div></div>
+      <div class="arr-name">Kofi</div><div class="arr-time">1 week</div>
+    </div>
+    <div class="arrival-chip" onclick="openProfile('Sara','S','#2980B9','Visitor · City Bowl','Visiting from Addis Ababa 🌍','Visiting 2wks',false)">
+      <div class="arr-av" style="background:#2980B9;">S<div class="new-ring"></div></div>
+      <div class="arr-name">Sara</div><div class="arr-time">1 week</div>
+    </div>
+  </div>
+
+  <!-- NEW ARRIVAL FULL CARD -->
+  <div class="arrival-card">
+    <div class="afc-tag">👋 New Arrival — say hello!</div>
+    <div class="afc-row" onclick="openProfile('Marcus','M','var(--terracotta)','Newcomer · Green Point · From Johannesburg','Graphic designer who loves hiking and great coffee. Looking to meet people and explore!','2 days ago',false)">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--terracotta);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;flex-shrink:0;">M</div>
+      <div>
+        <div class="afc-name">Marcus Johnson</div>
+        <div class="afc-sub">📍 Green Point · 2 days ago · From Joburg</div>
+      </div>
+    </div>
+    <div class="afc-text">"Hey neighbors! Just moved here — graphic designer, love hiking and great coffee. Looking to meet people!"</div>
+    <div class="afc-actions">
+      <button class="afc-btn afc-primary" onclick="this.textContent='👋 Said hello!';showToast('+10 reputation points! ⭐')">👋 Say Hello</button>
+      <button class="afc-btn afc-secondary" onclick="openProfile('Marcus','M','var(--terracotta)','Newcomer · Green Point · From Johannesburg','Graphic designer who loves hiking and great coffee.','2 days ago',false)">View Profile</button>
+    </div>
+  </div>
+
+  <!-- JOB CARD -->
+  <div class="card">
+    <div class="card-header">
+      <button class="card-av-btn" style="background:var(--sage);" onclick="openProfile('Blue Moon Bakery','B','var(--sage)','🏪 Verified Business · Sea Point · 0.3km','Fresh baked goods daily. Community favourite since 2021.','Est. 2021',false)">B</button>
+      <div class="card-meta" onclick="openProfile('Blue Moon Bakery','B','var(--sage)','🏪 Verified Business · Sea Point · 0.3km','Fresh baked goods daily. Community favourite since 2021.','Est. 2021',false)">
+        <div class="card-name">Blue Moon Bakery ✓</div>
+        <div class="card-detail">🏪 Business · 0.3km · 2 hrs ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-job">💼 Job Opening</span>
+    <div class="card-text">Looking for a friendly part-time sales assistant. No experience needed — just a great attitude!</div>
+    <div class="job-details">
+      <div class="job-row">
+        <div class="job-item"><b>⏰ Hours</b>Part-time</div>
+        <div class="job-item"><b>💰 Pay</b>R80–100/hr</div>
+        <div class="job-item"><b>📍 Where</b>On-site</div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 12</button>
+      <button class="action-btn">💬 4</button>
+      <button class="msg-btn" onclick="openProfile('Blue Moon Bakery','B','var(--sage)','🏪 Verified Business · Sea Point · 0.3km','Fresh baked goods daily.','Est. 2021',false)">✉️ Message</button>
+      <div class="action-spacer"></div>
+      <button class="apply-btn" onclick="this.textContent='✓ Applied!';showToast('Application sent!')">Apply Now</button>
+    </div>
+  </div>
+
+  <!-- SOCIAL CARD -->
+  <div class="card">
+    <div class="card-header">
+      <button class="card-av-btn" style="background:#9B59B6;" onclick="openProfile('Lerato Molefe','L','#9B59B6','🏆 Ambassador · Green Point · 6mo member','Passionate about building real community. Ask me anything about the area!','Member 6mo',true)">L</button>
+      <div class="card-meta" onclick="openProfile('Lerato Molefe','L','#9B59B6','🏆 Ambassador · Green Point · 6mo member','Passionate about building real community. Ask me anything about the area!','Member 6mo',true)">
+        <div class="card-name">Lerato Molefe 🏆</div>
+        <div class="card-detail">🏠 Ambassador · 1.1km · 5 hrs ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-event">🎉 Community Event</span>
+    <div class="card-text">Hosting a neighborhood braai this Saturday! All welcome — bring something to share and come meet your neighbors 🔥</div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 34</button>
+      <button class="action-btn">💬 11</button>
+      <button class="msg-btn" onclick="openProfile('Lerato Molefe','L','#9B59B6','🏆 Ambassador · Green Point · 6mo member','Passionate about community building.','Member 6mo',true)">✉️ Message</button>
+      <div class="action-spacer"></div>
+      <button class="apply-btn" style="background:var(--amber);color:var(--navy);" onclick="this.textContent='✓ Going!';showToast('RSVP confirmed!')">RSVP</button>
+    </div>
+  </div>
+
+  <!-- COMMUNITY CARD -->
+  <div class="card">
+    <div class="card-header">
+      <button class="card-av-btn" style="background:#2980B9;" onclick="openProfile('David K.','D','#2980B9','Resident · Woodstock · 3mo member','Coffee lover and local foodie 🍕','Member 3mo',false)">D</button>
+      <div class="card-meta" onclick="openProfile('David K.','D','#2980B9','Resident · Woodstock · 3mo member','Coffee lover and local foodie 🍕','Member 3mo',false)">
+        <div class="card-name">David K.</div>
+        <div class="card-detail">🏠 Resident · 0.6km · 8 hrs ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-social">💬 Community Post</span>
+    <div class="card-text">Anyone know a great independent coffee spot near Green Point? My usual place closed and I'm heartbroken ☕😭</div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 28</button>
+      <button class="action-btn">💬 17</button>
+      <button class="msg-btn" onclick="openProfile('David K.','D','#2980B9','Resident · Woodstock','Coffee lover and local foodie.','Member 3mo',false)">✉️ Message</button>
+    </div>
+  </div>
+
+  <!-- ALERT CARD -->
+  <div class="card">
+    <div class="card-header">
+      <button class="card-av-btn" style="background:var(--red);">N</button>
+      <div class="card-meta">
+        <div class="card-name">Neighborhood Watch</div>
+        <div class="card-detail">🔔 Alert · 12 hrs ago</div>
+      </div>
+      <button class="card-more">···</button>
+    </div>
+    <span class="type-badge badge-alert">🔔 Safety Alert</span>
+    <div class="card-text">Heads up — a few car break-ins on Regent Rd last night. Please lock your cars and don't leave anything visible 🙏</div>
+    <div class="card-actions">
+      <button class="action-btn" onclick="likePost(this)">🤍 56</button>
+      <button class="action-btn">💬 8</button>
+      <button class="action-btn">↗️ Share</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="showToast('Compose a post for your neighborhood')">✏️</button>
+
+<!-- PROFILE SHEET OVERLAY -->
+<div class="sheet-overlay" id="overlay" onclick="closeProfile()"></div>
+
+<!-- PROFILE PREVIEW SHEET -->
+<div class="profile-sheet" id="profileSheet">
+  <div class="sheet-handle"></div>
+  <div style="text-align:center;">
+    <div class="ps-av" id="psAv" style="background:var(--terracotta);">
+      <div class="ps-crown" id="psCrown" style="display:none;">🏆</div>
+      <span id="psInitial">M</span>
+    </div>
+    <div id="psBadge" class="ps-badge" style="display:none;">🏆 Ambassador</div>
+    <div class="ps-name" id="psName">Marcus Johnson</div>
+    <div class="ps-loc" id="psLoc">Newcomer · Green Point</div>
+    <div class="ps-bio" id="psBio">Graphic designer who loves hiking and great coffee.</div>
+  </div>
+  <div class="ps-stats">
+    <div class="ps-stat"><div class="ps-num" id="psPosts">42</div><div class="ps-label">Posts</div></div>
+    <div class="ps-stat"><div class="ps-num" id="psFollowers">128</div><div class="ps-label">Followers</div></div>
+    <div class="ps-stat"><div class="ps-num" id="psSince">2d</div><div class="ps-label">Member</div></div>
+  </div>
+  <div class="ps-actions">
+    <button class="ps-msg-btn" onclick="goToChat()">💬 Send Private Message</button>
+    <button class="ps-view-btn" onclick="window.location.href='nearby-profile.html'">Full Profile</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item active"><div class="bnav-icon">🏡</div><div class="bnav-label">Home</div></button>
+  <button class="bnav-item" onclick="window.location.href='nearby-arrivals.html'"><div class="bnav-icon">🆕</div><div class="bnav-label">Arrivals</div></button>
+  <button class="bnav-item" onclick="window.location.href='nearby-jobs.html'"><div class="bnav-icon">💼</div><div class="bnav-label">Jobs</div></button>
+  <button class="bnav-item" onclick="window.location.href='nearby-profile.html'"><div class="bnav-icon">👤</div><div class="bnav-label">Profile</div></button>
+</div>
+
+<script>
+  var currentChatName = '';
+
+  function openProfile(name, initial, color, loc, bio, since, isAmbassador) {
+    currentChatName = name;
+    var av = document.getElementById('psAv');
+    av.style.background = color;
+    document.getElementById('psInitial').textContent = initial;
+    document.getElementById('psName').textContent = name;
+    document.getElementById('psLoc').textContent = loc;
+    document.getElementById('psBio').textContent = bio;
+    document.getElementById('psSince').textContent = since;
+    document.getElementById('psCrown').style.display = isAmbassador ? 'block' : 'none';
+    document.getElementById('psBadge').style.display = isAmbassador ? 'inline-flex' : 'none';
+    document.getElementById('psPosts').textContent = Math.floor(Math.random()*150+10);
+    document.getElementById('psFollowers').textContent = Math.floor(Math.random()*300+50);
+    document.getElementById('profileSheet').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function closeProfile() {
+    document.getElementById('profileSheet').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function goToChat() {
+    closeProfile();
+    window.location.href = 'nearby-messages.html';
+  }
+
+  function setTab(el) {
+    document.querySelectorAll('.ftab').forEach(function(t){ t.classList.remove('on'); });
+    el.classList.add('on');
+  }
+
+  function likePost(btn) {
+    var liked = btn.classList.toggle('liked');
+    var num = parseInt(btn.textContent.replace(/\D/g,''));
+    btn.textContent = (liked ? '❤️ ' : '🤍 ') + (liked ? num+1 : num-1);
+  }
+
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 1800);
+    setTimeout(function(){ t.remove(); }, 2200);
+  }
+</script>
+</body>
+</html>
