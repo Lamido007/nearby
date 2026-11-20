@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- ═══ OPEN GRAPH — Rich preview on WhatsApp, Telegram, Twitter, iMessage ═══ -->
+<meta property="og:title" content="👋 Marcus just moved to Green Point!" />
+<meta property="og:description" content="Say hello to your new neighbor on Nearby — the community app that connects you with the people around you." />
+<meta property="og:image" content="https://nearby-navy.vercel.app/nearby-og-arrival.png" />
+<meta property="og:url" content="https://nearby-navy.vercel.app/nearby-arrival-preview.html" />
+<meta property="og:type" content="profile" />
+<meta property="og:site_name" content="Nearby" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="👋 Marcus just moved to your neighborhood!" />
+<meta name="twitter:description" content="Welcome him on Nearby — the local community app." />
+
+<title>Marcus just moved to Green Point — Nearby</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8; --terracotta: #C4622D; --navy: #1A2332;
+    --sage: #7A9E7E; --amber: #E8A838; --mid: #4A5568;
+    --light: #8A96A8; --white: #FDFAF4; --green: #38A169;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: #EEE9DF; color: var(--navy); max-width: 480px; margin: 0 auto; min-height: 100vh; }
+
+  .header { background: var(--navy); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: white; }
+  .logo span { color: var(--terracotta); }
+  .header-tag { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 100px; }
+
+  .public-banner { background: rgba(56,161,105,0.1); border-bottom: 1px solid rgba(56,161,105,0.2); padding: 10px 16px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--green); font-weight: 600; }
+
+  /* ARRIVAL HERO */
+  .arrival-hero { background: linear-gradient(135deg, var(--navy), #2C3E6B); padding: 28px 20px 24px; text-align: center; position: relative; overflow: hidden; }
+  .arrival-hero::after { content: '👋'; position: absolute; right: -10px; top: -10px; font-size: 100px; opacity: 0.07; }
+  .hero-tag { display: inline-block; background: rgba(196,98,45,0.3); color: #F0A070; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 16px; }
+  .arrival-av { width: 90px; height: 90px; border-radius: 50%; background: var(--terracotta); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; color: white; margin: 0 auto 14px; border: 4px solid rgba(255,255,255,0.15); position: relative; }
+  .arrival-av-ring { position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--terracotta); animation: ring-pulse 2s ease-in-out infinite; }
+  @keyframes ring-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.05)} }
+  .arrival-name { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: white; margin-bottom: 6px; }
+  .arrival-sub { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 16px; }
+  .arrival-from { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); border-radius: 100px; padding: 7px 16px; font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 500; }
+
+  /* PROFILE INFO */
+  .profile-card { background: var(--white); margin: 10px; border-radius: 18px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .pc-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
+  .bio-text { font-size: 15px; color: var(--mid); line-height: 1.7; font-style: italic; padding: 14px; background: var(--cream); border-radius: 12px; border-left: 3px solid var(--terracotta); margin-bottom: 14px; }
+  .interests-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+  .interest-chip { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 100px; background: rgba(26,35,50,0.06); font-size: 13px; font-weight: 500; color: var(--mid); }
+
+  /* LOOKING FOR */
+  .looking-card { background: rgba(122,158,126,0.08); border: 1px solid rgba(122,158,126,0.2); border-radius: 14px; padding: 14px; margin: 0 10px 10px; }
+  .lc-label { font-size: 11px; font-weight: 700; color: var(--sage); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .lc-items { display: flex; flex-direction: column; gap: 8px; }
+  .lc-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--mid); }
+  .lc-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sage); flex-shrink: 0; }
+
+  /* NEIGHBORHOOD AMBASSADORS */
+  .amb-card { background: var(--white); margin: 0 10px 10px; border-radius: 18px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .amb-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .amb-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--cream); border-radius: 12px; margin-bottom: 8px; }
+  .amb-av { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: white; flex-shrink: 0; position: relative; }
+  .amb-crown { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); font-size: 10px; }
+  .amb-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .amb-desc { font-size: 11px; color: var(--light); margin-top: 1px; }
+  .amb-greet { margin-left: auto; background: var(--navy); color: white; border: none; border-radius: 100px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+  /* JOIN BANNER */
+  .join-banner { background: linear-gradient(135deg, var(--terracotta), #A34B1F); margin: 0 10px 10px; border-radius: 18px; padding: 22px; text-align: center; }
+  .jb-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: white; margin-bottom: 8px; }
+  .jb-sub { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 18px; }
+  .jb-btn { width: 100%; padding: 14px; border-radius: 14px; background: white; color: var(--terracotta); border: none; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+  .jb-login { font-size: 13px; color: rgba(255,255,255,0.5); }
+  .jb-login a { color: rgba(255,255,255,0.8); font-weight: 600; text-decoration: none; }
+
+  /* SOCIAL PROOF */
+  .proof-strip { display: flex; background: var(--white); margin: 0 10px 10px; border-radius: 14px; overflow: hidden; }
+  .proof-item { flex: 1; padding: 14px 10px; text-align: center; }
+  .proof-item:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.06); }
+  .proof-num { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--navy); }
+  .proof-label { font-size: 10px; color: var(--light); margin-top: 2px; }
+
+  /* STICKY BOTTOM */
+  .sticky-bottom { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-top: 1px solid rgba(0,0,0,0.08); padding: 12px 16px 28px; }
+  .sticky-row { display: flex; gap: 10px; }
+  .welcome-btn { flex: 2; padding: 14px; border-radius: 14px; background: var(--terracotta); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .share-btn { flex: 1; padding: 14px; border-radius: 14px; background: #25D366; color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+  /* SHARE SHEET */
+  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+  .sheet-overlay.open { display: block; }
+  .share-sheet { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-radius: 24px 24px 0 0; padding: 20px 20px 44px; z-index: 101; }
+  .share-sheet.open { display: block; }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 16px; }
+  .sheet-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+  .sheet-sub { font-size: 13px; color: var(--light); margin-bottom: 20px; }
+  .share-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .share-opt { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; }
+  .so-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+  .so-label { font-size: 11px; font-weight: 600; color: var(--mid); text-align: center; }
+  .copy-link-box { background: var(--cream); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .copy-url { flex: 1; font-size: 12px; color: var(--mid); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .copy-btn { background: var(--navy); color: white; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+
+  .page-pad { padding-bottom: 100px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Near<span>by</span></div>
+  <div class="header-tag">👋 New Arrival</div>
+</div>
+
+<div class="public-banner">
+  ✅ Public profile · No account needed to view · Sign up to say hello
+</div>
+
+<!-- ARRIVAL HERO -->
+<div class="arrival-hero">
+  <div class="hero-tag">🆕 New to the neighborhood</div>
+  <div class="arrival-av">
+    M
+    <div class="arrival-av-ring"></div>
+  </div>
+  <div class="arrival-name">Marcus Johnson</div>
+  <div class="arrival-sub">📍 Moved to Green Point, Cape Town · 2 days ago</div>
+  <div class="arrival-from">🏙️ Originally from Johannesburg</div>
+</div>
+
+<div class="page-pad">
+
+  <!-- SOCIAL PROOF -->
+  <div class="proof-strip">
+    <div class="proof-item"><div class="proof-num">14</div><div class="proof-label">People said hello</div></div>
+    <div class="proof-item"><div class="proof-num">2d</div><div class="proof-label">In neighborhood</div></div>
+    <div class="proof-item"><div class="proof-num">🏡</div><div class="proof-label">Resident</div></div>
+  </div>
+
+  <!-- BIO -->
+  <div class="profile-card">
+    <div class="pc-title">👤 About Marcus</div>
+    <div class="bio-text">"Hey neighbors! Just moved here from Joburg — I'm a graphic designer who loves hiking, great coffee and meeting new people. Would love to explore Cape Town properly with some locals!"</div>
+    <div class="interests-wrap">
+      <div class="interest-chip">🎨 Design</div>
+      <div class="interest-chip">🥾 Hiking</div>
+      <div class="interest-chip">☕ Coffee</div>
+      <div class="interest-chip">📸 Photography</div>
+      <div class="interest-chip">🌍 Travel</div>
+    </div>
+  </div>
+
+  <!-- LOOKING FOR -->
+  <div class="looking-card">
+    <div class="lc-label">🔍 Marcus is looking for</div>
+    <div class="lc-items">
+      <div class="lc-item"><div class="lc-dot"></div>Hiking buddies and outdoor groups</div>
+      <div class="lc-item"><div class="lc-dot"></div>Independent coffee spots to explore</div>
+      <div class="lc-item"><div class="lc-dot"></div>Creative community and design network</div>
+      <div class="lc-item"><div class="lc-dot"></div>Friendly neighbors to show him around!</div>
+    </div>
+  </div>
+
+  <!-- AMBASSADORS -->
+  <div class="amb-card">
+    <div class="amb-title">🏆 Community Ambassadors in Green Point</div>
+    <div class="amb-item">
+      <div class="amb-av" style="background:#9B59B6;"><div class="amb-crown">🏆</div>L</div>
+      <div>
+        <div class="amb-name">Lerato Molefe</div>
+        <div class="amb-desc">Ambassador · 847 rep · 6mo member</div>
+      </div>
+      <button class="amb-greet" onclick="showToast('Join Nearby to greet Lerato!')">👋 Hi</button>
+    </div>
+    <div class="amb-item">
+      <div class="amb-av" style="background:var(--sage);"><div class="amb-crown">⭐</div>A</div>
+      <div>
+        <div class="amb-name">Amara O.</div>
+        <div class="amb-desc">Community Star · 520 rep · 8mo member</div>
+      </div>
+      <button class="amb-greet" onclick="showToast('Join Nearby to greet Amara!')">👋 Hi</button>
+    </div>
+  </div>
+
+  <!-- JOIN BANNER -->
+  <div class="join-banner">
+    <div class="jb-title">Welcome Marcus to your neighborhood 🏡</div>
+    <div class="jb-sub">Join Nearby free — say hello, share tips and connect with new and existing neighbors in your area.</div>
+    <button class="jb-btn" onclick="window.location.href='nearby-auth.html'">🚀 Join Nearby Free & Say Hello</button>
+    <div class="jb-login">Already have an account? <a href="nearby-auth.html">Sign in →</a></div>
+  </div>
+
+  <!-- MORE ARRIVALS -->
+  <div class="profile-card">
+    <div class="pc-title">🆕 Others new to Green Point</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="showToast('Join Nearby to view all arrivals!')">
+        <div style="width:40px;height:40px;border-radius:50%;background:#2980B9;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0;">S</div>
+        <div><div style="font-size:14px;font-weight:700;color:var(--navy);">Sara Bekele</div><div style="font-size:12px;color:var(--light);">Visitor from Addis Ababa · 1 week ago</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="showToast('Join Nearby to view all arrivals!')">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--navy);flex-shrink:0;">K</div>
+        <div><div style="font-size:14px;font-weight:700;color:var(--navy);">Kofi Asante</div><div style="font-size:12px;color:var(--light);">Moved from Accra · 4 days ago</div></div>
+      </div>
+      <button onclick="window.location.href='nearby-auth.html'" style="width:100%;padding:11px;border-radius:12px;border:2px solid rgba(0,0,0,0.1);background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;">See all 12 new arrivals →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- STICKY BOTTOM -->
+<div class="sticky-bottom">
+  <div class="sticky-row">
+    <button class="welcome-btn" onclick="window.location.href='nearby-auth.html'">👋 Say Hello to Marcus</button>
+    <button class="share-btn" onclick="openShare()"><span>🟢</span> Share</button>
+  </div>
+</div>
+
+<!-- SHARE OVERLAY -->
+<div class="sheet-overlay" id="overlay" onclick="closeShare()"></div>
+<div class="share-sheet" id="shareSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Share Marcus's arrival</div>
+  <div class="sheet-sub">Help your neighbors welcome him to the community</div>
+  <div class="share-options">
+    <div class="share-opt" onclick="shareWhatsApp()">
+      <div class="so-icon" style="background:#E8F9EE;">📱</div>
+      <div class="so-label">WhatsApp</div>
+    </div>
+    <div class="share-opt" onclick="shareTelegram()">
+      <div class="so-icon" style="background:#E8F4FD;">✈️</div>
+      <div class="so-label">Telegram</div>
+    </div>
+    <div class="share-opt" onclick="shareTwitter()">
+      <div class="so-icon" style="background:#F0F0F0;">🐦</div>
+      <div class="so-label">X / Twitter</div>
+    </div>
+    <div class="share-opt" onclick="shareFacebook()">
+      <div class="so-icon" style="background:#E8ECF8;">👥</div>
+      <div class="so-label">Facebook</div>
+    </div>
+  </div>
+  <div class="copy-link-box">
+    <div class="copy-url">nearby-navy.vercel.app/nearby-arrival-preview.html</div>
+    <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+  </div>
+</div>
+
+<script>
+  var PAGE_URL = encodeURIComponent(window.location.href);
+  var PAGE_TEXT = encodeURIComponent('👋 Marcus just moved to Green Point!\n\nSay hello to your new neighbor on Nearby — the community app that connects you with the people around you.\n\n');
+
+  function openShare() {
+    document.getElementById('shareSheet').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeShare() {
+    document.getElementById('shareSheet').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+  function shareWhatsApp() { window.open('https://wa.me/?text=' + PAGE_TEXT + PAGE_URL, '_blank'); closeShare(); }
+  function shareTelegram() { window.open('https://t.me/share/url?url=' + PAGE_URL + '&text=' + PAGE_TEXT, '_blank'); closeShare(); }
+  function shareTwitter() { window.open('https://twitter.com/intent/tweet?text=' + PAGE_TEXT + '&url=' + PAGE_URL, '_blank'); closeShare(); }
+  function shareFacebook() { window.open('https://www.facebook.com/sharer/sharer.php?u=' + PAGE_URL, '_blank'); closeShare(); }
+  function copyLink() {
+    navigator.clipboard.writeText(decodeURIComponent(PAGE_URL)).then(function() {
+      document.querySelector('.copy-btn').textContent = '✓ Copied!';
+      setTimeout(function(){ document.querySelector('.copy-btn').textContent = 'Copy Link'; }, 2000);
+    });
+  }
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 1800);
+    setTimeout(function(){ t.remove(); }, 2200);
+  }
+</script>
+</body>
+</html>
