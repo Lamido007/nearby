@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- ═══ OPEN GRAPH — Rich preview on WhatsApp, Telegram, Twitter, iMessage ═══ -->
+<meta property="og:title" content="💼 Sales Assistant — Blue Moon Bakery" />
+<meta property="og:description" content="📍 Sea Point, Cape Town · Part-time · R80–100/hr · No experience needed. Apply on Nearby — your local community app." />
+<meta property="og:image" content="https://nearby-navy.vercel.app/nearby-og-job.png" />
+<meta property="og:url" content="https://nearby-navy.vercel.app/nearby-job-preview.html" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Nearby" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="💼 Sales Assistant — Blue Moon Bakery" />
+<meta name="twitter:description" content="📍 Sea Point · Part-time · R80–100/hr · Apply on Nearby" />
+
+<title>Sales Assistant at Blue Moon Bakery — Nearby</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8; --terracotta: #C4622D; --navy: #1A2332;
+    --sage: #7A9E7E; --amber: #E8A838; --mid: #4A5568;
+    --light: #8A96A8; --white: #FDFAF4; --green: #38A169; --red: #E53E3E;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: #EEE9DF; color: var(--navy); max-width: 480px; margin: 0 auto; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--navy); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: white; }
+  .logo span { color: var(--terracotta); }
+  .header-tag { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 100px; }
+
+  /* PUBLIC BANNER */
+  .public-banner { background: rgba(56,161,105,0.1); border-bottom: 1px solid rgba(56,161,105,0.2); padding: 10px 16px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--green); font-weight: 600; }
+
+  /* JOB HERO */
+  .job-hero { background: var(--white); padding: 20px 16px; margin-bottom: 10px; }
+  .biz-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .biz-logo { width: 60px; height: 60px; border-radius: 16px; background: var(--sage); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: white; flex-shrink: 0; }
+  .biz-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .biz-verified { font-size: 12px; color: var(--green); font-weight: 500; }
+  .biz-loc { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .job-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; color: var(--navy); letter-spacing: -0.5px; margin-bottom: 10px; }
+  .job-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .job-tag { padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+  .tag-type { background: rgba(122,158,126,0.12); color: var(--sage); }
+  .tag-pay { background: rgba(56,161,105,0.1); color: var(--green); }
+  .tag-urgent { background: rgba(229,62,62,0.1); color: var(--red); }
+  .tag-time { background: rgba(26,35,50,0.07); color: var(--mid); }
+
+  /* APPLICANTS */
+  .applicants-row { display: flex; align-items: center; gap: 8px; padding: 12px 0; border-top: 1px solid rgba(0,0,0,0.06); border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 14px; }
+  .app-avs { display: flex; }
+  .app-av { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--white); margin-left: -6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; }
+  .app-av:first-child { margin-left: 0; }
+  .app-text { font-size: 12px; color: var(--mid); flex: 1; }
+  .app-text b { color: var(--navy); }
+  .deadline { font-size: 11px; color: var(--red); font-weight: 600; }
+
+  /* SECTION */
+  .card { background: var(--white); border-radius: 16px; margin: 0 10px 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .detail-item { background: var(--cream); border-radius: 12px; padding: 12px; }
+  .di-label { font-size: 10px; font-weight: 700; color: var(--light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .di-val { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .desc-text { font-size: 14px; color: var(--mid); line-height: 1.7; }
+  .req-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; color: var(--mid); }
+  .req-item:last-child { border-bottom: none; }
+  .req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--terracotta); flex-shrink: 0; }
+
+  /* BUSINESS INFO */
+  .biz-info-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+  .biz-info-row:last-child { border-bottom: none; }
+  .bi-icon { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+  .bi-text { font-size: 13px; color: var(--mid); }
+  .bi-text b { color: var(--navy); }
+
+  /* JOIN BANNER */
+  .join-banner { background: linear-gradient(135deg, var(--navy), #2C3E6B); margin: 0 10px 10px; border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden; }
+  .join-banner::after { content: '🏡'; position: absolute; right: -10px; bottom: -10px; font-size: 70px; opacity: 0.08; }
+  .join-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: white; margin-bottom: 6px; }
+  .join-sub { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 16px; }
+  .join-btn { display: block; background: var(--terracotta); color: white; border: none; border-radius: 100px; padding: 13px 32px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; margin: 0 auto 10px; width: 100%; }
+  .join-login { font-size: 13px; color: rgba(255,255,255,0.5); }
+  .join-login a { color: rgba(255,255,255,0.8); font-weight: 600; text-decoration: none; }
+
+  /* STICKY BOTTOM */
+  .sticky-bottom { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-top: 1px solid rgba(0,0,0,0.08); padding: 12px 16px 28px; }
+  .sticky-row { display: flex; gap: 10px; }
+  .apply-btn { flex: 2; padding: 14px; border-radius: 14px; background: var(--navy); color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .apply-btn:hover { background: var(--terracotta); }
+  .share-btn { flex: 1; padding: 14px; border-radius: 14px; background: #25D366; color: white; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .share-btn:active { background: #1DA851; }
+
+  /* SHARE SHEET */
+  .sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+  .sheet-overlay.open { display: block; }
+  .share-sheet { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-radius: 24px 24px 0 0; padding: 20px 20px 44px; z-index: 101; }
+  .share-sheet.open { display: block; }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 100px; margin: 0 auto 16px; }
+  .sheet-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+  .sheet-sub { font-size: 13px; color: var(--light); margin-bottom: 20px; }
+  .share-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .share-opt { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; }
+  .so-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+  .so-label { font-size: 11px; font-weight: 600; color: var(--mid); text-align: center; }
+  .copy-link-box { background: var(--cream); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .copy-url { flex: 1; font-size: 12px; color: var(--mid); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .copy-btn { background: var(--navy); color: white; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+  .copy-btn:active { background: var(--terracotta); }
+
+  .page-pad { padding-bottom: 100px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">Near<span>by</span></div>
+  <div class="header-tag">👁️ Public Job Post</div>
+</div>
+
+<!-- PUBLIC BANNER -->
+<div class="public-banner">
+  ✅ You're viewing this without an account · Sign up to apply
+</div>
+
+<!-- JOB HERO -->
+<div class="job-hero">
+  <div class="biz-row">
+    <div class="biz-logo">B</div>
+    <div>
+      <div class="biz-name">Blue Moon Bakery ✓</div>
+      <div class="biz-verified">✓ Verified Business on Nearby</div>
+      <div class="biz-loc">📍 Sea Point, Cape Town · 0.3km from Green Point</div>
+    </div>
+  </div>
+  <div class="job-title">Sales Assistant</div>
+  <div class="job-tags">
+    <span class="job-tag tag-type">🏪 Retail</span>
+    <span class="job-tag tag-time">⏰ Part-time</span>
+    <span class="job-tag tag-pay">💰 R80–100/hr</span>
+    <span class="job-tag tag-urgent">🔥 Urgent</span>
+  </div>
+  <div class="applicants-row">
+    <div class="app-avs">
+      <div class="app-av" style="background:var(--terracotta);">M</div>
+      <div class="app-av" style="background:var(--sage);">A</div>
+      <div class="app-av" style="background:#9B59B6;">K</div>
+      <div class="app-av" style="background:#2980B9;">S</div>
+    </div>
+    <div class="app-text"><b>12 neighbors</b> already applied</div>
+    <div class="deadline">⏳ Closes in 3 days</div>
+  </div>
+</div>
+
+<div class="page-pad">
+
+  <!-- DETAILS -->
+  <div class="card">
+    <div class="card-title">📋 Job Details</div>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="di-label">Start Date</div><div class="di-val">Immediately</div></div>
+      <div class="detail-item"><div class="di-label">Hours/Week</div><div class="di-val">20–25 hrs</div></div>
+      <div class="detail-item"><div class="di-label">Experience</div><div class="di-val">Not required</div></div>
+      <div class="detail-item"><div class="di-label">Pay</div><div class="di-val">R80–100/hr</div></div>
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="card">
+    <div class="card-title">📝 About This Role</div>
+    <div class="desc-text">We're looking for a friendly, enthusiastic sales assistant to join our busy bakery team. You'll serve customers, handle the till and keep our front-of-house running smoothly. We'll train you on everything — all we need is a great attitude and a love for people!</div>
+  </div>
+
+  <!-- REQUIREMENTS -->
+  <div class="card">
+    <div class="card-title">✅ Requirements</div>
+    <div class="req-item"><div class="req-dot"></div>Friendly, people-first attitude</div>
+    <div class="req-item"><div class="req-dot"></div>Available weekday mornings and weekends</div>
+    <div class="req-item"><div class="req-dot"></div>Basic English communication</div>
+    <div class="req-item"><div class="req-dot"></div>Must be local to Sea Point / Green Point area</div>
+    <div class="req-item" style="color:var(--green);"><div class="req-dot" style="background:var(--green);"></div>No experience needed — full training provided</div>
+  </div>
+
+  <!-- BUSINESS INFO -->
+  <div class="card">
+    <div class="card-title">🏪 About Blue Moon Bakery</div>
+    <div class="biz-info-row"><div class="bi-icon">📍</div><div class="bi-text"><b>12 Main Rd, Sea Point</b>, Cape Town</div></div>
+    <div class="biz-info-row"><div class="bi-icon">🕐</div><div class="bi-text">Open <b>Mon–Fri 7am–6pm</b> · Sat 8am–2pm</div></div>
+    <div class="biz-info-row"><div class="bi-icon">⭐</div><div class="bi-text"><b>4.8 stars</b> from 124 neighbor reviews</div></div>
+    <div class="biz-info-row"><div class="bi-icon">🛡️</div><div class="bi-text"><b>Verified business</b> · Zero complaints · 3 years on Nearby</div></div>
+  </div>
+
+  <!-- JOIN BANNER -->
+  <div class="join-banner">
+    <div class="join-title">Want to apply?</div>
+    <div class="join-sub">Join Nearby free — connect with local jobs, neighbors and opportunities in your area.</div>
+    <button class="join-btn" onclick="window.location.href='nearby-auth.html'">🚀 Join Nearby Free & Apply</button>
+    <div class="join-login">Already have an account? <a href="nearby-auth.html">Sign in →</a></div>
+  </div>
+
+  <!-- MORE JOBS -->
+  <div class="card">
+    <div class="card-title">💼 More Jobs Nearby</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--cream);border-radius:12px;cursor:pointer;" onclick="showToast('Sign up to view all jobs!')">
+        <div style="font-size:22px;">🌿</div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:var(--navy);">Weekend Gardening Assistant</div><div style="font-size:12px;color:var(--mid);">Green Thumb · R120/hr · 1.8km away</div></div>
+        <div style="font-size:12px;font-weight:700;color:var(--sage);">New</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--cream);border-radius:12px;cursor:pointer;" onclick="showToast('Sign up to view all jobs!')">
+        <div style="font-size:22px;">☕</div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:var(--navy);">Barista / Cashier</div><div style="font-size:12px;color:var(--mid);">Cape Town Eats · R8,500/mo · 2.1km</div></div>
+        <div style="font-size:12px;font-weight:700;color:var(--terracotta);">Urgent</div>
+      </div>
+      <button onclick="window.location.href='nearby-auth.html'" style="width:100%;padding:12px;border-radius:12px;border:2px solid rgba(0,0,0,0.1);background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;">See all 138 local jobs →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- STICKY BOTTOM -->
+<div class="sticky-bottom">
+  <div class="sticky-row">
+    <button class="apply-btn" onclick="window.location.href='nearby-auth.html'">Apply Now — Join Free</button>
+    <button class="share-btn" onclick="openShare()">
+      <span>🟢</span> Share
+    </button>
+  </div>
+</div>
+
+<!-- SHARE OVERLAY -->
+<div class="sheet-overlay" id="overlay" onclick="closeShare()"></div>
+
+<!-- SHARE SHEET -->
+<div class="share-sheet" id="shareSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Share this job</div>
+  <div class="sheet-sub">Help someone in your community find this opportunity</div>
+  <div class="share-options">
+    <div class="share-opt" onclick="shareWhatsApp()">
+      <div class="so-icon" style="background:#E8F9EE;">📱</div>
+      <div class="so-label">WhatsApp</div>
+    </div>
+    <div class="share-opt" onclick="shareTelegram()">
+      <div class="so-icon" style="background:#E8F4FD;">✈️</div>
+      <div class="so-label">Telegram</div>
+    </div>
+    <div class="share-opt" onclick="shareTwitter()">
+      <div class="so-icon" style="background:#E8ECF8;">🐦</div>
+      <div class="so-label">X / Twitter</div>
+    </div>
+    <div class="share-opt" onclick="shareFacebook()">
+      <div class="so-icon" style="background:#E8ECF8;">👥</div>
+      <div class="so-label">Facebook</div>
+    </div>
+  </div>
+  <div class="copy-link-box">
+    <div class="copy-url" id="shareUrl">nearby-navy.vercel.app/nearby-job-preview.html</div>
+    <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+  </div>
+</div>
+
+<script>
+  var JOB_URL = encodeURIComponent(window.location.href);
+  var JOB_TEXT = encodeURIComponent('💼 Job Alert on Nearby!\n\nSales Assistant at Blue Moon Bakery\n📍 Sea Point, Cape Town\n⏰ Part-time · R80–100/hr\n🔥 Urgent — Closes in 3 days\n\n12 neighbors already applied. Apply free 👇\n');
+
+  function openShare() {
+    document.getElementById('shareSheet').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeShare() {
+    document.getElementById('shareSheet').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+  function shareWhatsApp() {
+    window.open('https://wa.me/?text=' + JOB_TEXT + JOB_URL, '_blank');
+    closeShare();
+  }
+  function shareTelegram() {
+    window.open('https://t.me/share/url?url=' + JOB_URL + '&text=' + JOB_TEXT, '_blank');
+    closeShare();
+  }
+  function shareTwitter() {
+    window.open('https://twitter.com/intent/tweet?text=' + JOB_TEXT + '&url=' + JOB_URL, '_blank');
+    closeShare();
+  }
+  function shareFacebook() {
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + JOB_URL, '_blank');
+    closeShare();
+  }
+  function copyLink() {
+    navigator.clipboard.writeText(decodeURIComponent(JOB_URL)).then(function() {
+      document.querySelector('.copy-btn').textContent = '✓ Copied!';
+      setTimeout(function(){ document.querySelector('.copy-btn').textContent = 'Copy Link'; }, 2000);
+    });
+  }
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; }, 1800);
+    setTimeout(function(){ t.remove(); }, 2200);
+  }
+</script>
+</body>
+</html>
